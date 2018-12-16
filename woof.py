@@ -527,7 +527,7 @@ HORZINCREMENT = 10
 VERTINCREMENT = 10
 
 DEBUG = False
-DATA_PATH = "~/Git/woof-tile/windows.dat"
+DATA_PATH = "~/.woof/windows.dat"
 DATA_PATH = call(['readlink -f', DATA_PATH]).rstrip()
 
 # Initialise a tree
