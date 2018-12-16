@@ -1,0 +1,554 @@
+import os
+import subprocess
+import time
+
+class DIRECTION:
+    LEFT = 0
+    DOWN = 1
+    UP = 2
+    RIGHT = 3
+
+class PLANE:
+    HORZ = 0
+    VERT = 1
+
+class WorkSpace:
+    def __init__(self, DesktopCount, ScreensCount, ResHorz, ResVert):
+        self.DesktopsCount = DesktopCount
+        self.Desktops = []
+
+        for i in range(self.DesktopsCount):
+            NewDesktop = Desktop(ScreensCount, ResHorz, ResVert)
+            self.Desktops.append(NewDesktop)
+
+class Desktop:
+    def __init__(self, ScreensCount, ResHorz, ResVert):
+        self.ScreensCount = ScreensCount
+        self.Screens = []
+        
+        ScreenResHorz = ResHorz / self.ScreensCount
+        LeftLimit = 0
+        for RightLimit in range(ScreenResHorz, ResHorz + ScreenResHorz, ScreenResHorz):
+            NewScreen = Screen(LeftLimit, 1080, 0, RightLimit)
+            LeftLimit = RightLimit
+            self.Screens.append(NewScreen)
+
+class Screen:
+    def __init__(self, LeftLimit, DownLimit, UpLimit, RightLimit):
+        self.LeftLimit = LeftLimit
+        self.DownLimit = DownLimit
+        self.UpLimit = UpLimit
+        self.RightLimit = RightLimit
+
+        self.Child = None
+
+    def DEBUG_PRINT(self, Level):
+        print "\t" * Level + "Screen"
+        self.Child.DEBUG_PRINT(Level + 1)
+
+    def get_borders(self):
+            return self.LeftLimit, self.DownLimit, self.UpLimit, self.RightLimit
+
+    def set_window(self, Window):
+        if self.Child != None:
+            return False
+
+        self.Child = Window
+        self.Child.set_size(self.LeftLimit, self.DownLimit, self.UpLimit, self.RightLimit)
+        self.Child.reset_size()
+        return True
+    
+    def add_node(self, CallerChild, NewWindowId, PlaneType, Direction):
+        NewNode = Node(self, PlaneType)
+        NewWindow = NewNode.split(CallerChild, NewWindowId, PlaneType, Direction)
+
+        self.Child = NewNode
+
+        return NewWindow
+
+    def border_check_left(self, Coord):
+        return self.LeftLimit == Coord
+
+    def border_check_down(self, Coord):
+        return self.DownLimit == Coord
+
+    def border_check_up(self, Coord):
+        return self.UpLimit == Coord
+
+    def border_check_right(self, Coord):
+        return self.RightLimit == Coord
+
+    def expand_horz(self, CallerChild):
+        return False
+
+    def reduce_horz(self, CallerChild):
+        return False
+    
+
+class Node:
+    def __init__(self, Parent, PlaneType, ChildA = None, ChildB = None):
+        self.PlaneType = PlaneType
+        self.Parent = Parent
+        self.ChildA = ChildA
+        self.ChildB = ChildB
+
+        L, D, U, R = self.Parent.get_borders()
+        if self.PlaneType == PLANE.HORZ:
+            self.SplitCoord = (U + D) / 2
+        else:
+            self.SplitCoord = (L + R) / 2
+
+    def DEBUG_PRINT(self, Level):
+        if self.PlaneType == PLANE.HORZ:
+            PT = "Horz"
+        else:
+            PT = "Vert"
+        print "\t" * Level + "Node: " + PT
+        self.ChildA.DEBUG_PRINT(Level + 1)
+        self.ChildB.DEBUG_PRINT(Level + 1)
+
+    def refresh_children_size(self):
+        L, D, U, R = self.Parent.get_borders()
+
+        if self.PlaneType == PLANE.HORZ:
+            self.ChildA.set_size(L, self.SplitCoord, U, R)
+            self.ChildB.set_size(L, D, self.SplitCoord, R)
+        else:
+            self.ChildA.set_size(L, D, U, self.SplitCoord)
+            self.ChildB.set_size(self.SplitCoord, D, U, R)
+
+    def add_node(self, CallerChild, NewWindow, PlaneType, Direction):
+        if Direction == DIRECTION.DOWN or Direction == DIRECTION.RIGHT:
+            ChildA = CallerChild
+            ChildB = NewWindow
+        else: 
+            ChildA = NewWindow
+            ChildB = CallerChild
+
+        NewNode = Node(self, PlaneType, ChildA, ChildB)
+        ChildA.Parent = NewNode
+        ChildB.Parent = NewNode
+
+        if CallerChild == self.ChildA
+            self.ChildA = NewNode
+        else:
+            self.ChildB = NewNode
+
+        self.refresh_children_size()
+
+        return NewWindow
+
+    def split(self, CurrWindow, NewWindowId, PlaneType, Direction):
+        NewWindow = Window(NewWindowId, self)
+        ALeft, ADown, AUp, ARight = CurrWindow.get_borders()
+        BLeft, BDown, BUp, BRight = ALeft, ADown, AUp, ARight 
+        
+        if Direction == DIRECTION.DOWN or Direction == DIRECTION.RIGHT:
+            self.ChildA = CurrWindow
+            self.ChildB = NewWindow
+        else:
+            self.ChildA = NewWindow
+            self.ChildB = CurrWindow
+
+        if PlaneType == PLANE.HORZ:
+            ADown = ADown - (ADown - AUp) / 2
+            BUp = ADown
+        else:
+            ARight = ARight - (ARight - ALeft) / 2
+            BLeft = ARight
+        
+        self.ChildA.set_size(ALeft, ADown, AUp, ARight)
+        self.ChildA.reset_size()
+        self.ChildB.set_size(BLeft, BDown, BUp, BRight)
+        self.ChildB.reset_size()
+
+        self.ChildA.Parent = self
+        self.ChildB.Parent = self
+
+        DEBUG_LOG(["current window id", CurrWindow.WindowIdDec])
+
+        CL, CD, CU, CR = CurrWindow.get_borders()
+        DEBUG_LOG(["curr window moved", CL, CD, CU, CR])
+
+        DL, DD, DU, DR = NewWindow.get_borders()
+        DEBUG_LOG(["new window split at", DL, DD, DU, DR])
+
+        return NewWindow
+
+    def border_check_left(self, Coord):
+        return self.Parent.border_check_left(Coord)
+
+    def border_check_down(self, Coord):
+        return self.Parent.border_check_down(Coord)
+
+    def border_check_up(self, Coord):
+        return self.Parent.border_check_up(Coord)
+
+    def border_check_right(self, Coord):
+        return self.Parent.border_check_right(Coord)
+
+    def expand_right(self):
+        self.ChildB.expand_right()
+        if self.PlaneType == PLANE.HORZ:
+            self.ChildA.expand_right()
+    def reduce_right(self):
+        self.ChildB.reduce_right()
+        if self.PlaneType == PLANE.HORZ:
+            self.ChildA.reduce_right()
+
+    def expand_left(self):
+        self.ChildA.expand_left()
+        if self.PlaneType == PLANE.HORZ:
+            self.ChildB.expand_left()
+    def reduce_left(self):
+        self.ChildA.reduce_left()
+        if self.PlaneType == PLANE.HORZ:
+            self.ChildB.reduce_left()
+
+    def expand_down(self):
+        self.ChildB.expand_down()
+        if self.PlaneType == PLANE.VERT:
+            self.ChildA.expand_down()
+    def reduce_down(self):
+        self.ChildB.reduce_down()
+        if self.PlaneType == PLANE.VERT:
+            self.ChildA.reduce_down()
+
+    def expand_up(self):
+        self.ChildA.expand_up()
+        if self.PlaneType == PLANE.VERT:
+            self.ChildB.expand_up()
+    def reduce_up(self):
+        self.ChildA.reduce_up()
+        if self.PlaneType == PLANE.VERT:
+            self.ChildB.reduce_up()
+
+    def expand_horz(self, CallerChild):
+        if self.PlaneType == PLANE.HORZ:
+            return self.Parent.expand_horz(self)
+
+        if CallerChild == self.ChildB:
+            return self.Parent.expand_horz(self)
+
+        # if CallerChild.Right - CallerChild.Left < 10:
+        #     self.Parent.expand_horz(self)
+
+        self.ChildA.expand_right()
+        self.ChildB.reduce_left()
+
+    def reduce_horz(self, CallerChild):
+        if self.PlaneType == PLANE.HORZ:
+            return self.Parent.reduce_horz(self)
+
+        if CallerChild == self.ChildB:
+            return self.Parent.reduce_horz(self)
+
+        self.ChildA.reduce_right()
+        self.ChildB.expand_left()
+
+    def expand_vert(self, CallerChild):
+        if self.PlaneType == PLANE.VERT:
+            return self.Parent.expand_vert(self)
+
+        if CallerChild == self.ChildB:
+            return self.Parent.expand_vert(self)
+
+        self.ChildA.expand_down()
+        self.ChildB.reduce_up()
+
+    def reduce_vert(self, CallerChild):
+        if self.PlaneType == PLANE.VERT:
+            return self.Parent.reduce_vert(self)
+
+        if CallerChild == self.ChildB:
+            return self.Parent.reduce_vert(self)
+
+        self.ChildA.reduce_down()
+        self.ChildB.expand_up()
+        
+    def convert_plane(self, PlaneType):
+        if self.PlaneType == PlaneType:
+            return False
+
+        Left, _, Up, _ = self.ChildA.get_borders()
+        _, Down, _, Right = self.ChildB.get_borders()
+
+        if PlaneType == PLANE.HORZ:
+            NewSplitPoint = Up + (Down - Up) / 2
+            self.ChildA.set_size(Left, NewSplitPoint, Up, Right)
+            self.ChildB.set_size(Left, Down, NewSplitPoint, Right)
+        else:
+            NewSplitPoint = Left + (Right - Left) / 2
+            self.ChildA.set_size(Left, Down, Up, NewSplitPoint)
+            self.ChildB.set_size(NewSplitPoint, Down, Up, Right)
+
+        self.ChildA.reset_size()
+        self.ChildB.reset_size()
+        self.PlaneType = PlaneType
+        
+class Window:
+    def __init__(self, WindowId, Parent):
+        self.WindowIdDec = WindowId
+        self.WindowIdHex = hex(int(WindowId))
+        self.Parent = Parent
+
+        self.unmaximize()
+
+    def DEBUG_PRINT(self, Level):
+        print "\t" * Level + "WindowID: " + str(self.WindowIdDec)
+
+    def set_id(self, WindowId):
+        self.WindowIdDec = WindowId
+        self.WindowIdHex = hex(int(WindowId))
+
+    def get_borders(self):
+        return self.Left, self.Down, self.Up, self.Right
+
+    def set_size(self, Left, Down, Up, Right):
+        self.Left = Left
+        self.Down = Down
+        self.Up = Up
+        self.Right = Right
+
+    def reset_size(self):
+        if self.Parent.border_check_left(self.Left):
+            LeftGap = GAP
+        else:
+            LeftGap = GAP / 2
+        if self.Parent.border_check_down(self.Down):
+            DownGap = GAP
+        else:
+            DownGap = GAP / 2
+        if self.Parent.border_check_up(self.Up):
+            UpGap = GAP
+        else:
+            UpGap = GAP / 2
+        if self.Parent.border_check_right(self.Right):
+            RightGap = GAP
+        else:
+            RightGap = GAP / 2
+
+        PosX = self.Left + LEFTBORDER + LeftGap
+        PosY = self.Up  + TOPBORDER + UpGap
+        SizeX = self.Right - PosX - RIGHTBORDER - RightGap
+        SizeY = self.Down - PosY - BOTTOMBORDER - DownGap
+
+        # xdotool will not override the plasma panel border
+        # wmctrl is very particular about its args
+        MVARG = '0,' + str(PosX) + ',' + str(PosY) + ',' + str(SizeX) + ',' + str(SizeY)
+        call(['wmctrl -ir', self.WindowIdHex, '-e', MVARG])
+
+    def expand_right(self):
+        self.Right += HORZINCREMENT
+        self.reset_size()
+    def reduce_right(self):
+        self.Right -= HORZINCREMENT
+        self.reset_size()
+
+    def expand_left(self):
+        self.Left -= HORZINCREMENT
+        self.reset_size()
+    def reduce_left(self):
+        self.Left += HORZINCREMENT
+        self.reset_size()
+
+    def expand_down(self):
+        self.Down += VERTINCREMENT
+        self.reset_size()
+    def reduce_down(self):
+        self.Down -= VERTINCREMENT
+        self.reset_size()
+
+    def expand_up(self):
+        self.Up -= VERTINCREMENT
+        self.reset_size()
+    def reduce_up(self):
+        self.Up += VERTINCREMENT
+        self.reset_size()
+        
+    def expand_horz(self):
+        self.Parent.expand_horz(self)
+    def reduce_horz(self):
+        self.Parent.reduce_horz(self)
+
+    def expand_vert(self):
+        self.Parent.expand_vert(self)
+    def reduce_vert(self):
+        self.Parent.reduce_vert(self)
+
+    def split(self, NewWindowId, PlaneType, Direction):
+        NewWindow = self.Parent.add_node(self, NewWindowId, PlaneType, Direction)
+        return NewWindow
+
+    def convert_plane(self, PlaneType):
+        self.Parent.convert_plane(PlaneType)
+
+    def unmaximize(self):
+        subprocess.call(["wmctrl", "-ir", self.WindowIdHex, "-b", "remove,maximized_vert,maximized_horz"])
+        
+class Windows:
+    def __init__(self):
+        self.Windows = {}
+
+    def add_window(self, Window):
+        NewWindowId = Window.WindowIdDec
+        self.Windows[NewWindowId] = Window
+
+    def swap_windows(self, WindowIdA, WindowIdB):
+        WindowA = self.Windows[WindowIdA]
+        WindowB = self.Windows[WindowIdB]
+
+        WindowA.set_id(WindowIdB)
+        WindowB.set_id(WindowIdA)
+
+        print WindowA.WindowIdDec
+        print WindowB.WindowIdDec
+
+        WindowA.reset_size()
+        WindowB.reset_size()
+
+def call(Command):
+    Cmd = join_and_sanitize(Command)
+    proc = subprocess.Popen(Cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    Return, err = proc.communicate()
+
+    return Return
+
+def current_desktop():
+    return int(call(['xdotool', 'get_desktop']))
+
+def join_and_sanitize(List):
+    if isinstance(List, str):
+        return List
+
+    NewList = []
+    for Item in List:
+        if isinstance(Item, str):
+            NewList.append(Item)
+            continue
+        elif isinstance(Item, int):
+            NewList.append(str(Item))
+            continue
+        else:
+            raise Exception('Invalid type when attempting to join and santize')
+    
+    return ' '.join(NewList)
+
+def DEBUG_LOG(X):
+    if not DEBUG:
+        return
+    print X
+
+# Some initial parameters
+GAP = 10
+TOPBORDER = 25
+LEFTBORDER = 2
+RIGHTBORDER = 2
+BOTTOMBORDER = 4
+
+HORZINCREMENT = 10
+VERTINCREMENT = 10
+
+DEBUG = True
+WorkSpace = WorkSpace(4, 3, 5760, 1080)
+Windows = Windows()
+
+ActiveWindow = call('xdotool getactivewindow').rstrip()
+Window0 = Window(ActiveWindow, WorkSpace.Desktops[0].Screens[0])
+WorkSpace.Desktops[0].Screens[0].set_window(Window0)
+Windows.add_window(Window0)
+
+time.sleep(1.0)
+call(['xdotool windowactivate', 113246214])
+Window1 = Window0.split(113246214, PLANE.VERT, DIRECTION.LEFT)
+Windows.add_window(Window1)
+
+time.sleep(1.0)
+call(['xdotool windowactivate', 115343366])
+Window2 = Window0.split(115343366, PLANE.HORZ, DIRECTION.DOWN)
+Windows.add_window(Window2)
+
+time.sleep(1.0)
+call(['xdotool windowactivate', 117440518])
+Window3 = Window1.split(117440518, PLANE.HORZ, DIRECTION.UP)
+Windows.add_window(Window3)
+
+time.sleep(1.0)
+call(['xdotool windowactivate', 119537670])
+Window4 = Window2.split(119537670, PLANE.VERT, DIRECTION.RIGHT)
+Windows.add_window(Window4)
+
+time.sleep(1.0)
+for i in range(8):
+    Window2.expand_horz()
+    time.sleep(0.2)
+
+time.sleep(1.0)
+for i in range(5):
+    Window1.expand_horz()
+    time.sleep(0.2)
+
+time.sleep(1.0)
+call(['xdotool windowactivate', 121634822])
+Window5 = Window3.split(121634822, PLANE.VERT, DIRECTION.RIGHT)
+Windows.add_window(Window5)
+
+WorkSpace.Desktops[0].Screens[0].DEBUG_PRINT(0)
+
+time.sleep(1.0)
+for i in range(4):
+    Window5.expand_horz()
+    time.sleep(0.2)
+
+time.sleep(1.0)
+for i in range(6):
+    Window3.reduce_horz()
+    time.sleep(0.2)
+
+time.sleep(1.0)
+for i in range(6):
+    Window1.reduce_horz()
+    time.sleep(0.2)
+ 
+time.sleep(1.0)
+for i in range(6):
+    Window3.expand_vert()
+    time.sleep(0.2)   
+ 
+time.sleep(1.0)
+for i in range(6):
+    Window3.reduce_vert()
+    time.sleep(0.2)   
+ 
+time.sleep(1.0)
+for i in range(8):
+    Window0.expand_vert()
+    time.sleep(0.2)   
+ 
+time.sleep(1.0)
+for i in range(3):
+    Window0.reduce_vert()
+    time.sleep(0.2)   
+
+time.sleep(1.0)
+Window3.convert_plane(PLANE.HORZ)
+time.sleep(1.0)
+Window3.convert_plane(PLANE.VERT)
+
+time.sleep(1.0)
+Window2.convert_plane(PLANE.HORZ)
+time.sleep(1.0)
+Window2.convert_plane(PLANE.VERT)
+
+time.sleep(1.0)
+Windows.swap_windows(Window2.WindowIdDec, Window5.WindowIdDec)
+
+time.sleep(1.0)
+
+call(['xdotool windowactivate', ActiveWindow])
+time.sleep(5.0)
+call(['xdotool windowminimize', 113246214])
+call(['xdotool windowminimize', 115343366])
+call(['xdotool windowminimize', 117440518])
+call(['xdotool windowminimize', 119537670])
+call(['xdotool windowminimize', 121634822])
