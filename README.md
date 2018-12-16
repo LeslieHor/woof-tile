@@ -2,22 +2,7 @@
 
 DE/WM agnostic tiling manager
 
-## TODO 
-* ~~Make tree structure persistant~~
-* ~~Dynamically add windows to tree~~
-* ~~Enable splitting of nodes~~
-* ~~Resize Horizontally~~
-* ~~Resize Vertically~~
-* ~~Allow swapping of windows~~
-* Clean the code to not require the bash file
-* Comment the code
-* Document the application
-* Use a dedicated config file
-* ~~Use dedicated dir for data store~~
-* Make it work for multiple desktops
-* Allow resizing of Bottom/Right windows
-
-## Notes
+## Usage
 
 Assign hotkeys using xbindkeys to actually use it
 
