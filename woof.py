@@ -307,9 +307,9 @@ class Window:
         return self.Parent.get_borders(self)
 
     def border_multiplier(self):
-        WindowTitle = call(['xdotool getwindowname', self.WindowIdDec]).rstrip()
+        WindowClass = call(['xprop -id', self.WindowIdDec, '| grep WM_CLASS | sed \'s/.* = "//\' | sed \'s/".*//\'']).rstrip()
         for Name in BORDER_WHITELIST:
-            if Name in WindowTitle:
+            if Name in WindowClass:
                 return 1
         return 0
 
@@ -520,7 +520,8 @@ BOTTOMBORDER = 4
 
 # Include border calculations for the following programs
 BORDER_WHITELIST = [
-    'Konsole'
+    'konsole',
+    'spotify'
 ]
 
 HORZINCREMENT = 10
