@@ -35,6 +35,8 @@ else
     elif [[ ${1} == "swap"* ]]; then
         ARGS=$(echo ${1} | sed 's/swap //')
         ${WOOF} swaprofi $ARGS
+    elif [[ ${1} == "kill" ]]; then
+        ${WOOF} $@ && wmctrl -c :ACTIVE:
     else
         ${WOOF} $@ >> ~/log
     fi

@@ -14,6 +14,9 @@ class PLANE:
     HORZ = 0
     VERT = 1
 
+"""Root of all tree structures
+
+"""
 class WorkSpace:
     def __init__(self, DesktopCount, ScreensCount, ResHorz, ResVert):
         self.DesktopsCount = DesktopCount
@@ -28,6 +31,12 @@ class WorkSpace:
         for D in self.Desktops:
             D.DEBUG_PRINT(1)
 
+"""Container for all screens for a particular desktop
+
+Automatically constructs screen limits and stores a list of screens
+
+# TODO: Allow any even grid-based layout e.g. 1x3, 2x2, 3x2 etc.
+"""
 class Desktop:
     def __init__(self, ScreensCount, ResHorz, ResVert):
         self.ScreensCount = ScreensCount
@@ -45,6 +54,9 @@ class Desktop:
         for S in self.Screens:
             S.DEBUG_PRINT(Level + 1)
 
+    """Returns the screen index the given pixel belongs to
+    # TODO Should work for grid-based layouts
+    """
     def which_screen(self, L):
         Screen = 0
         for S in self.Screens:
@@ -290,6 +302,11 @@ class Node:
     def get_screen_borders(self):
         return self.Parent.get_screen_borders()
 
+    def other_child(self, CallerChild):
+        if CallerChild == self.ChildA:
+            return self.ChildB
+        return self.ChildA
+
 class Window:
     def __init__(self, WindowId):
         self.WindowIdDec = WindowId
@@ -299,7 +316,7 @@ class Window:
         self.Maximized = False
 
     def DEBUG_PRINT(self, Level):
-        L, D, U, R = self.Parent.get_borders(self)
+        # L, D, U, R = self.Parent.get_borders(self)
         # print "\t" * Level + "WindowID: " + str(self.WindowIdDec) + ": " + str(L) + ", " + str(D) + ", " + str(U) + ", " + str(R)
         print "\t" * Level + "WindowID: " + str(self.WindowIdDec) + ": " + call(['xdotool getwindowname', self.WindowIdDec]).rstrip() + str(self.Maximized)
 
@@ -345,16 +362,24 @@ class Window:
         self.Parent.split(self, NewWindow, PlaneType, Direction)
 
     def expand_vert(self):
-        self.Parent.expand_vert(self)
+        if not self.Parent.expand_vert(self):
+            OtherChild = self.Parent.other_child(self)
+            self.Parent.reduce_vert(OtherChild)
 
     def reduce_vert(self):
-        self.Parent.reduce_vert(self)
+        if not self.Parent.reduce_vert(self):
+            OtherChild = self.Parent.other_child(self)
+            self.Parent.expand_vert(OtherChild)
 
     def expand_horz(self):
-        self.Parent.expand_horz(self)
+        if not self.Parent.expand_horz(self):
+            OtherChild = self.Parent.other_child(self)
+            self.Parent.reduce_horz(OtherChild)
     
     def reduce_horz(self):
-        self.Parent.reduce_horz(self)
+        if not self.Parent.reduce_horz(self):
+            OtherChild = self.Parent.other_child(self)
+            self.Parent.expand_horz(OtherChild)
 
     def change_plane(self):
         self.Parent.change_plane()
@@ -407,8 +432,8 @@ class Windows:
 
     def kill_window(self, WindowId):
         Window = self.Windows[WindowId]
-        del self.Windows[WindowId]
         Window.kill_window()
+        del self.Windows[WindowId]
 
     def swap_windows(self, WindowIdA, WindowIdB):
         WindowA = self.Windows[WindowIdA]
@@ -434,18 +459,20 @@ class Windows:
             Window.set_size()
 
     def check_windows(self):
-        HexIdsStr = call(' wmctrl -l | awk -F" " \'$2 == 0 {print $1}\'')
+        HexIdsStr = call('wmctrl -l | awk -F" " \'$2 == 0 {print $1}\'')
         HexIds = HexIdsStr.split("\n")
         DecIds = [int(X, 0) for X in HexIds if X != '']
         Fix = False
-        for WinId, Win in self.Windows.iteritems():
+        WindowIdsToKill = []
+        for WinId, _Win in self.Windows.iteritems():
             if WinId not in DecIds:
-                Win.kill_window()
+                WindowIdsToKill.append(WinId)
                 Fix = True
-
             else:
                 # TEMP FIXES
                 None
+        for WinId in WindowIdsToKill:
+            self.kill_window(WinId)
 
         return Fix
 
@@ -694,9 +721,8 @@ def do_it(ARGS):
             WindowsObj.Windows[WinId].maximize()
     elif Cmd == 'kill':
         WinId = get_active_window()
-        call(['xdotool windowkill', WinId])
         if not WindowsObj.exists(WinId):
-            exit(1)
+            return
         WindowsObj.kill_window(WinId)
     elif Cmd == 'remove':
         WinId = get_active_window()
@@ -709,3 +735,4 @@ def do_it(ARGS):
     pickle.dump(WindowsObj, open(DATA_PATH, "wb"))
 
 do_it(ARGS)
+exit(0)
