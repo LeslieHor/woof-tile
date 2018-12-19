@@ -3,6 +3,7 @@
 import subprocess
 import pickle
 import sys
+import time
 
 """Enum for directions
 """
@@ -149,13 +150,9 @@ class Screen:
 
     You cannot resize the screen itself.
     """
-    def expand_vert(self, CallerChild):
+    def resize_vert(self, CallerChild, _Increment):
         return False
-    def reduce_vert(self, CallerChild):
-        return False
-    def expand_horz(self, CallerChild):
-        return False
-    def reduce_horz(self, CallerChild):
+    def resize_horz(self, CallerChild, _Increment):
         return False
 
     """Reset pointer to child to None
@@ -339,25 +336,15 @@ class Node:
 
     # TODO: Possible to use a single function to do this?
     """
-    def expand_vert(self, CallerChild):
+    def resize_vert(self, CallerChild, Increment):
         if CallerChild == self.ChildB or self.PlaneType == PLANE.VERT:
-            return self.Parent.expand_vert(self)
-        self.Split += VERTINCREMENT
+            return self.Parent.resize_vert(self, Increment)
+        self.Split += Increment
         self.set_size()
-    def reduce_vert(self, CallerChild):
-        if CallerChild == self.ChildB or self.PlaneType == PLANE.VERT:
-            return self.Parent.reduce_vert(self)
-        self.Split -= VERTINCREMENT
-        self.set_size()
-    def expand_horz(self, CallerChild):
+    def resize_horz(self, CallerChild, Increment):
         if CallerChild == self.ChildB or self.PlaneType == PLANE.HORZ:
-            return self.Parent.expand_horz(self)
-        self.Split += HORZINCREMENT
-        self.set_size()
-    def reduce_horz(self, CallerChild):
-        if CallerChild == self.ChildB or self.PlaneType == PLANE.HORZ:
-            return self.Parent.reduce_horz(self)
-        self.Split -= HORZINCREMENT
+            return self.Parent.resize_vert(self, Increment)
+        self.Split += Increment
         self.set_size()
 
     """Swap the direction of the split
@@ -548,22 +535,14 @@ class Window:
     If the request fails, attempt to resize sibling window to accomplish the
     resize.
     """
-    def expand_vert(self):
-        if not self.Parent.expand_vert(self):
+    def resize_vert(self, Increment):
+        if not self.Parent.resize_vert(self, Increment):
             OtherChild = self.Parent.other_child(self)
-            self.Parent.reduce_vert(OtherChild)
-    def reduce_vert(self):
-        if not self.Parent.reduce_vert(self):
+            self.Parent.resize_vert(OtherChild, -1 * Increment)
+    def resize_horz(self, Increment):
+        if not self.Parent.resize_horz(self, Increment):
             OtherChild = self.Parent.other_child(self)
-            self.Parent.expand_vert(OtherChild)
-    def expand_horz(self):
-        if not self.Parent.expand_horz(self):
-            OtherChild = self.Parent.other_child(self)
-            self.Parent.reduce_horz(OtherChild)
-    def reduce_horz(self):
-        if not self.Parent.reduce_horz(self):
-            OtherChild = self.Parent.other_child(self)
-            self.Parent.expand_horz(OtherChild)
+            self.Parent.resize_horz(OtherChild, -1 * Increment)
 
     """Request parent to change plane orientation
     """
@@ -639,9 +618,18 @@ class Windows:
     def __init__(self, DesktopCount, ScreensCount, ResHorz, ResVert):
         self.WorkSpace = WorkSpace(DesktopCount, ScreensCount, ResHorz, ResVert)
         self.Windows = {}
+        self.LastResizeTS = 0
 
     def DEBUG_PRINT(self):
         self.WorkSpace.DEBUG_PRINT()
+
+    def update_resize_ts(self):
+        Now = time.time() * 1000
+        RI = RESIZEINCREMENT
+        if (Now - self.LastResizeTS) < RESIZERAPIDTIME:
+            RI = RAPIDINCREMENT
+        self.LastResizeTS = Now
+        return RI
 
     """Add the window the dictionary
     """
@@ -758,6 +746,30 @@ class Windows:
     def minimize_all(self):
         for _Key, Win in self.Windows.iteritems():
             Win.minimize()
+        
+    def resize_vert(self, ExpandOrReduce):
+        WinId = self.get_active_window()
+        if not self.exists(WinId):
+            return False
+
+        Increment = self.update_resize_ts()
+        if ExpandOrReduce == 'reduce':
+            Increment *= -1
+
+        self.Windows[WinId].resize_vert(Increment)
+
+    def resize_horz(self, ExpandOrReduce):
+        WinId = self.get_active_window()
+        if not self.exists(WinId):
+            return False
+
+        Increment = self.update_resize_ts()
+        if ExpandOrReduce == 'reduce':
+            Increment *= -1
+
+        self.Windows[WinId].resize_horz(Increment)
+
+
 
     """Unminimize all windows
 
@@ -778,6 +790,44 @@ class Windows:
     def get_active_window(self):
         return int(call('xdotool getactivewindow').rstrip())
 
+    def add_to_window(self, PlaneType, Direction, TargetId):
+        NewWindowId = self.get_active_window()
+        NewWindow = Window(NewWindowId)
+        NewWindow.remove_wm_maximize()
+
+        TargetId = int(TargetId)
+        if not self.exists(TargetId):
+            return False
+        
+        self.Windows[TargetId].split(NewWindow, PlaneType, Direction)
+
+        print "2"
+
+        self.add_window(NewWindow)
+ 
+    def add(self, PlaneType, Direction, TargetId, ScreenIndex = None):
+        NewWindowId = self.get_active_window()
+        NewWindow = Window(NewWindowId)
+        NewWindow.remove_wm_maximize()
+
+        if TargetId == 'Screen':
+            try:
+                ScreenIndex = int(ScreenIndex)
+            except:
+                return False
+
+            Screen = self.WorkSpace.Desktops[0].Screens[ScreenIndex]
+            if Screen.Child != None:
+                return False
+            Screen.initialise(NewWindow)
+        else:
+            TargetId = int(TargetId)
+            if not self.exists(TargetId):
+                return False
+
+            self.Windows[TargetId].split(NewWindow, PlaneType, Direction)
+            
+        self.add_window(NewWindow)
 
 # TODO: All of these functions should be moved to Windows
 """Join a list of items into a single string
@@ -825,32 +875,20 @@ def main(ARGS):
     elif Cmd == 'list':
         print(WindowsObj.list_add_windows(ARGS[2]))
     elif Cmd == 'addrofi':
-        WinId = WindowsObj.get_active_window()
         TargetId = ARGS[3]
-        if WindowsObj.exists(WinId):
-            exit(1)
-        if TargetId == 'Screen':
-            ScreenId = int(ARGS[4])
-            if WindowsObj.WorkSpace.Desktops[0].Screens[ScreenId].Child != None:
-                exit(1)
-            NewWindow = Window(WinId)
-            NewWindow.remove_wm_maximize()
-            WindowsObj.WorkSpace.Desktops[0].Screens[ScreenId].initialise(NewWindow)
-            WindowsObj.add_window(NewWindow)
+        if len(ARGS) > 4:
+            ScreenIndex = ARGS[4]
         else:
-            TargetId = int(TargetId)
+            ScreenIndex = None
 
-            if ARGS[2] == "h":
-                PlaneType = PLANE.VERT
-                Dir = DIR.R
-            else:
-                PlaneType = PLANE.HORZ
-                Dir = DIR.D
+        if ARGS[2] == 'h':
+            PlaneType = PLANE.VERT
+            Direction = DIR.R
+        else:
+            PlaneType = PLANE.HORZ
+            Direction = DIR.D
 
-            NewWindow = Window(WinId)
-            NewWindow.remove_wm_maximize()
-            WindowsObj.Windows[TargetId].split(NewWindow, PlaneType, Dir)
-            WindowsObj.add_window(NewWindow)
+        WindowsObj.add(PlaneType, Direction, TargetId, ScreenIndex)
     elif Cmd == 'add':
         if len(ARGS) < 3:
             exit(1)
@@ -893,25 +931,13 @@ def main(ARGS):
             WindowsObj.add_window(NewWindow)
 
     elif Cmd == 'expand_vert':
-        WinId = WindowsObj.get_active_window()
-        if not WindowsObj.exists(WinId):
-            exit(1)
-        WindowsObj.Windows[WinId].expand_vert()
+        WindowsObj.resize_vert('expand')
     elif Cmd == 'reduce_vert':
-        WinId = WindowsObj.get_active_window()
-        if not WindowsObj.exists(WinId):
-            exit(1)
-        WindowsObj.Windows[WinId].reduce_vert()
+        WindowsObj.resize_vert('reduce')
     elif Cmd == 'expand_horz':
-        WinId = WindowsObj.get_active_window()
-        if not WindowsObj.exists(WinId):
-            exit(1)
-        WindowsObj.Windows[WinId].expand_horz()
+        WindowsObj.resize_horz('expand')
     elif Cmd == 'reduce_horz':
-        WinId = WindowsObj.get_active_window()
-        if not WindowsObj.exists(WinId):
-            exit(1)
-        WindowsObj.Windows[WinId].reduce_horz()
+        WindowsObj.resize_horz('reduce')
     elif Cmd == 'change_plane':
         WinId = WindowsObj.get_active_window()
         if not WindowsObj.exists(WinId):
@@ -989,8 +1015,9 @@ BORDER_WHITELIST = [
     'spotify'
 ]
 
-HORZINCREMENT = 10
-VERTINCREMENT = 10
+RESIZEINCREMENT = 10
+RAPIDINCREMENT = 80
+RESIZERAPIDTIME = 165 # milliseconds
 
 DEBUG = False
 DATA_PATH = "~/.woof/windows.dat"
