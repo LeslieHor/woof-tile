@@ -649,6 +649,11 @@ class Windows:
         NewWindowId = Window.WindowIdDec
         self.Windows[NewWindowId] = Window
 
+    """Return the window object of the given ID
+    """
+    def get_window(self, WindowId):
+        return self.Windows[WindowId]
+
     """Request the window to kill itself and remove from dictionary
     """
     def kill_window(self, WindowId):
@@ -673,19 +678,21 @@ class Windows:
         # If the swapped window(s) were maximized, re-maximize them after
         # the swap
         if WindowA.Maximized:
-            do_it(['', 'maximize', WindowA.WindowIdDec])
+            main(['', 'maximize', WindowA.WindowIdDec])
         if WindowB.Maximized:
-            do_it(['', 'maximize', WindowB.WindowIdDec])
+            main(['', 'maximize', WindowB.WindowIdDec])
 
     """Unminimize and unmaximize all windows
 
     Restores all windows to their intended positions
     """
     def restore_all(self):
+        ActiveWinId = self.get_active_window()
         self.unminimize_all()
         for _WindowID, Window in self.Windows.iteritems():
             Window.Maximized = False
             Window.set_size()
+        self.activate_window(ActiveWinId)
 
     """Checks that all windows in the dictionary are still alive
 
@@ -763,6 +770,15 @@ class Windows:
             Win.activate()
             Win.Maximized = False
 
+    def activate_window(self, WinId):
+        self.Windows[WinId].activate()
+
+    """Get ID of current active window
+    """
+    def get_active_window(self):
+        return int(call('xdotool getactivewindow').rstrip())
+
+
 # TODO: All of these functions should be moved to Windows
 """Join a list of items into a single string
 """
@@ -792,64 +808,24 @@ def call(Command):
 
     return Return
 
-"""Get ID of current active window
-"""
-def get_active_window():
-    return int(call('xdotool getactivewindow').rstrip())
-
 """Extract window id using mouse to select window
 """
 def mouse_select_window():
     return int(call('xdotool selectwindow').rstrip())
 
-# TODO: Parameters should be defined by an actual config file
-# Some initial parameters
-GAP = 10
-TOPBORDER = 25
-LEFTBORDER = 2
-RIGHTBORDER = 2
-BOTTOMBORDER = 4
-
-# Include border calculations for the following programs
-BORDER_WHITELIST = [
-    'konsole',
-    'spotify'
-]
-
-HORZINCREMENT = 10
-VERTINCREMENT = 10
-
-DEBUG = False
-DATA_PATH = "~/.woof/windows.dat"
-DATA_PATH = call(['readlink -f', DATA_PATH]).rstrip()
-
-# TODO: Seriously, clean up this code
-# Initialise a tree
-if sys.argv[1] == 'reload':
-    WindowsObj = Windows(4, 3, 5760, 1080)
-else:
-    WindowsObj = pickle.load(open(DATA_PATH, "rb"))
-    if WindowsObj.check_windows():
-        WindowsObj.restore_all()
-
-ARGS = sys.argv
-
-def do_it(ARGS):
+def debug_print():
+    WindowsObj.DEBUG_PRINT()
+    
+def main(ARGS):
     Cmd = ARGS[1]
     if   Cmd == 'debug':
-        WindowsObj.DEBUG_PRINT()
+        debug_print()
     elif Cmd == 'restore':
-        WinId = get_active_window()
         WindowsObj.restore_all()
-        call(['xdotool windowactivate', WinId])
     elif Cmd == 'list':
         print(WindowsObj.list_add_windows(ARGS[2]))
-    elif Cmd == 'select_test':
-        print "select_test"
-        Id = call('xdotool selectwindow').rstrip()
-        print call(['xdotool getwindowgeometry', Id])
     elif Cmd == 'addrofi':
-        WinId = get_active_window()
+        WinId = WindowsObj.get_active_window()
         TargetId = ARGS[3]
         if WindowsObj.exists(WinId):
             exit(1)
@@ -878,7 +854,7 @@ def do_it(ARGS):
     elif Cmd == 'add':
         if len(ARGS) < 3:
             exit(1)
-        WinId = get_active_window()
+        WinId = WindowsObj.get_active_window()
         TargetId = mouse_select_window()
         if WindowsObj.exists(WinId):
             exit(1)
@@ -917,43 +893,43 @@ def do_it(ARGS):
             WindowsObj.add_window(NewWindow)
 
     elif Cmd == 'expand_vert':
-        WinId = get_active_window()
+        WinId = WindowsObj.get_active_window()
         if not WindowsObj.exists(WinId):
             exit(1)
         WindowsObj.Windows[WinId].expand_vert()
     elif Cmd == 'reduce_vert':
-        WinId = get_active_window()
+        WinId = WindowsObj.get_active_window()
         if not WindowsObj.exists(WinId):
             exit(1)
         WindowsObj.Windows[WinId].reduce_vert()
     elif Cmd == 'expand_horz':
-        WinId = get_active_window()
+        WinId = WindowsObj.get_active_window()
         if not WindowsObj.exists(WinId):
             exit(1)
         WindowsObj.Windows[WinId].expand_horz()
     elif Cmd == 'reduce_horz':
-        WinId = get_active_window()
+        WinId = WindowsObj.get_active_window()
         if not WindowsObj.exists(WinId):
             exit(1)
         WindowsObj.Windows[WinId].reduce_horz()
     elif Cmd == 'change_plane':
-        WinId = get_active_window()
+        WinId = WindowsObj.get_active_window()
         if not WindowsObj.exists(WinId):
             exit(1)
         WindowsObj.Windows[WinId].change_plane()
     elif Cmd == 'swap_pane':
-        WinId = get_active_window()
+        WinId = WindowsObj.get_active_window()
         if not WindowsObj.exists(WinId):
             exit(1)
         WindowsObj.Windows[WinId].swap_pane_position()
     elif Cmd == 'swaprofi':
-        WinId = get_active_window()
+        WinId = WindowsObj.get_active_window()
         TargetId = int(ARGS[2])
         if not WindowsObj.exists(WinId) or not WindowsObj.exists(TargetId):
             exit(1)
         WindowsObj.swap_windows(WinId, TargetId)
     elif Cmd == 'swap':
-        WinId = get_active_window()
+        WinId = WindowsObj.get_active_window()
         TargetId = mouse_select_window()
         if not WindowsObj.exists(WinId) or not WindowsObj.exists(TargetId):
             exit(1)
@@ -961,14 +937,14 @@ def do_it(ARGS):
     elif Cmd == 'min':
         WindowsObj.minimize_all()
     elif Cmd == 'unmin':
-        WinId = get_active_window()
+        WinId = WindowsObj.get_active_window()
         WindowsObj.unminimize_all()
         call(['xdotool windowactivate', WinId])
     elif Cmd == 'maximize':
         if len(ARGS) > 2:
             WinId = int(ARGS[2])
         else:
-            WinId = get_active_window()
+            WinId = WindowsObj.get_active_window()
         if not WindowsObj.exists(WinId):
             exit(1)
         WinIds = WindowsObj.Windows[WinId].list_screen_windows()
@@ -986,19 +962,50 @@ def do_it(ARGS):
                 WindowsObj.Windows[Id].minimize()
             WindowsObj.Windows[WinId].maximize()
     elif Cmd == 'kill':
-        WinId = get_active_window()
+        WinId = WindowsObj.get_active_window()
         if not WindowsObj.exists(WinId):
             return
         WindowsObj.kill_window(WinId)
     elif Cmd == 'remove':
-        WinId = get_active_window()
+        WinId = WindowsObj.get_active_window()
         if not WindowsObj.exists(WinId):
             exit(1)
         WindowsObj.kill_window(WinId)
 
-
-
     pickle.dump(WindowsObj, open(DATA_PATH, "wb"))
 
-do_it(ARGS)
+# TODO: Parameters should be defined by an actual config file
+# TODO: Although it would add another IO operation...
+# Some initial parameters
+GAP = 10
+TOPBORDER = 25
+LEFTBORDER = 2
+RIGHTBORDER = 2
+BOTTOMBORDER = 4
+
+# Include border calculations for the following programs
+BORDER_WHITELIST = [
+    'konsole',
+    'spotify'
+]
+
+HORZINCREMENT = 10
+VERTINCREMENT = 10
+
+DEBUG = False
+DATA_PATH = "~/.woof/windows.dat"
+DATA_PATH = call(['readlink -f', DATA_PATH]).rstrip() # Convert relative path to global path
+
+# TODO: Seriously, clean up this code
+# Initialise a tree
+if sys.argv[1] == 'reload':
+    WindowsObj = Windows(4, 3, 5760, 1080)
+else:
+    WindowsObj = pickle.load(open(DATA_PATH, "rb"))
+    if WindowsObj.check_windows():
+        WindowsObj.restore_all()
+
+ARGS = sys.argv
+
+main(ARGS)
 exit(0)
