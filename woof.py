@@ -649,9 +649,17 @@ class Windows:
         Window.kill_window()
         del self.Windows[WindowId]
 
-    """Given two window ids, swap their positions in the tree
+    """Given a window id, swap the active and target positions in the tree
+    # TODO: This really should work even in the same pane. Fix it and use this to 
+    # TODO: do the swap pane positions thing
     """
-    def swap_windows(self, WindowIdA, WindowIdB):
+    def swap_windows(self, TargetId):
+        if not self.exists() or not self.exists(TargetId):
+            return False
+
+        WindowIdA = self.get_active_window()
+        WindowIdB = TargetId
+
         WindowA = self.Windows[WindowIdA]
         WindowB = self.Windows[WindowIdB]
 
@@ -675,12 +683,10 @@ class Windows:
     Restores all windows to their intended positions
     """
     def restore_all(self):
-        ActiveWinId = self.get_active_window()
         self.unminimize_all()
         for _WindowID, Window in self.Windows.iteritems():
             Window.Maximized = False
             Window.set_size()
-        self.activate_window(ActiveWinId)
 
     """Checks that all windows in the dictionary are still alive
 
@@ -738,7 +744,9 @@ class Windows:
 
     """Check if a list if already in the dictionary
     """
-    def exists(self, WinId):
+    def exists(self, WinId = None):
+        if WinId == None:
+            WinId = self.get_active_window()
         return WinId in self.list_windows()
 
     """Minimze all windows
@@ -769,7 +777,15 @@ class Windows:
 
         self.Windows[WinId].resize_horz(Increment)
 
+    def change_plane(self):
+        if not self.exists():
+            return False
+        self.Windows[self.get_active_window()].change_plane()
 
+    def swap_pane_position(self):
+        if not self.exists():
+            return False
+        self.Windows[self.get_active_window()].swap_pane_position()
 
     """Unminimize all windows
 
@@ -778,9 +794,13 @@ class Windows:
     positions
     """
     def unminimize_all(self):
+        ActiveWinId = self.get_active_window()
         for _Key, Win in self.Windows.iteritems():
             Win.activate()
             Win.Maximized = False
+
+        # We active the window through a call, in case it is not in the tree
+        call(['xdotool windowactivate', ActiveWinId])
 
     def activate_window(self, WinId):
         self.Windows[WinId].activate()
@@ -807,6 +827,9 @@ class Windows:
  
     def add(self, PlaneType, Direction, TargetId, ScreenIndex = None):
         NewWindowId = self.get_active_window()
+        if self.exists(NewWindowId):
+            return False
+
         NewWindow = Window(NewWindowId)
         NewWindow.remove_wm_maximize()
 
@@ -865,6 +888,23 @@ def mouse_select_window():
 
 def debug_print():
     WindowsObj.DEBUG_PRINT()
+
+def dir_str_to_plane_dir(Direction):
+    if Direction == 'h':
+        return dir_str_to_plane_dir('r')
+    elif Direction == 'v':
+        return dir_str_to_plane_dir('d')
+
+    elif Direction == 'l':
+        return PLANE.VERT, DIR.L
+    elif Direction == 'd':
+        return PLANE.HORZ, DIR.D
+    elif Direction == 'u':
+        return PLANE.HORZ, DIR.U
+    elif Direction == 'r':
+        return PLANE.VERT, DIR.R
+    else:
+        return False
     
 def main(ARGS):
     Cmd = ARGS[1]
@@ -881,55 +921,22 @@ def main(ARGS):
         else:
             ScreenIndex = None
 
-        if ARGS[2] == 'h':
-            PlaneType = PLANE.VERT
-            Direction = DIR.R
-        else:
-            PlaneType = PLANE.HORZ
-            Direction = DIR.D
+        PlaneType, Direction = dir_str_to_plane_dir(ARGS[2])
 
         WindowsObj.add(PlaneType, Direction, TargetId, ScreenIndex)
     elif Cmd == 'add':
-        if len(ARGS) < 3:
-            exit(1)
-        WinId = WindowsObj.get_active_window()
         TargetId = mouse_select_window()
-        if WindowsObj.exists(WinId):
-            exit(1)
+        ScreenIndex = None
+
+        # If the selected window doesn't exist, assume it's a screen
         if not WindowsObj.exists(TargetId):
             XCoord = int(call(['xdotool getwindowgeometry', TargetId, '| grep Position | sed \'s/.*Position: //\' | sed \'s/,.*//\'']).rstrip())
-            Screen = WindowsObj.WorkSpace.Desktops[0].which_screen(XCoord)
-            if WindowsObj.WorkSpace.Desktops[0].Screens[Screen].Child != None:
-                exit(1)
-            NewWindow = Window(WinId)
-            NewWindow.remove_wm_maximize()
-            WindowsObj.WorkSpace.Desktops[0].Screens[Screen].initialise(NewWindow)
-            WindowsObj.add_window(NewWindow)
-        else:
-            Dir = ARGS[2]
-            if Dir == 'h':
-                Dir = 'r'
-            if Dir == 'v':
-                Dir = 'd'
+            ScreenIndex = WindowsObj.WorkSpace.Desktops[0].which_screen(XCoord)
+            TargetId = 'Screen'
 
-            if Dir == 'l':
-                PlaneType = PLANE.VERT
-                Direction = DIR.L
-            elif Dir == 'd':
-                PlaneType = PLANE.HORZ
-                Direction = DIR.D
-            elif Dir == 'u':
-                PlaneType = PLANE.HORZ
-                Direction = DIR.U
-            else: # Dir == 'r'
-                PlaneType = PLANE.VERT
-                Direction = DIR.R
-            
-            NewWindow = Window(WinId)
-            NewWindow.remove_wm_maximize()
-            WindowsObj.Windows[TargetId].split(NewWindow, PlaneType, Direction)
-            WindowsObj.add_window(NewWindow)
+        PlaneType, Direction = dir_str_to_plane_dir(ARGS[2])
 
+        WindowsObj.add(PlaneType, Direction, TargetId, ScreenIndex)
     elif Cmd == 'expand_vert':
         WindowsObj.resize_vert('expand')
     elif Cmd == 'reduce_vert':
@@ -939,33 +946,19 @@ def main(ARGS):
     elif Cmd == 'reduce_horz':
         WindowsObj.resize_horz('reduce')
     elif Cmd == 'change_plane':
-        WinId = WindowsObj.get_active_window()
-        if not WindowsObj.exists(WinId):
-            exit(1)
-        WindowsObj.Windows[WinId].change_plane()
+        WindowsObj.change_plane()
     elif Cmd == 'swap_pane':
-        WinId = WindowsObj.get_active_window()
-        if not WindowsObj.exists(WinId):
-            exit(1)
-        WindowsObj.Windows[WinId].swap_pane_position()
+        WindowsObj.swap_pane_position()
     elif Cmd == 'swaprofi':
-        WinId = WindowsObj.get_active_window()
         TargetId = int(ARGS[2])
-        if not WindowsObj.exists(WinId) or not WindowsObj.exists(TargetId):
-            exit(1)
-        WindowsObj.swap_windows(WinId, TargetId)
+        WindowsObj.swap_windows(TargetId)
     elif Cmd == 'swap':
-        WinId = WindowsObj.get_active_window()
         TargetId = mouse_select_window()
-        if not WindowsObj.exists(WinId) or not WindowsObj.exists(TargetId):
-            exit(1)
-        WindowsObj.swap_windows(WinId, TargetId)
+        WindowsObj.swap_windows(TargetId)
     elif Cmd == 'min':
         WindowsObj.minimize_all()
     elif Cmd == 'unmin':
-        WinId = WindowsObj.get_active_window()
         WindowsObj.unminimize_all()
-        call(['xdotool windowactivate', WinId])
     elif Cmd == 'maximize':
         if len(ARGS) > 2:
             WinId = int(ARGS[2])
