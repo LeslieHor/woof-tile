@@ -945,7 +945,7 @@ def log(List):
     String = Timestamp + String
     with open(LOG_PATH, 'a') as LogFile:
         LogFile.write(String)
-    
+
 def main(ARGS):
     Cmd = ARGS[1]
     log_info(['------- Start --------', 'Args:'] + ARGS[1:])

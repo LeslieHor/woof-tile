@@ -1,6 +1,6 @@
 #!/bin/bash
 
-WOOF=~/Git/woof-tile/woof.py
+WOOF=~/.woof/woof.py
 
 if [[ -z "$@" ]]; then
     echo "add h
