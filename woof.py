@@ -761,14 +761,16 @@ class Windows:
         for _Key, Win in self.Windows.iteritems():
             Win.minimize()
         
-    def resize_vert(self, ExpandOrReduce):
+    def resize_vert(self, ExpandOrReduce, Increment = None):
         WinId = self.get_active_window()
         log_debug(['Active Window ID:', WinId])
         if not self.exists(WinId):
             log_warning(['Window does not exist, exiting.'])
             return False
 
-        Increment = self.update_resize_ts()
+        if Increment == None:
+            Increment = self.update_resize_ts()
+        
         log_debug(['Resize increment:', Increment])
         if ExpandOrReduce == 'reduce':
             log_debug(['Reduce size detected. Inverting increment'])
@@ -776,13 +778,19 @@ class Windows:
 
         self.Windows[WinId].resize_vert(self, Increment)
 
-    def resize_horz(self, ExpandOrReduce):
+    def resize_horz(self, ExpandOrReduce, Increment = None):
         WinId = self.get_active_window()
+        log_debug(['Active Window ID:', WinId])
         if not self.exists(WinId):
+            log_warning(['Window does not exist, exiting.'])
             return False
 
-        Increment = self.update_resize_ts()
+        if Increment == None:
+            Increment = self.update_resize_ts()
+
+        log_debug(['Resize increment:', Increment])
         if ExpandOrReduce == 'reduce':
+            log_debug(['Reduce size detected. Inverting increment'])
             Increment *= -1
 
         self.Windows[WinId].resize_horz(self, Increment)
@@ -916,6 +924,12 @@ def dir_str_to_plane_dir(Direction):
     else:
         return False
 
+def element(List, Index, Default):
+    try:
+        return List[Index]
+    except:
+        return Default
+
 def log_info(List):
     log(['[INFO]'] + List)
 def log_debug(List):
@@ -967,18 +981,33 @@ def main(ARGS):
         PlaneType, Direction = dir_str_to_plane_dir(ARGS[2])
 
         WindowsObj.add(PlaneType, Direction, TargetId, ScreenIndex)
-    elif Cmd == 'expand_vert':
+    elif Cmd == 'expand-vert':
+        Increment = element(ARGS, 2, None)
+        if Increment != None:
+            Increment = int(Increment)
         log_debug(['Attempting to expand vertical size.'])
-        WindowsObj.resize_vert('expand')
-    elif Cmd == 'reduce_vert':
-        WindowsObj.resize_vert('reduce')
-    elif Cmd == 'expand_horz':
-        WindowsObj.resize_horz('expand')
-    elif Cmd == 'reduce_horz':
-        WindowsObj.resize_horz('reduce')
-    elif Cmd == 'change_plane':
+        WindowsObj.resize_vert('expand', Increment)
+    elif Cmd == 'reduce-vert':
+        log_debug(['Attempting to reduce vertical size.'])
+        Increment = element(ARGS, 2, None)
+        if Increment != None:
+            Increment = int(Increment)
+        WindowsObj.resize_vert('reduce', Increment)
+    elif Cmd == 'expand-horz':
+        log_debug(['Attempting to expand horizontal size.'])
+        Increment = element(ARGS, 2, None)
+        if Increment != None:
+            Increment = int(Increment)
+        WindowsObj.resize_horz('expand', Increment)
+    elif Cmd == 'reduce-horz':
+        Increment = element(ARGS, 2, None)
+        if Increment != None:
+            Increment = int(Increment)
+        log_debug(['Attempting to reduce horizontal size.'])
+        WindowsObj.resize_horz('reduce', Increment)
+    elif Cmd == 'change-plane':
         WindowsObj.change_plane()
-    elif Cmd == 'swap_pane':
+    elif Cmd == 'swap-pane':
         WindowsObj.swap_pane_position()
     elif Cmd == 'swaprofi':
         TargetId = int(ARGS[2])

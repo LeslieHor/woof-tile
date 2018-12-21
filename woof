@@ -9,12 +9,16 @@ maximize
 min
 unmin
 swap
-swap_pane
-change_plane
+swap-pane
+change-plane
 kill
 remove
 restore
 move-to
+expand-horz
+expand-vert
+reduce-horz
+reduce-vert
 "
 else
     echo $@ >> ~/log
