@@ -14,6 +14,7 @@ change_plane
 kill
 remove
 restore
+move-to
 "
 else
     echo $@ >> ~/log
@@ -37,7 +38,9 @@ else
         ${WOOF} swaprofi $ARGS
     elif [[ ${1} == "kill" ]]; then
         ${WOOF} $@ && wmctrl -c :ACTIVE:
+    elif [[ ${1} == "move-to" ]]; then
+        ${WOOF} list "move-to " | grep -v $(xdotool getactivewindow)
     else
-        ${WOOF} $@ >> ~/log
+        ${WOOF} $@
     fi
 fi

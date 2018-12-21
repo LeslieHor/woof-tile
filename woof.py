@@ -341,11 +341,13 @@ class Node:
             return self.Parent.resize_vert(self, Increment)
         self.Split += Increment
         self.set_size()
+        return True
     def resize_horz(self, CallerChild, Increment):
         if CallerChild == self.ChildB or self.PlaneType == PLANE.HORZ:
             return self.Parent.resize_vert(self, Increment)
         self.Split += Increment
         self.set_size()
+        return True
 
     """Swap the direction of the split
 
@@ -412,11 +414,13 @@ class Node:
     def get_screen_borders(self):
         return self.Parent.get_screen_borders()
 
-    """Return the 'other' child
+    """Return the higher priority node
     """
-    def other_child(self, CallerChild):
+    def get_higher_priority(self, CallerChild):
         if CallerChild == self.ChildA:
-            return self.ChildB
+            log_info(['get_higher_priority', 'returning parent'])
+            return self.Parent
+        log_info(['get_higher_priority', 'returning sibling'])
         return self.ChildA
 
 """Leaf node, representing a viewable window
@@ -535,14 +539,16 @@ class Window:
     If the request fails, attempt to resize sibling window to accomplish the
     resize.
     """
-    def resize_vert(self, Increment):
+    def resize_vert(self, _CallerChild, Increment):
         if not self.Parent.resize_vert(self, Increment):
-            OtherChild = self.Parent.other_child(self)
-            self.Parent.resize_vert(OtherChild, -1 * Increment)
-    def resize_horz(self, Increment):
+            log_warning(['Unable to resize window. Attempting to invert resize higher priority node'])
+            HigherPriorityNode = self.Parent.get_higher_priority(self)
+            HigherPriorityNode.resize_vert(self, -1 * Increment)
+    def resize_horz(self, _CallerChild, Increment):
         if not self.Parent.resize_horz(self, Increment):
-            OtherChild = self.Parent.other_child(self)
-            self.Parent.resize_horz(OtherChild, -1 * Increment)
+            log_warning(['Unable to resize window. Attempting to invert resize higher priority node'])
+            HigherPriorityNode = self.Parent.get_higher_priority(self)
+            HigherPriorityNode.resize_horz(self, -1 * Increment)
 
     """Request parent to change plane orientation
     """
@@ -757,14 +763,18 @@ class Windows:
         
     def resize_vert(self, ExpandOrReduce):
         WinId = self.get_active_window()
+        log_debug(['Active Window ID:', WinId])
         if not self.exists(WinId):
+            log_warning(['Window does not exist, exiting.'])
             return False
 
         Increment = self.update_resize_ts()
+        log_debug(['Resize increment:', Increment])
         if ExpandOrReduce == 'reduce':
+            log_debug(['Reduce size detected. Inverting increment'])
             Increment *= -1
 
-        self.Windows[WinId].resize_vert(Increment)
+        self.Windows[WinId].resize_vert(self, Increment)
 
     def resize_horz(self, ExpandOrReduce):
         WinId = self.get_active_window()
@@ -775,7 +785,7 @@ class Windows:
         if ExpandOrReduce == 'reduce':
             Increment *= -1
 
-        self.Windows[WinId].resize_horz(Increment)
+        self.Windows[WinId].resize_horz(self, Increment)
 
     def change_plane(self):
         if not self.exists():
@@ -905,9 +915,26 @@ def dir_str_to_plane_dir(Direction):
         return PLANE.VERT, DIR.R
     else:
         return False
+
+def log_info(List):
+    log(['[INFO]'] + List)
+def log_debug(List):
+    log(['[DEBUG]'] + List)
+def log_warning(List):
+    log(['[WARN]'] + List)
+def log_error(List):
+    log(['[ERROR]'] + List)
+
+def log(List):
+    String = join_and_sanitize(List) + '\n'
+    Timestamp = time.strftime('%Y-%m-%dT%H:%M:%S ', time.gmtime())
+    String = Timestamp + String
+    with open(LOG_PATH, 'a') as LogFile:
+        LogFile.write(String)
     
 def main(ARGS):
     Cmd = ARGS[1]
+    log_info(['------- Start --------', 'Args:'] + ARGS[1:])
     if   Cmd == 'debug':
         debug_print()
     elif Cmd == 'restore':
@@ -916,9 +943,12 @@ def main(ARGS):
         print(WindowsObj.list_add_windows(ARGS[2]))
     elif Cmd == 'addrofi':
         TargetId = ARGS[3]
+        log_debug(['TargetId:', TargetId])
         if len(ARGS) > 4:
             ScreenIndex = ARGS[4]
+            log_debug(['Detected screen add. Screen Index:', ScreenIndex])
         else:
+            log_debug(['Not a screen add'])
             ScreenIndex = None
 
         PlaneType, Direction = dir_str_to_plane_dir(ARGS[2])
@@ -938,6 +968,7 @@ def main(ARGS):
 
         WindowsObj.add(PlaneType, Direction, TargetId, ScreenIndex)
     elif Cmd == 'expand_vert':
+        log_debug(['Attempting to expand vertical size.'])
         WindowsObj.resize_vert('expand')
     elif Cmd == 'reduce_vert':
         WindowsObj.resize_vert('reduce')
@@ -990,6 +1021,9 @@ def main(ARGS):
         if not WindowsObj.exists(WinId):
             exit(1)
         WindowsObj.kill_window(WinId)
+    elif Cmd == 'move-to':
+        main(['', 'remove'])
+        main(['', 'addrofi', 'h', ARGS[2]])
 
     pickle.dump(WindowsObj, open(DATA_PATH, "wb"))
 
@@ -1015,6 +1049,8 @@ RESIZERAPIDTIME = 165 # milliseconds
 DEBUG = False
 DATA_PATH = "~/.woof/windows.dat"
 DATA_PATH = call(['readlink -f', DATA_PATH]).rstrip() # Convert relative path to global path
+LOG_PATH = "~/.woof/log/log"
+LOG_PATH = call(['readlink -f', LOG_PATH]).rstrip() # Convert relative path to global path
 
 # TODO: Seriously, clean up this code
 # Initialise a tree
