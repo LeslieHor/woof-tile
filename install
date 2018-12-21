@@ -1,0 +1,7 @@
+#!/bin/bash
+
+BIN_DIR=~/bin/
+WOOF_DIR=~/.woof/
+
+cp -v ./woof ${BIN_DIR}
+cp -v ./woof.py ${WOOF_DIR}
