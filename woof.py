@@ -570,6 +570,8 @@ class Window:
                 if not self.Parent.all_are_bees(self):
                     log_debug(['All are not bees'])
                     Increment *= -1
+                elif self.Parent.PlaneType == PLANE.HORZ:
+                    Increment *= -1
                 NextChild.resize_vert(self, Increment)
 
     def resize_horz(self, _CallerChild, Increment):
@@ -578,6 +580,9 @@ class Window:
             NextChild = self.Parent.find_earliest_a_but_not_me(self)
             if NextChild != None:
                 if not self.Parent.all_are_bees(self):
+                    log_debug(['All are not bees'])
+                    Increment *= -1
+                elif self.Parent.PlaneType == PLANE.VERT:
                     Increment *= -1
                 NextChild.resize_horz(self, Increment)
 
