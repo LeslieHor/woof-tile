@@ -32,7 +32,7 @@ else
     elif [[ ${1} == "add v"* ]]; then
         ARGS=$(echo ${1} | sed 's/add v //')
         ${WOOF} addrofi v $ARGS
-    elif [[ ${1} == "swap_pane" ]]; then
+    elif [[ ${1} == "swap-pane" ]]; then
         ${WOOF} $@
     elif [[ ${1} == "swap" ]]; then
         WINID=$(xdotool getactivewindow)

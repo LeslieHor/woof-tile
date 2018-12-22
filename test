@@ -1,0 +1,805 @@
+#!/bin/bash
+
+MAINWIN=$(xdotool getactivewindow)
+MANUAL=${1}
+CLEANUP=${2}
+PASS_COUNTER=0
+FAIL_COUNTER=0
+DELAY=0.2
+
+function wait_for_user {
+    if [ "hackyfix"${AUTO} == "hackyfixmanual" ]; then
+        xdotool windowactivate ${MAINWIN}
+        read
+    else
+        echo
+    fi
+}
+
+function pass {
+    echo "PASS"
+    PASS_COUNTER=$[PASS_COUNTER + 1]
+}
+
+function fail {
+    echo -e "\033[0;31mFAIL\033[0m - Expected: ${2} - Got: ${1}"
+    FAIL_COUNTER=$[FAIL_COUNTER + 1]
+}
+
+function assert_equal {
+    if [ ${1} == ${2} ]; then
+        pass
+        return 0
+    else
+        fail ${1} ${2}
+        return 1
+    fi
+}
+
+function assert_border {
+    WINID=${1}
+
+    EXPECTEDXPOS=${2}
+    EXPECTEDYPOS=${3}
+    EXPECTEDXSIZE=${4}
+    EXPECTEDYSIZE=${5}
+
+    XPOS=$(get_x_pos $WINID)
+    YPOS=$(get_y_pos $WINID)
+    XSIZE=$(get_x_size $WINID)
+    YSIZE=$(get_y_size $WINID)
+
+    if [ ${XPOS} != ${EXPECTEDXPOS} ]; then
+        echo -n "X Positon - "
+        fail ${XPOS} "XPOS ${EXPECTEDXPOS}"
+        return 1
+    fi
+    if [ ${YPOS} != ${EXPECTEDYPOS} ]; then
+        echo -n "Y Positon - "
+        fail ${YPOS} "YPOS ${EXPECTEDYPOS}"
+        return 1
+    fi
+    if [ ${XSIZE} != ${EXPECTEDXSIZE} ]; then
+        echo -n "X Size - "
+        fail ${XSIZE} "XSIZE ${EXPECTEDXSIZE}"
+        return 1
+    fi
+    if [ ${YSIZE} != ${EXPECTEDYSIZE} ]; then
+        echo -n "Y Size - "
+        fail ${YSIZE} "YSIZE ${EXPECTEDYSIZE}"
+        return 1
+    fi
+    pass
+    return 0
+}
+
+function get_x_size {
+    echo $(xdotool getwindowgeometry ${1} | grep "Geometry" | sed 's/.*Geometry: //' | sed 's/x.*//')
+}
+
+function get_y_size {
+    echo $(xdotool getwindowgeometry ${1} | grep "Geometry" | sed 's/.*x//')
+}
+
+function get_x_pos {
+    echo $(xdotool getwindowgeometry ${1} | grep "Position" | sed 's/.*Position: //' | sed 's/,.*//')
+}
+
+function get_y_pos {
+    echo $(xdotool getwindowgeometry ${1} | grep "Position" | sed 's/.*,//' | sed 's/ (screen.*//')
+}
+
+woof min
+mv ~/.woof/windows.dat ~/.woof/windows.dat.backup
+woof reload
+
+echo "Creating 6 test windows"
+for I in {1..6}; do
+    konsole -p "tabtitle=woof_test_window_${I}" &> /dev/null &
+done
+
+xdotool windowactivate ${MAINWIN}
+xdotool windowmove ${MAINWIN} 1920 0
+xdotool windowsize ${MAINWIN} 500 1080
+
+echo "Arranging windows like:
++-----+-----+-----------+
+|  3  |  4  |     2     |
++-----+-----+-----+-----+
+|     1     |  5  |  6  |
++-----------+-----+-----+"
+
+sleep 1.0
+if [ $(wmctrl -l | grep "woof_test_window_" | wc -l) != 6 ]; then
+    echo "Windows not detected. Exiting."
+    exit 1
+fi
+
+xdotool windowactivate ${MAINWIN}
+
+WIN1HEX=$(wmctrl -l | grep woof_test_window_1 | sed 's/ .*//')
+WIN2HEX=$(wmctrl -l | grep woof_test_window_2 | sed 's/ .*//')
+WIN3HEX=$(wmctrl -l | grep woof_test_window_3 | sed 's/ .*//')
+WIN4HEX=$(wmctrl -l | grep woof_test_window_4 | sed 's/ .*//')
+WIN5HEX=$(wmctrl -l | grep woof_test_window_5 | sed 's/ .*//')
+WIN6HEX=$(wmctrl -l | grep woof_test_window_6 | sed 's/ .*//')
+
+WIN1DEC=$(printf "%d\n" ${WIN1HEX})
+WIN2DEC=$(printf "%d\n" ${WIN2HEX})
+WIN3DEC=$(printf "%d\n" ${WIN3HEX})
+WIN4DEC=$(printf "%d\n" ${WIN4HEX})
+WIN5DEC=$(printf "%d\n" ${WIN5HEX})
+WIN6DEC=$(printf "%d\n" ${WIN6HEX})
+
+echo "---------- Window Split Tests ----------"
+echo "----- Adding Win 1 to Screen 0 -----"
+xdotool windowactivate ${WIN1HEX}
+woof addrofi h Screen 0
+sleep ${DELAY}
+
+echo -n "Window 1 - "
+assert_border ${WIN1HEX} 12 35 1896 1031
+
+echo "----- Adding Win 2 to Win 1 (horz) -----"
+xdotool windowactivate ${WIN2HEX}
+woof addrofi h ${WIN1DEC}
+sleep ${DELAY}
+
+echo -n "Window 1 - "
+assert_border ${WIN1HEX} 12 35 941 1031
+echo -n "Window 2 - "
+assert_border ${WIN2HEX} 967 35 941 1031
+
+echo "----- Adding Win 3 to Win 1 (vert) -----"
+xdotool windowactivate ${WIN3HEX}
+woof addrofi v ${WIN1DEC}
+sleep ${DELAY}
+
+echo -n "Window 1 - "
+assert_border ${WIN1HEX} 12 35 941 496
+echo -n "Window 2 - "
+assert_border ${WIN2HEX} 967 35 941 1031
+echo -n "Window 3 - "
+assert_border ${WIN3HEX} 12 570 941 496
+
+echo "----- Swapping Win 1 and 3 -----"
+xdotool windowactivate ${WIN1HEX}
+woof swap-pane
+sleep ${DELAY}
+
+echo -n "Window 1 - "
+assert_border ${WIN1HEX} 12 570 941 496
+echo -n "Window 2 - "
+assert_border ${WIN2HEX} 967 35 941 1031
+echo -n "Window 3 - "
+assert_border ${WIN3HEX} 12 35 941 496 
+
+echo "----- Adding Win 4 to Win 3 (horz) -----"
+xdotool windowactivate ${WIN4HEX}
+woof addrofi h ${WIN3DEC}
+sleep ${DELAY}
+
+echo -n "Window 1 - "
+assert_border ${WIN1HEX} 12 570 941 496
+echo -n "Window 2 - "
+assert_border ${WIN2HEX} 967 35 941 1031
+echo -n "Window 3 - "
+assert_border ${WIN3HEX} 12 35 461 496
+echo -n "Window 4 - "
+assert_border ${WIN4HEX} 487 35 466 496
+
+echo "----- Adding Win 5 to Win 2 (vert) -----"
+xdotool windowactivate ${WIN5HEX}
+woof addrofi v ${WIN2DEC}
+sleep ${DELAY}
+
+echo -n "Window 1 - "
+assert_border ${WIN1HEX} 12 570 941 496
+echo -n "Window 2 - "
+assert_border ${WIN2HEX} 967 35 941 496
+echo -n "Window 3 - "
+assert_border ${WIN3HEX} 12 35 461 496
+echo -n "Window 4 - "
+assert_border ${WIN4HEX} 487 35 466 496
+echo -n "Window 5 - "
+assert_border ${WIN5HEX} 967 570 941 496
+
+echo "----- Adding Win 6 to Win 5 (horz) -----"
+xdotool windowactivate ${WIN6HEX}
+woof addrofi h ${WIN5DEC}
+sleep ${DELAY}
+
+echo -n "Window 1 - "
+assert_border ${WIN1HEX} 12 570 941 496
+echo -n "Window 2 - "
+assert_border ${WIN2HEX} 967 35 941 496
+echo -n "Window 3 - "
+assert_border ${WIN3HEX} 12 35 461 496
+echo -n "Window 4 - "
+assert_border ${WIN4HEX} 487 35 466 496
+echo -n "Window 5 - "
+assert_border ${WIN5HEX} 967 570 466 496
+echo -n "Window 6 - "
+assert_border ${WIN6HEX} 1447 570 461 496
+
+function horz_test {
+    echo -n "----- Horizontal test ${1} -----"
+    wait_for_user
+
+    xdotool windowactivate ${2}
+    woof expand-horz 50
+    sleep ${DELAY}
+}
+
+function horz_test_2 {
+    echo -n "----- Horizontal reduce test ${1}"
+    wait_for_user
+    
+    xdotool windowactivate ${2}
+    woof reduce-horz 50
+    sleep ${DELAY}
+
+    echo -n "Window 1 - "
+    assert_border ${WIN1HEX} 12 570 941 496
+    echo -n "Window 2 - "
+    assert_border ${WIN2HEX} 967 35 941 496
+    echo -n "Window 3 - "
+    assert_border ${WIN3HEX} 12 35 461 496
+    echo -n "Window 4 - "
+    assert_border ${WIN4HEX} 487 35 466 496
+    echo -n "Window 5 - "
+    assert_border ${WIN5HEX} 967 570 466 496
+    echo -n "Window 6 - "
+    assert_border ${WIN6HEX} 1447 570 461 496
+}
+
+echo "---------- Horizontal tests ----------"
+horz_test 1 ${WIN1HEX}
+echo -n "Window 1 - "
+assert_border ${WIN1HEX} 12 570 991 496
+echo -n "Window 2 - "
+assert_border ${WIN2HEX} 1017 35 891 496
+echo -n "Window 3 - "
+assert_border ${WIN3HEX} 12 35 461 496
+echo -n "Window 4 - "
+assert_border ${WIN4HEX} 487 35 516 496
+echo -n "Window 5 - "
+assert_border ${WIN5HEX} 1017 570 416 496
+echo -n "Window 6 - "
+assert_border ${WIN6HEX} 1447 570 461 496
+horz_test_2 1 ${WIN1HEX}
+
+horz_test 2 ${WIN2HEX}
+echo -n "Window 1 - "
+assert_border ${WIN1HEX} 12 570 891 496
+echo -n "Window 2 - "
+assert_border ${WIN2HEX} 917 35 991 496
+echo -n "Window 3 - "
+assert_border ${WIN3HEX} 12 35 461 496
+echo -n "Window 4 - "
+assert_border ${WIN4HEX} 487 35 416 496
+echo -n "Window 5 - "
+assert_border ${WIN5HEX} 917 570 516 496
+echo -n "Window 6 - "
+assert_border ${WIN6HEX} 1447 570 461 496
+horz_test_2 2 ${WIN2HEX}
+
+
+horz_test 3 ${WIN3HEX}
+echo -n "Window 1 - "
+assert_border ${WIN1HEX} 12 570 941 496
+echo -n "Window 2 - "
+assert_border ${WIN2HEX} 967 35 941 496
+echo -n "Window 3 - "
+assert_border ${WIN3HEX} 12 35 511 496
+echo -n "Window 4 - "
+assert_border ${WIN4HEX} 537 35 416 496
+echo -n "Window 5 - "
+assert_border ${WIN5HEX} 967 570 466 496
+echo -n "Window 6 - "
+assert_border ${WIN6HEX} 1447 570 461 496
+horz_test_2 3 ${WIN3HEX}
+
+
+horz_test 4 ${WIN4HEX}
+echo -n "Window 1 - "
+assert_border ${WIN1HEX} 12 570 991 496
+echo -n "Window 2 - "
+assert_border ${WIN2HEX} 1017 35 891 496
+echo -n "Window 3 - "
+assert_border ${WIN3HEX} 12 35 461 496
+echo -n "Window 4 - "
+assert_border ${WIN4HEX} 487 35 516 496
+echo -n "Window 5 - "
+assert_border ${WIN5HEX} 1017 570 416 496
+echo -n "Window 6 - "
+assert_border ${WIN6HEX} 1447 570 461 496
+horz_test_2 4 ${WIN4HEX}
+
+
+horz_test 5 ${WIN5HEX}
+echo -n "Window 1 - "
+assert_border ${WIN1HEX} 12 570 941 496
+echo -n "Window 2 - "
+assert_border ${WIN2HEX} 967 35 941 496
+echo -n "Window 3 - "
+assert_border ${WIN3HEX} 12 35 461 496
+echo -n "Window 4 - "
+assert_border ${WIN4HEX} 487 35 466 496
+echo -n "Window 5 - "
+assert_border ${WIN5HEX} 967 570 516 496
+echo -n "Window 6 - "
+assert_border ${WIN6HEX} 1497 570 411 496
+horz_test_2 5 ${WIN5HEX}
+
+
+horz_test 6 ${WIN6HEX}
+echo -n "Window 1 - "
+assert_border ${WIN1HEX} 12 570 941 496
+echo -n "Window 2 - "
+assert_border ${WIN2HEX} 967 35 941 496
+echo -n "Window 3 - "
+assert_border ${WIN3HEX} 12 35 461 496
+echo -n "Window 4 - "
+assert_border ${WIN4HEX} 487 35 466 496
+echo -n "Window 5 - "
+assert_border ${WIN5HEX} 967 570 416 496
+echo -n "Window 6 - "
+assert_border ${WIN6HEX} 1397 570 511 496
+horz_test_2 6 ${WIN6HEX}
+
+
+function vert_test {
+    echo -n "----- Vertical test ${1} -----"
+    wait_for_user
+
+    xdotool windowactivate ${2}
+    woof expand-vert 50
+    sleep ${DELAY}
+}
+
+function vert_test_2 {
+    echo -n "----- Vertical reduce test ${1}"
+    wait_for_user
+    
+    xdotool windowactivate ${2}
+    woof reduce-vert 50
+    sleep ${DELAY}
+
+    echo -n "Window 1 - "
+    assert_border ${WIN1HEX} 12 570 941 496
+    echo -n "Window 2 - "
+    assert_border ${WIN2HEX} 967 35 941 496
+    echo -n "Window 3 - "
+    assert_border ${WIN3HEX} 12 35 461 496
+    echo -n "Window 4 - "
+    assert_border ${WIN4HEX} 487 35 466 496
+    echo -n "Window 5 - "
+    assert_border ${WIN5HEX} 967 570 466 496
+    echo -n "Window 6 - "
+    assert_border ${WIN6HEX} 1447 570 461 496
+}
+
+echo "---------- Vertical tests ----------"
+
+vert_test 1 ${WIN1HEX}
+echo -n "Window 1 - "
+assert_border ${WIN1HEX} 12 520 941 546
+echo -n "Window 2 - "
+assert_border ${WIN2HEX} 967 35 941 496
+echo -n "Window 3 - "
+assert_border ${WIN3HEX} 12 35 461 446
+echo -n "Window 4 - "
+assert_border ${WIN4HEX} 487 35 466 446
+echo -n "Window 5 - "
+assert_border ${WIN5HEX} 967 570 466 496
+echo -n "Window 6 - "
+assert_border ${WIN6HEX} 1447 570 461 496
+vert_test_2 1 ${WIN1HEX}
+
+vert_test 2 ${WIN2HEX}
+echo -n "Window 1 - "
+assert_border ${WIN1HEX} 12 570 941 496
+echo -n "Window 2 - "
+assert_border ${WIN2HEX} 967 35 941 546
+echo -n "Window 3 - "
+assert_border ${WIN3HEX} 12 35 461 496
+echo -n "Window 4 - "
+assert_border ${WIN4HEX} 487 35 466 496
+echo -n "Window 5 - "
+assert_border ${WIN5HEX} 967 620 466 446
+echo -n "Window 6 - "
+assert_border ${WIN6HEX} 1447 620 461 446
+vert_test_2 2 ${WIN2HEX}
+
+vert_test 3 ${WIN3HEX}
+echo -n "Window 1 - "
+assert_border ${WIN1HEX} 12 620 941 446
+echo -n "Window 2 - "
+assert_border ${WIN2HEX} 967 35 941 496
+echo -n "Window 3 - "
+assert_border ${WIN3HEX} 12 35 461 546
+echo -n "Window 4 - "
+assert_border ${WIN4HEX} 487 35 466 546
+echo -n "Window 5 - "
+assert_border ${WIN5HEX} 967 570 466 496
+echo -n "Window 6 - "
+assert_border ${WIN6HEX} 1447 570 461 496
+vert_test_2 3 ${WIN3HEX}
+
+vert_test 4 ${WIN4HEX}
+echo -n "Window 1 - "
+assert_border ${WIN1HEX} 12 620 941 446
+echo -n "Window 2 - "
+assert_border ${WIN2HEX} 967 35 941 496
+echo -n "Window 3 - "
+assert_border ${WIN3HEX} 12 35 461 546
+echo -n "Window 4 - "
+assert_border ${WIN4HEX} 487 35 466 546
+echo -n "Window 5 - "
+assert_border ${WIN5HEX} 967 570 466 496
+echo -n "Window 6 - "
+assert_border ${WIN6HEX} 1447 570 461 496
+vert_test_2 4 ${WIN4HEX}
+
+vert_test 5 ${WIN5HEX}
+echo -n "Window 1 - "
+assert_border ${WIN1HEX} 12 570 941 496
+echo -n "Window 2 - "
+assert_border ${WIN2HEX} 967 35 941 446
+echo -n "Window 3 - "
+assert_border ${WIN3HEX} 12 35 461 496
+echo -n "Window 4 - "
+assert_border ${WIN4HEX} 487 35 466 496
+echo -n "Window 5 - "
+assert_border ${WIN5HEX} 967 520 466 546
+echo -n "Window 6 - "
+assert_border ${WIN6HEX} 1447 520 461 546
+vert_test_2 5 ${WIN5HEX}
+
+vert_test 6 ${WIN6HEX}
+echo -n "Window 1 - "
+assert_border ${WIN1HEX} 12 570 941 496
+echo -n "Window 2 - "
+assert_border ${WIN2HEX} 967 35 941 446
+echo -n "Window 3 - "
+assert_border ${WIN3HEX} 12 35 461 496
+echo -n "Window 4 - "
+assert_border ${WIN4HEX} 487 35 466 496
+echo -n "Window 5 - "
+assert_border ${WIN5HEX} 967 520 466 546
+echo -n "Window 6 - "
+assert_border ${WIN6HEX} 1447 520 461 546
+vert_test_2 6 ${WIN6HEX}
+
+function swap_test {
+    echo -n "----- Swapping windows ${1} and ${2} -----"
+    wait_for_user
+
+    echo "Swapping ${1} and ${2}"
+    xdotool windowactivate ${5}
+    XPOSA=$(get_x_pos ${3})
+    YPOSA=$(get_y_pos ${3})
+    XSIZEA=$(get_x_size ${3})
+    YSIZEA=$(get_y_size ${3})
+
+    XPOSB=$(get_x_pos ${4})
+    YPOSB=$(get_y_pos ${4})
+    XSIZEB=$(get_x_size ${4})
+    YSIZEB=$(get_y_size ${4})
+
+    woof "swap ${6}"
+    sleep ${DELAY}
+
+    echo -n "Win ${1} in correct position - "
+    assert_border ${3} ${XPOSB} ${YPOSB} ${XSIZEB} ${YSIZEB}
+
+    echo -n "Win ${2} in correct position - "
+    assert_border ${4} ${XPOSA} ${YPOSA} ${XSIZEA} ${YSIZEA}
+
+    [ -z ${7} ] || swap_test ${2} ${1} ${4} ${3} ${6} ${5}
+}
+
+echo "---------- Swap tests ----------"
+swap_test 1 2 ${WIN1HEX} ${WIN2HEX} ${WIN1DEC} ${WIN2DEC} _
+swap_test 3 5 ${WIN3HEX} ${WIN5HEX} ${WIN3DEC} ${WIN5DEC} _
+swap_test 1 4 ${WIN1HEX} ${WIN4HEX} ${WIN1DEC} ${WIN4DEC} _
+swap_test 2 6 ${WIN2HEX} ${WIN6HEX} ${WIN2DEC} ${WIN6DEC} _
+
+function is_min {
+    WIN_STATE=$(xprop -id ${2} | grep "window state" | sed 's/.*window state: //')
+
+    echo -n "Win ${1} is minimized - "
+    assert_equal ${WIN_STATE} "Iconic"
+}
+
+echo "---------- Minimize test ----------"
+woof min
+sleep ${DELAY}
+
+is_min 1 ${WIN1HEX}
+is_min 2 ${WIN2HEX}
+is_min 3 ${WIN3HEX}
+is_min 4 ${WIN4HEX}
+is_min 5 ${WIN5HEX}
+is_min 6 ${WIN6HEX}
+
+function is_not_min {
+    WIN_STATE=$(xprop -id ${2} | grep "window state" | sed 's/.*window state: //')
+
+    echo -n "Win ${1} is minimized - "
+    assert_equal ${WIN_STATE} "Normal"
+}
+
+echo "---------- Unminimize test ----------"
+woof unmin
+sleep ${DELAY}
+
+is_not_min 1 ${WIN1HEX}
+is_not_min 2 ${WIN2HEX}
+is_not_min 3 ${WIN3HEX}
+is_not_min 4 ${WIN4HEX}
+is_not_min 5 ${WIN5HEX}
+is_not_min 6 ${WIN6HEX}
+
+echo "----- All wins are still in correct position -----"
+echo -n "Window 1 - "
+assert_border ${WIN1HEX} 12 570 941 496
+echo -n "Window 2 - "
+assert_border ${WIN2HEX} 967 35 941 496
+echo -n "Window 3 - "
+assert_border ${WIN3HEX} 12 35 461 496
+echo -n "Window 4 - "
+assert_border ${WIN4HEX} 487 35 466 496
+echo -n "Window 5 - "
+assert_border ${WIN5HEX} 967 570 466 496
+echo -n "Window 6 - "
+assert_border ${WIN6HEX} 1447 570 461 496
+
+
+echo "---------- Swapping pane tests ----------"
+
+echo "----- Swapping pane [3,4] -----"
+xdotool windowactivate ${WIN3HEX}
+
+XPOSA=$(get_x_pos ${WIN3HEX})
+YPOSA=$(get_y_pos ${WIN3HEX})
+XSIZEA=$(get_x_size ${WIN3HEX})
+YSIZEA=$(get_y_size ${WIN3HEX})
+
+XPOSB=$(get_x_pos ${WIN4HEX})
+YPOSB=$(get_y_pos ${WIN4HEX})
+XSIZEB=$(get_x_size ${WIN4HEX})
+YSIZEB=$(get_y_size ${WIN4HEX})
+
+woof swap-pane
+sleep ${DELAY}
+
+echo -n "Win 3 in correct pos - "
+assert_border ${WIN3HEX} ${XPOSB} ${YPOSB} ${XSIZEB} ${YSIZEB}
+
+echo -n "Win 4 in correct pos - "
+assert_border ${WIN4HEX} ${XPOSA} ${YPOSA} ${XSIZEA} ${YSIZEA}
+
+echo "----- Swapping pane [4,3] -----"
+xdotool windowactivate ${WIN4HEX}
+
+XPOSA=$(get_x_pos ${WIN3HEX})
+YPOSA=$(get_y_pos ${WIN3HEX})
+XSIZEA=$(get_x_size ${WIN3HEX})
+YSIZEA=$(get_y_size ${WIN3HEX})
+
+XPOSB=$(get_x_pos ${WIN4HEX})
+YPOSB=$(get_y_pos ${WIN4HEX})
+XSIZEB=$(get_x_size ${WIN4HEX})
+YSIZEB=$(get_y_size ${WIN4HEX})
+
+woof swap-pane
+sleep ${DELAY}
+
+echo -n "Win 3 in correct pos - "
+assert_border ${WIN3HEX} ${XPOSB} ${YPOSB} ${XSIZEB} ${YSIZEB}
+
+echo -n "Win 4 in correct pos - "
+assert_border ${WIN4HEX} ${XPOSA} ${YPOSA} ${XSIZEA} ${YSIZEA}
+
+echo "----- Swapping pane [5,6] -----"
+xdotool windowactivate ${WIN5HEX}
+
+XPOSA=$(get_x_pos ${WIN5HEX})
+YPOSA=$(get_y_pos ${WIN5HEX})
+XSIZEA=$(get_x_size ${WIN5HEX})
+YSIZEA=$(get_y_size ${WIN5HEX})
+
+XPOSB=$(get_x_pos ${WIN6HEX})
+YPOSB=$(get_y_pos ${WIN6HEX})
+XSIZEB=$(get_x_size ${WIN6HEX})
+YSIZEB=$(get_y_size ${WIN6HEX})
+
+woof swap-pane
+sleep ${DELAY}
+
+echo -n "Win 5 in correct pos - "
+assert_border ${WIN5HEX} ${XPOSB} ${YPOSB} ${XSIZEB} ${YSIZEB}
+
+echo -n "Win 6 in correct pos - "
+assert_border ${WIN6HEX} ${XPOSA} ${YPOSA} ${XSIZEA} ${YSIZEA}
+
+echo "----- Swapping pane [6,5] -----"
+xdotool windowactivate ${WIN6HEX}
+
+XPOSA=$(get_x_pos ${WIN5HEX})
+YPOSA=$(get_y_pos ${WIN5HEX})
+XSIZEA=$(get_x_size ${WIN5HEX})
+YSIZEA=$(get_y_size ${WIN5HEX})
+
+XPOSB=$(get_x_pos ${WIN6HEX})
+YPOSB=$(get_y_pos ${WIN6HEX})
+XSIZEB=$(get_x_size ${WIN6HEX})
+YSIZEB=$(get_y_size ${WIN6HEX})
+
+woof swap-pane
+sleep ${DELAY}
+
+echo -n "Win 5 in correct pos - "
+assert_border ${WIN5HEX} ${XPOSB} ${YPOSB} ${XSIZEB} ${YSIZEB}
+
+echo -n "Win 6 in correct pos - "
+assert_border ${WIN6HEX} ${XPOSA} ${YPOSA} ${XSIZEA} ${YSIZEA}
+
+echo "----- Swapping pane [[3,4], [1]] -----"
+xdotool windowactivate ${WIN1HEX}
+
+XPOS1=$(get_x_pos ${WIN3HEX})
+YPOS1=$(get_y_pos ${WIN3HEX})
+XSIZE1=$(get_x_size ${WIN1HEX})
+YSIZE1=$(get_y_size ${WIN1HEX})
+
+XPOS3=$(get_x_pos ${WIN1HEX})
+YPOS3=$(get_y_pos ${WIN1HEX})
+XSIZE3=$(get_x_size ${WIN3HEX})
+YSIZE3=$(get_y_size ${WIN3HEX})
+
+XPOS4=$(get_x_pos ${WIN4HEX})
+YPOS4=$(get_y_pos ${WIN1HEX})
+XSIZE4=$(get_x_size ${WIN4HEX})
+YSIZE4=$(get_y_size ${WIN4HEX})
+
+woof swap-pane
+sleep ${DELAY}
+
+echo -n "Win 1 in correct pos - "
+assert_border ${WIN1HEX} ${XPOS1} ${YPOS1} ${XSIZE1} ${YSIZE1}
+
+echo -n "Win 3 in correct pos - "
+assert_border ${WIN3HEX} ${XPOS3} ${YPOS3} ${XSIZE3} ${YSIZE3}
+
+echo -n "Win 4 in correct pos - "
+assert_border ${WIN4HEX} ${XPOS4} ${YPOS4} ${XSIZE4} ${YSIZE4}
+
+echo "----- Swapping pane [[1], [3,4]] -----"
+xdotool windowactivate ${WIN1HEX}
+
+XPOS1=$(get_x_pos ${WIN3HEX})
+YPOS1=$(get_y_pos ${WIN3HEX})
+XSIZE1=$(get_x_size ${WIN1HEX})
+YSIZE1=$(get_y_size ${WIN1HEX})
+
+XPOS3=$(get_x_pos ${WIN1HEX})
+YPOS3=$(get_y_pos ${WIN1HEX})
+XSIZE3=$(get_x_size ${WIN3HEX})
+YSIZE3=$(get_y_size ${WIN3HEX})
+
+XPOS4=$(get_x_pos ${WIN4HEX})
+YPOS4=$(get_y_pos ${WIN1HEX})
+XSIZE4=$(get_x_size ${WIN4HEX})
+YSIZE4=$(get_y_size ${WIN4HEX})
+
+woof swap-pane
+sleep ${DELAY}
+
+echo -n "Win 1 in correct pos - "
+assert_border ${WIN1HEX} ${XPOS1} ${YPOS1} ${XSIZE1} ${YSIZE1}
+
+echo -n "Win 3 in correct pos - "
+assert_border ${WIN3HEX} ${XPOS3} ${YPOS3} ${XSIZE3} ${YSIZE3}
+
+echo -n "Win 4 in correct pos - "
+assert_border ${WIN4HEX} ${XPOS4} ${YPOS4} ${XSIZE4} ${YSIZE4}
+
+echo "----- Swapping pane [[2], [5,6]] -----"
+xdotool windowactivate ${WIN2HEX}
+
+XPOS2=$(get_x_pos ${WIN5HEX})
+YPOS2=$(get_y_pos ${WIN5HEX})
+XSIZE2=$(get_x_size ${WIN2HEX})
+YSIZE2=$(get_y_size ${WIN2HEX})
+
+XPOS5=$(get_x_pos ${WIN2HEX})
+YPOS5=$(get_y_pos ${WIN2HEX})
+XSIZE5=$(get_x_size ${WIN5HEX})
+YSIZE5=$(get_y_size ${WIN5HEX})
+
+XPOS6=$(get_x_pos ${WIN6HEX})
+YPOS6=$(get_y_pos ${WIN2HEX})
+XSIZE6=$(get_x_size ${WIN6HEX})
+YSIZE6=$(get_y_size ${WIN6HEX})
+
+woof swap-pane
+sleep ${DELAY}
+
+echo -n "Win 2 in correct pos - "
+assert_border ${WIN2HEX} ${XPOS2} ${YPOS2} ${XSIZE2} ${YSIZE2}
+
+echo -n "Win 5 in correct pos - "
+assert_border ${WIN5HEX} ${XPOS5} ${YPOS5} ${XSIZE5} ${YSIZE5}
+
+echo -n "Win 6 in correct pos - "
+assert_border ${WIN6HEX} ${XPOS6} ${YPOS6} ${XSIZE6} ${YSIZE6}
+
+woof swap-pane
+sleep ${DELAY}
+
+echo "---------- Change plane tests ----------"
+
+echo "----- Changing plane [3,4] -----"
+xdotool windowactivate ${WIN3HEX}
+
+woof change-plane
+sleep ${DELAY}
+
+echo -n "Win 3 in correct pos - "
+assert_border ${WIN3HEX} 12 35 941 226
+
+echo -n "Win 4 in correct pos - "
+assert_border ${WIN4HEX} 12 300 941 231
+
+woof change-plane
+sleep ${DELAY}
+
+echo "----- Changing plane [2, [5, 6]] -----"
+xdotool windowactivate ${WIN2HEX}
+
+woof change-plane
+sleep ${DELAY}
+
+echo -n "Win 2 in correct pos - "
+assert_border ${WIN2HEX} 967 35 466 1031
+
+echo -n "Win 5 in correct pos - "
+assert_border ${WIN5HEX} 1447 35 226 1031
+
+echo -n "Win 6 in correct pos - "
+assert_border ${WIN6HEX} 1687 35 221 1031
+
+woof change-plane
+sleep ${DELAY}
+
+echo "---------- Moving tests ----------"
+
+echo "----- Moving win 6 to win 1"
+xdotool windowactivate ${WIN6HEX}
+woof "move-to ${WIN1DEC}"
+sleep ${DELAY}
+
+echo -n "Win 1 in correct pos - "
+assert_border ${WIN1HEX} 12 570 461 496
+
+echo -n "Win 5 in correct pos - "
+assert_border ${WIN5HEX} 967 570 941 496
+
+echo -n "Win 6 in correct pos - "
+assert_border ${WIN6HEX} 487 570 466 496
+
+woof "move-to ${WIN5DEC}"
+
+if [ "hackyfix"${CLEANUP} == "hackyfixclean" ]; then
+    echo
+    echo "---------- Cleaning up ----------"
+    ./clean_up
+fi
+
+echo
+echo "---------- RESULTS ----------"
+echo "Passed: ${PASS_COUNTER}"
+echo "Failed: ${FAIL_COUNTER}"

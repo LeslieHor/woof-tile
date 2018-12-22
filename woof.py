@@ -189,6 +189,12 @@ class Screen:
     def get_screen_borders(self):
         return self.L, self.D, self.U, self.R
 
+    def all_are_bees(self, _CallerChild):
+        return True
+
+    def find_earliest_a_but_not_me(self, _CallerChild):
+        return None
+
 """Node of the tree
 
 Contains two children, which can be nodes or children.
@@ -333,21 +339,41 @@ class Node:
     If the calling child is child A, simply move the split to give more
     space to child A.
     Otherwise, ripple the request to the parent, to see if they can resize
+    
 
     # TODO: Possible to use a single function to do this?
     """
     def resize_vert(self, CallerChild, Increment):
-        if CallerChild == self.ChildB or self.PlaneType == PLANE.VERT:
+        if self.PlaneType != PLANE.HORZ:
             return self.Parent.resize_vert(self, Increment)
+        if CallerChild == self.ChildB:
+            return self.Parent.resize_vert(self, Increment)
+
         self.Split += Increment
         self.set_size()
         return True
     def resize_horz(self, CallerChild, Increment):
-        if CallerChild == self.ChildB or self.PlaneType == PLANE.HORZ:
-            return self.Parent.resize_vert(self, Increment)
+        if self.PlaneType != PLANE.VERT:
+            return self.Parent.resize_horz(self, Increment)
+        if CallerChild == self.ChildB:
+            return self.Parent.resize_horz(self, Increment)
+
         self.Split += Increment
         self.set_size()
         return True
+    
+    def all_are_bees(self, CallerChild):
+        if CallerChild == self.ChildB:
+            return self.Parent.all_are_bees(self)
+        return False
+
+    def find_earliest_a_but_not_me(self, CallerChild):
+        if CallerChild == self.ChildA:
+            return self.Parent.find_earliest_a_but_not_me(self)
+        return self.ChildA
+
+    def get_childa(self):
+        return self.ChildA
 
     """Swap the direction of the split
 
@@ -535,20 +561,25 @@ class Window:
         self.Parent.split(self, NewWindow, PlaneType, Direction)
 
     """Request parent to resize window.
-
-    If the request fails, attempt to resize sibling window to accomplish the
-    resize.
     """
     def resize_vert(self, _CallerChild, Increment):
         if not self.Parent.resize_vert(self, Increment):
-            log_warning(['Unable to resize window. Attempting to invert resize higher priority node'])
-            HigherPriorityNode = self.Parent.get_higher_priority(self)
-            HigherPriorityNode.resize_vert(self, -1 * Increment)
+            log_debug(['Unable to resize. Using alterative'])
+            NextChild = self.Parent.find_earliest_a_but_not_me(self)
+            if NextChild != None:
+                if not self.Parent.all_are_bees(self):
+                    log_debug(['All are not bees'])
+                    Increment *= -1
+                NextChild.resize_vert(self, Increment)
+
     def resize_horz(self, _CallerChild, Increment):
         if not self.Parent.resize_horz(self, Increment):
-            log_warning(['Unable to resize window. Attempting to invert resize higher priority node'])
-            HigherPriorityNode = self.Parent.get_higher_priority(self)
-            HigherPriorityNode.resize_horz(self, -1 * Increment)
+            log_debug(['Unable to resize. Using alterative'])
+            NextChild = self.Parent.find_earliest_a_but_not_me(self)
+            if NextChild != None:
+                if not self.Parent.all_are_bees(self):
+                    Increment *= -1
+                NextChild.resize_horz(self, Increment)
 
     """Request parent to change plane orientation
     """
@@ -559,7 +590,7 @@ class Window:
     """
     def swap_pane_position(self):
         self.Parent.swap_pane_position()
-    
+   
     """Request parent to replace self with a new child
     """
     def replace_child(self, NewChild):
@@ -1073,7 +1104,7 @@ BORDER_WHITELIST = [
 
 RESIZEINCREMENT = 10
 RAPIDINCREMENT = 80
-RESIZERAPIDTIME = 165 # milliseconds
+RESIZERAPIDTIME = 200 # milliseconds
 
 DEBUG = False
 DATA_PATH = "~/.woof/windows.dat"
