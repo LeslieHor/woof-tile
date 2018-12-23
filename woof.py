@@ -440,6 +440,111 @@ class Node:
     def get_screen_borders(self):
         return self.Parent.get_screen_borders()
 
+class WindowGroup:
+    def __init__(self, Parent, ActiveWindow, InactiveWindows):
+        self.AllWindows = [ActiveWindow] + InactiveWindows
+        self.ActiveWindow = ActiveWindow
+        self.InactiveWindows = InactiveWindows
+        self.ActiveWindowIndex = 0
+
+        self.Parent = Parent
+
+    def DEBUG_PRINT(self, Level):
+        print "\t" * Level + "WindowGroup"
+        for Window in self.AllWindows:
+            Window.DEBUG_PRINT()
+
+    """Ripple gap correction requests up to the root screen
+    """
+    def gap_correct_left(self, L):
+        return self.Parent.gap_correct_left(L)
+    def gap_correct_down(self, D):
+        return self.Parent.gap_correct_down(D)
+    def gap_correct_up(self, U):
+        return self.Parent.gap_correct_up(U)
+    def gap_correct_right(self, R):
+        return self.Parent.gap_correct_right(R)
+
+    def get_shaded_size(self, Index):
+        L, D, U, R = self.Parent.get_borders(self)
+        Increment = R / len(self.InactiveWindows)
+        Borders = range(L, R, Increment) + [R]
+        log_debug(Borders)
+        return Borders[Index], D, U, Borders[Index + 1]
+
+    def add_window(self, NewWindow):
+        self.AllWindows.append(NewWindow)
+        self.InactiveWindows.append(NewWindow)
+        NewWindowIndex = len(self.InactiveWindows)
+        Offset = NewWindowIndex - self.ActiveWindowIndex
+        self.activate_next_window(Offset)
+
+    def set_size(self, _ResizeDefault = False):
+        for I in range(len(self.InactiveWindows)):
+            InactiveWindow = self.InactiveWindows[I]
+            log_debug(['Shading window', InactiveWindow.WindowIdHex])
+            L, D, U, R = self.get_shaded_size(I)
+            PX, PY, SX, SY = InactiveWindow.border_gap_correct(L, D, U, R)
+            InactiveWindow.set_size_override(PX, PY, SX, SY)
+            InactiveWindow.shade()
+
+        ActiveWindow = self.ActiveWindow
+        L, D, U, R = self.Parent.get_borders(self)
+        PX, PY, SX, SY = ActiveWindow.border_gap_correct(L, D, U, R)
+        PY += SHADEDSIZE
+        SY -= SHADEDSIZE
+        ActiveWindow.set_size_override(PX, PY, SX, SY)
+        ActiveWindow.unshade()
+
+    def activate_active_window(self):
+        log_debug(['Activating active window'])
+        self.set_size()
+        self.ActiveWindow.activate()
+
+    def activate_next_window(self, Increment):
+        self.ActiveWindowIndex += Increment
+        self.ActiveWindowIndex %= len(self.AllWindows)
+
+        self.ActiveWindow = self.AllWindows[self.ActiveWindowIndex]
+        self.InactiveWindows = list(self.AllWindows)
+        del self.InactiveWindows[self.ActiveWindowIndex]
+        RotatedList = self.InactiveWindows[self.ActiveWindowIndex:] + self.InactiveWindows[: self.ActiveWindowIndex]
+        self.InactiveWindows = RotatedList
+
+        self.activate_active_window()
+
+    def resize_vert(self, _CallerChild, Increment):
+        return self.Parent.resize_vert(self, Increment)
+    def resize_horz(self, _CallerChild, Increment):
+        return self.Parent.resize_horz(self, Increment)
+
+    def find_earliest_a_but_not_me(self, CallerChild):
+        return self.Parent.find_earliest_a_but_not_me(self)
+
+    def all_are_bees(self, CallerChild):
+        return self.Parent.all_are_bees(self)
+    
+    def get_borders(self, _CallingChild):
+        return self.Parent.get_borders(self)
+
+    def kill_window(self, CallerChild):
+        if len(self.AllWindows) == 2:
+            # The remaining window will be a single, so we
+            # turn it into a normal window
+            CallerChild.Parent = self.Parent
+            self.AllWindows.remove(CallerChild)
+            SurvivingChild = self.AllWindows[0]
+            self.Parent.replace_child(self, SurvivingChild)
+            SurvivingChild.unshade()
+            SurvivingChild.set_size()
+            SurvivingChild.activate()
+        else:
+            self.AllWindows.remove(CallerChild)
+            self.activate_next_window(0)
+        
+    def split(self, _CallerChild, NewWindow, PlaneType, Direction):
+        self.Parent.split(self, NewWindow, PlaneType, Direction)
+
 """Leaf node, representing a viewable window
 """
 class Window:
@@ -476,11 +581,11 @@ class Window:
     Intended window position
     +-Screen----------------------+
     |                             |
+    |  +--------+                 |
+    |  |        |                 |
+    |  |        |                 |
+    |  +--------+                 |
     |                             |
-    |  +--------+                 |
-    |  |        |                 |
-    |  |        |                 |
-    |  +--------+                 |
     |                             |
     |                             |
     +-----------------------------+
@@ -643,6 +748,20 @@ class Window:
         WindowName = call(['xdotool getwindowname', self.WindowIdDec]).rstrip()
         return Prepend + str(self.WindowIdDec) + " : " + WindowName
 
+    def get_state(self):
+        return call(['xprop', '-id', self.WindowIdDec, ' | grep "NET_WM_STATE" | sed \'s/_NET_WM_STATE(ATOM) = //\'']).rstrip()
+
+    def is_shaded(self):
+        return self.get_state() == "_NET_WM_STATE_SHADED"
+
+    def shade(self):
+        call(['wmctrl', '-ir', self.WindowIdHex, '-b', 'add,shaded'])
+    def unshade(self):
+        call(['wmctrl', '-ir', self.WindowIdHex, '-b', 'remove,shaded'])
+
+
+
+
 """Stores and manages the workspaces and windows
 
 Contains pointer to workspace and a dictionary of windows ID --> Window Object
@@ -756,7 +875,8 @@ class Windows:
     def list_add_windows(self, Prepend):
         List = []
         for _WinId, Win in self.Windows.iteritems():
-            List.append(Win.list_add_window(Prepend))
+            if not Win.is_shaded():
+                List.append(Win.list_add_window(Prepend))
 
         List.sort()
         Counter = 0
@@ -866,8 +986,6 @@ class Windows:
         
         self.Windows[TargetId].split(NewWindow, PlaneType, Direction)
 
-        print "2"
-
         self.add_window(NewWindow)
  
     def add(self, PlaneType, Direction, TargetId, ScreenIndex = None):
@@ -896,7 +1014,7 @@ class Windows:
             self.Windows[TargetId].split(NewWindow, PlaneType, Direction)
             
         self.add_window(NewWindow)
-    
+
     def nav_left(self):
         WinID = self.get_active_window()
         L, _, T, _ = self.Windows[WinID].get_size()
@@ -905,6 +1023,9 @@ class Windows:
         ClosestWindow = None
 
         for _WinId, Win in self.Windows.iteritems():
+            if Win.is_shaded():
+                continue
+
             _, _, WT, WR = Win.get_size()
 
             if L < WR: # Current window is to the right of Win
@@ -935,6 +1056,9 @@ class Windows:
         ClosestWindow = None
 
         for _WinId, Win in self.Windows.iteritems():
+            if Win.is_shaded():
+                continue
+
             WL, _, WT, _ = Win.get_size()
 
             if WL < R: # Current window is to the left of Win
@@ -965,6 +1089,9 @@ class Windows:
         ClosestWindow = None
 
         for _WinId, Win in self.Windows.iteritems():
+            if Win.is_shaded():
+                continue
+
             WL, WB, _, _ = Win.get_size()
 
             if T < WB: # Current window is to the bottom of Win
@@ -995,6 +1122,9 @@ class Windows:
         ClosestWindow = None
 
         for _WinId, Win in self.Windows.iteritems():
+            if Win.is_shaded():
+                continue
+
             WL, _, WT, _ = Win.get_size()
 
             if WT < B: # Current window is to the bottom of Win
@@ -1016,6 +1146,47 @@ class Windows:
             return
         log_debug(['Closest top window:', ClosestWindow.list_add_window()])
         ClosestWindow.activate()
+    
+    def add_to_window_group(self, TargetId):
+        WinId = self.get_active_window()
+        TargetId = int(TargetId)
+        if self.exists(WinId) or not self.exists(TargetId):
+            log_debug(['Active window exists, or target window does not exist'])
+            return False
+        
+        NewWindow = Window(WinId)
+        TargetWin = self.Windows[TargetId]
+        NodeParent = TargetWin.Parent
+        if isinstance(NodeParent, WindowGroup):
+            NewWindow.Parent = NodeParent
+            NodeParent.add_window(NewWindow)
+        else: # Create new window group
+            NewWindowGroup = WindowGroup(NodeParent, NewWindow, [TargetWin])
+
+            NodeParent.replace_child(TargetWin, NewWindowGroup)
+
+            NewWindow.Parent = NewWindowGroup
+            TargetWin.Parent = NewWindowGroup
+
+            NewWindowGroup.activate_active_window()
+
+        self.add_window(NewWindow)
+
+    def activate_next_window(self, Increment):
+        WinId = self.get_active_window()
+        if not self.exists(WinId):
+            log_debug(['Window doesn\'t exist'])
+            return False
+        Window = self.get_window(WinId)
+        if not isinstance(Window.Parent, WindowGroup):
+            log_debug(['Window not in window group'])
+            return False
+        
+        Window.Parent.activate_next_window(Increment)
+
+
+
+        
 
 # TODO: All of these functions should be moved to Windows
 """Join a list of items into a single string
@@ -1208,6 +1379,13 @@ def main(ARGS):
         WindowsObj.nav_up()
     elif Cmd == 'nav-down':
         WindowsObj.nav_down()
+    elif Cmd == 'add-to-group':
+        TargetId = ARGS[2]
+        WindowsObj.add_to_window_group(TargetId)
+    elif Cmd == 'activate-next-window':
+        WindowsObj.activate_next_window(1)
+    elif Cmd == 'activate-prev-window':
+        WindowsObj.activate_next_window(-1)
 
     pickle.dump(WindowsObj, open(DATA_PATH, "wb"))
 
@@ -1219,6 +1397,7 @@ TOPBORDER = 25
 LEFTBORDER = 2
 RIGHTBORDER = 2
 BOTTOMBORDER = 4
+SHADEDSIZE = 25
 
 # Include border calculations for the following programs
 BORDER_WHITELIST = [

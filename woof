@@ -5,6 +5,7 @@ WOOF=~/.woof/woof.py
 if [[ -z "$@" ]]; then
     echo "add h
 add v
+add-to-group
 maximize
 min
 unmin
@@ -19,6 +20,8 @@ expand-horz
 expand-vert
 reduce-horz
 reduce-vert
+activate-next-window
+activate-prev-window
 "
 else
     echo $@ >> ~/log
@@ -44,6 +47,8 @@ else
         ${WOOF} $@ && wmctrl -c :ACTIVE:
     elif [[ ${1} == "move-to" ]]; then
         ${WOOF} list "move-to " | grep -v $(xdotool getactivewindow)
+    elif [[ ${1} == "add-to-group" ]]; then
+        ${WOOF} list "add-to-group "
     else
         ${WOOF} $@
     fi

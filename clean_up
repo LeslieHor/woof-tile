@@ -6,6 +6,9 @@ WIN3HEX=$(wmctrl -l | grep woof_test_window_3 | sed 's/ .*//')
 WIN4HEX=$(wmctrl -l | grep woof_test_window_4 | sed 's/ .*//')
 WIN5HEX=$(wmctrl -l | grep woof_test_window_5 | sed 's/ .*//')
 WIN6HEX=$(wmctrl -l | grep woof_test_window_6 | sed 's/ .*//')
+WIN7HEX=$(wmctrl -l | grep woof_test_window_7 | sed 's/ .*//')
+WIN8HEX=$(wmctrl -l | grep woof_test_window_8 | sed 's/ .*//')
+WIN9HEX=$(wmctrl -l | grep woof_test_window_9 | sed 's/ .*//')
 
 echo "Killing windows"
 wmctrl -ic ${WIN1HEX}
@@ -14,8 +17,13 @@ wmctrl -ic ${WIN3HEX}
 wmctrl -ic ${WIN4HEX}
 wmctrl -ic ${WIN5HEX}
 wmctrl -ic ${WIN6HEX}
+wmctrl -ic ${WIN7HEX}
+wmctrl -ic ${WIN8HEX}
+wmctrl -ic ${WIN9HEX}
 
 echo "Restoring window data"
 mv ~/.woof/windows.dat.backup ~/.woof/windows.dat
+mv ~/.woof/woof.py.backup ~/.woof/woof.py
+mv ~/bin/woof.backup ~/bin/woof
 woof unmin
 woof restore
