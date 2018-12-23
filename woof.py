@@ -905,6 +905,126 @@ class Windows:
             self.Windows[TargetId].split(NewWindow, PlaneType, Direction)
             
         self.add_window(NewWindow)
+    
+    def nav_left(self):
+        WinID = self.get_active_window()
+        L, _, T, _ = self.Windows[WinID].get_size()
+        ClosestRightBorder = 0
+        LowestTopDiff = sys.maxint
+        ClosestWindow = None
+
+        for _WinId, Win in self.Windows.iteritems():
+            _, _, WT, WR = Win.get_size()
+
+            if L < WR: # Current window is to the right of Win
+                continue
+            
+            if WR < ClosestRightBorder:
+                continue
+
+            TopBorderDiff = (T - WT) ** 2 # Magnitude of diff
+            if LowestTopDiff < TopBorderDiff:
+                continue
+
+            ClosestRightBorder = WR
+            LowestTopDiff = TopBorderDiff
+            ClosestWindow = Win
+
+        if ClosestWindow == None:
+            log_debug(['No valid window found'])
+            return
+        log_debug(['Closest left window:', ClosestWindow.list_add_window()])
+        ClosestWindow.activate()
+    
+    def nav_right(self):
+        WinID = self.get_active_window()
+        _, _, T, R = self.Windows[WinID].get_size()
+        ClosestLeftBorder = sys.maxint
+        LowestTopDiff = sys.maxint
+        ClosestWindow = None
+
+        for _WinId, Win in self.Windows.iteritems():
+            WL, _, WT, _ = Win.get_size()
+
+            if WL < R: # Current window is to the left of Win
+                continue
+            
+            if ClosestLeftBorder < WL:
+                continue
+
+            TopBorderDiff = (T - WT) ** 2 # Magnitude of diff
+            if LowestTopDiff < TopBorderDiff:
+                continue
+
+            ClosestLeftBorder = WL
+            LowestTopDiff = TopBorderDiff
+            ClosestWindow = Win
+
+        if ClosestWindow == None:
+            log_debug(['No valid window found'])
+            return
+        log_debug(['Closest right window:', ClosestWindow.list_add_window()])
+        ClosestWindow.activate()
+
+    def nav_up(self):
+        WinID = self.get_active_window()
+        L, _, T, _ = self.Windows[WinID].get_size()
+        ClosestBottomBorder = 0
+        LowestLeftDiff = sys.maxint
+        ClosestWindow = None
+
+        for _WinId, Win in self.Windows.iteritems():
+            WL, WB, _, _ = Win.get_size()
+
+            if T < WB: # Current window is to the bottom of Win
+                continue
+            
+            if WB < ClosestBottomBorder:
+                continue
+
+            LeftBorderDiff = (L - WL) ** 2 # Magnitude of diff
+            if LowestLeftDiff < LeftBorderDiff:
+                continue
+
+            ClosestBottomBorder = WB
+            LowestLeftDiff = LeftBorderDiff
+            ClosestWindow = Win
+
+        if ClosestWindow == None:
+            log_debug(['No valid window found'])
+            return
+        log_debug(['Closest top window:', ClosestWindow.list_add_window()])
+        ClosestWindow.activate()
+
+    def nav_down(self):
+        WinID = self.get_active_window()
+        L, B, _, _ = self.Windows[WinID].get_size()
+        ClosestTopBorder = sys.maxint
+        LowestLeftDiff = sys.maxint
+        ClosestWindow = None
+
+        for _WinId, Win in self.Windows.iteritems():
+            WL, _, WT, _ = Win.get_size()
+
+            if WT < B: # Current window is to the bottom of Win
+                continue
+            
+            if ClosestTopBorder < WT:
+                continue
+
+            LeftBorderDiff = (L - WL) ** 2 # Magnitude of diff
+            if LowestLeftDiff < LeftBorderDiff:
+                continue
+
+            ClosestTopBorder = WT
+            LowestLeftDiff = LeftBorderDiff
+            ClosestWindow = Win
+
+        if ClosestWindow == None:
+            log_debug(['No valid window found'])
+            return
+        log_debug(['Closest top window:', ClosestWindow.list_add_window()])
+        ClosestWindow.activate()
 
 # TODO: All of these functions should be moved to Windows
 """Join a list of items into a single string
@@ -1089,6 +1209,14 @@ def main(ARGS):
     elif Cmd == 'move-to':
         main(['', 'remove'])
         main(['', 'addrofi', 'h', ARGS[2]])
+    elif Cmd == 'nav-right':
+        WindowsObj.nav_right()
+    elif Cmd == 'nav-left':
+        WindowsObj.nav_left()
+    elif Cmd == 'nav-up':
+        WindowsObj.nav_up()
+    elif Cmd == 'nav-down':
+        WindowsObj.nav_down()
 
     pickle.dump(WindowsObj, open(DATA_PATH, "wb"))
 

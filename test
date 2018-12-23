@@ -359,7 +359,7 @@ function vert_test {
 }
 
 function vert_test_2 {
-    echo -n "----- Vertical reduce test ${1}"
+    echo -n "----- Vertical reduce test ${1} -----"
     wait_for_user
     
     xdotool windowactivate ${2}
@@ -777,7 +777,7 @@ sleep ${DELAY}
 
 echo "---------- Moving tests ----------"
 
-echo "----- Moving win 6 to win 1"
+echo "----- Moving win 6 to win 1 -----"
 xdotool windowactivate ${WIN6HEX}
 woof "move-to ${WIN1DEC}"
 sleep ${DELAY}
@@ -792,6 +792,40 @@ echo -n "Win 6 in correct pos - "
 assert_border ${WIN6HEX} 487 570 466 496
 
 woof "move-to ${WIN5DEC}"
+
+echo "---------- Navigation tests ----------"
+
+echo "----- Focus 5 to 1 -----"
+xdotool windowactivate ${WIN5HEX}
+woof nav-left
+sleep ${DELAY}
+ACTIVEWIN=$(xdotool getactivewindow)
+echo -n "Win 1 is active - "
+assert_equal ${ACTIVEWIN} ${WIN1DEC}
+
+echo "----- Focus 3 to 4 -----"
+xdotool windowactivate ${WIN3HEX}
+woof nav-right
+sleep ${DELAY}
+ACTIVEWIN=$(xdotool getactivewindow)
+echo -n "Win 4 is active - "
+assert_equal ${ACTIVEWIN} ${WIN4DEC}
+
+echo "----- Focus 4 to 1 -----"
+xdotool windowactivate ${WIN4HEX}
+woof nav-down
+sleep ${DELAY}
+ACTIVEWIN=$(xdotool getactivewindow)
+echo -n "Win 1 is active - "
+assert_equal ${ACTIVEWIN} ${WIN1DEC}
+
+echo "----- Focus 6 to 2 -----"
+xdotool windowactivate ${WIN6HEX}
+woof nav-up
+sleep ${DELAY}
+ACTIVEWIN=$(xdotool getactivewindow)
+echo -n "Win 2 is active - "
+assert_equal ${ACTIVEWIN} ${WIN2DEC}
 
 if [ "hackyfix"${CLEANUP} == "hackyfixclean" ]; then
     echo
