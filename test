@@ -507,10 +507,10 @@ swap_test 1 4 ${WIN1HEX} ${WIN4HEX} ${WIN1DEC} ${WIN4DEC} _
 swap_test 2 6 ${WIN2HEX} ${WIN6HEX} ${WIN2DEC} ${WIN6DEC} _
 
 function is_min {
-    WIN_STATE=$(xprop -id ${2} | grep "window state" | sed 's/.*window state: //')
+    WIN_STATE=$(xprop -id ${2} | grep "NET_WM_STATE" | sed 's/_NET_WM_STATE(ATOM) = //')
 
     echo -n "Win ${1} is minimized - "
-    assert_equal ${WIN_STATE} "Iconic"
+    assert_equal ${WIN_STATE} "_NET_WM_STATE_HIDDEN"
 }
 
 echo "---------- Minimize test ----------"
@@ -525,10 +525,10 @@ is_min 5 ${WIN5HEX}
 is_min 6 ${WIN6HEX}
 
 function is_not_min {
-    WIN_STATE=$(xprop -id ${2} | grep "window state" | sed 's/.*window state: //')
+    WIN_STATE=$(xprop -id ${2} | grep "NET_WM_STATE" | sed 's/_NET_WM_STATE(ATOM) = //')
 
-    echo -n "Win ${1} is minimized - "
-    assert_equal ${WIN_STATE} "Normal"
+    echo -n "Win ${1} is not minimized - "
+    assert_equal ${WIN_STATE} ""
 }
 
 echo "---------- Unminimize test ----------"
