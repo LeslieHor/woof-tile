@@ -16,10 +16,10 @@ kill
 remove
 restore
 move-to
-expand-horz
-expand-vert
-reduce-horz
-reduce-vert
+eh
+ev
+rh
+rv
 activate-next-window
 activate-prev-window
 "

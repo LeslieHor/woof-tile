@@ -1299,25 +1299,25 @@ def main(ARGS):
         PlaneType, Direction = dir_str_to_plane_dir(ARGS[2])
 
         WindowsObj.add(PlaneType, Direction, TargetId, ScreenIndex)
-    elif Cmd == 'expand-vert':
+    elif Cmd == 'ev':
         Increment = element(ARGS, 2, None)
         if Increment != None:
             Increment = int(Increment)
         log_debug(['Attempting to expand vertical size.'])
         WindowsObj.resize_vert('expand', Increment)
-    elif Cmd == 'reduce-vert':
+    elif Cmd == 'rv':
         log_debug(['Attempting to reduce vertical size.'])
         Increment = element(ARGS, 2, None)
         if Increment != None:
             Increment = int(Increment)
         WindowsObj.resize_vert('reduce', Increment)
-    elif Cmd == 'expand-horz':
+    elif Cmd == 'eh':
         log_debug(['Attempting to expand horizontal size.'])
         Increment = element(ARGS, 2, None)
         if Increment != None:
             Increment = int(Increment)
         WindowsObj.resize_horz('expand', Increment)
-    elif Cmd == 'reduce-horz':
+    elif Cmd == 'rh':
         Increment = element(ARGS, 2, None)
         if Increment != None:
             Increment = int(Increment)
