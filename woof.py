@@ -440,15 +440,6 @@ class Node:
     def get_screen_borders(self):
         return self.Parent.get_screen_borders()
 
-    """Return the higher priority node
-    """
-    def get_higher_priority(self, CallerChild):
-        if CallerChild == self.ChildA:
-            log_info(['get_higher_priority', 'returning parent'])
-            return self.Parent
-        log_info(['get_higher_priority', 'returning sibling'])
-        return self.ChildA
-
 """Leaf node, representing a viewable window
 """
 class Window:
