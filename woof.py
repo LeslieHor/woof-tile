@@ -440,6 +440,9 @@ class Node:
     def get_screen_borders(self):
         return self.Parent.get_screen_borders()
 
+    def get_planetype(self):
+        return self.PlaneType
+
 class WindowGroup:
     def __init__(self, Parent, ActiveWindow, InactiveWindows):
         self.AllWindows = [ActiveWindow] + InactiveWindows
@@ -452,7 +455,7 @@ class WindowGroup:
     def DEBUG_PRINT(self, Level):
         print "\t" * Level + "WindowGroup"
         for Window in self.AllWindows:
-            Window.DEBUG_PRINT()
+            Window.DEBUG_PRINT(Level + 1)
 
     """Ripple gap correction requests up to the root screen
     """
@@ -471,7 +474,7 @@ class WindowGroup:
         Borders = range(L, R, Increment) + [R]
         log_debug(Borders)
         return Borders[Index], D, U, Borders[Index + 1]
-
+    
     def add_window(self, NewWindow):
         self.AllWindows.append(NewWindow)
         self.InactiveWindows.append(NewWindow)
@@ -524,17 +527,17 @@ class WindowGroup:
     def all_are_bees(self, CallerChild):
         return self.Parent.all_are_bees(self)
     
-    def get_borders(self, _CallingChild):
+    def get_borders(self, CallingChild):
         return self.Parent.get_borders(self)
 
     def kill_window(self, CallerChild):
         if len(self.AllWindows) == 2:
             # The remaining window will be a single, so we
             # turn it into a normal window
-            CallerChild.Parent = self.Parent
             self.AllWindows.remove(CallerChild)
             SurvivingChild = self.AllWindows[0]
             self.Parent.replace_child(self, SurvivingChild)
+            SurvivingChild.parent = self.Parent
             SurvivingChild.unshade()
             SurvivingChild.set_size()
             SurvivingChild.activate()
@@ -544,6 +547,9 @@ class WindowGroup:
         
     def split(self, _CallerChild, NewWindow, PlaneType, Direction):
         self.Parent.split(self, NewWindow, PlaneType, Direction)
+
+    def get_planetype(self):
+        return self.Parent.PlaneType
 
 """Leaf node, representing a viewable window
 """
@@ -666,7 +672,7 @@ class Window:
                 if not self.Parent.all_are_bees(self):
                     log_debug(['All are not bees'])
                     Increment *= -1
-                elif self.Parent.PlaneType == PLANE.HORZ:
+                elif self.Parent.get_planetype() == PLANE.HORZ:
                     Increment *= -1
                 NextChild.resize_vert(self, Increment)
 
@@ -678,7 +684,7 @@ class Window:
                 if not self.Parent.all_are_bees(self):
                     log_debug(['All are not bees'])
                     Increment *= -1
-                elif self.Parent.PlaneType == PLANE.VERT:
+                elif self.Parent.get_planetype() == PLANE.VERT:
                     Increment *= -1
                 NextChild.resize_horz(self, Increment)
 
@@ -759,9 +765,6 @@ class Window:
     def unshade(self):
         call(['wmctrl', '-ir', self.WindowIdHex, '-b', 'remove,shaded'])
 
-
-
-
 """Stores and manages the workspaces and windows
 
 Contains pointer to workspace and a dictionary of windows ID --> Window Object
@@ -773,6 +776,10 @@ class Windows:
         self.LastResizeTS = 0
 
     def DEBUG_PRINT(self):
+        for WinID, Win in self.Windows.iteritems():
+            print WinID
+            Win.DEBUG_PRINT(0)
+
         self.WorkSpace.DEBUG_PRINT()
 
     def update_resize_ts(self):
@@ -838,7 +845,10 @@ class Windows:
         self.unminimize_all()
         for _WindowID, Window in self.Windows.iteritems():
             Window.Maximized = False
-            Window.set_size()
+            if isinstance(Window.Parent, WindowGroup):
+                Window.Parent.set_size()
+            else:
+                Window.set_size()
 
     """Checks that all windows in the dictionary are still alive
 
