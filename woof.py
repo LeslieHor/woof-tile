@@ -467,7 +467,7 @@ class WindowGroup:
 
     def get_shaded_size(self, Index):
         L, D, U, R = self.Parent.get_borders(self)
-        Increment = R / len(self.InactiveWindows)
+        Increment = (R - L) / len(self.InactiveWindows)
         Borders = range(L, R, Increment) + [R]
         log_debug(Borders)
         return Borders[Index], D, U, Borders[Index + 1]
