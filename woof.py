@@ -32,8 +32,10 @@ class WorkSpace:
 
     def DEBUG_PRINT(self):
         print "WorkSpace"
+        WindowCounter = 0
         for Desktop in self.Desktops:
-            Desktop.DEBUG_PRINT(1)
+            WindowCounter += Desktop.DEBUG_PRINT(1)
+        return WindowCounter
 
 """Container for all screens for a particular desktop
 
@@ -55,8 +57,10 @@ class Desktop:
 
     def DEBUG_PRINT(self, Level):
         print "\t" * Level + "Desktop"
+        WindowCounter = 0
         for Screen in self.Screens:
-            Screen.DEBUG_PRINT(Level + 1)
+            WindowCounter += Screen.DEBUG_PRINT(Level + 1)
+        return WindowCounter
 
     """Returns the screen index the given pixel belongs to
     # TODO Should work for grid-based layouts
@@ -81,7 +85,9 @@ class Screen:
     def DEBUG_PRINT(self, Level):
         print "\t" * Level + "Screen"
         if self.Child != None:
-            self.Child.DEBUG_PRINT(Level + 1)
+            return self.Child.DEBUG_PRINT(Level + 1)
+        else:
+            return 0
 
     def get_borders(self, _CallerChild):
         return self.L, self.D, self.U, self.R
@@ -210,13 +216,17 @@ class Node:
 
     def DEBUG_PRINT(self, Level):
         if self.PlaneType == PLANE.HORZ:
-            PT = "Horz"
+            PT = "H"
         else:
-            PT = "Vert"
+            PT = "V"
         L, D, U, R = self.Parent.get_borders(self)
-        print "\t" * Level + "Node: " + PT + ": " + str(L) + ", " + str(D) + ", " + str(U) + ", " + str(R) + " - " + str(self.Split)
-        self.ChildA.DEBUG_PRINT(Level + 1)
-        self.ChildB.DEBUG_PRINT(Level + 1)
+        print "\t" * Level + "N (" + PT + ") "  + str(self.Split) + " " + str(L) + "," + str(D) + "," + str(U) + "," + str(R)
+
+        WindowCounter = 0
+        WindowCounter += self.ChildA.DEBUG_PRINT(Level + 1)
+        WindowCounter += self.ChildB.DEBUG_PRINT(Level + 1)
+
+        return WindowCounter
 
     """Sets split to 50% of the node's assigned area
     """
@@ -453,9 +463,11 @@ class WindowGroup:
         self.Parent = Parent
 
     def DEBUG_PRINT(self, Level):
-        print "\t" * Level + "WindowGroup"
+        print "\t" * Level + "WG WinCount: " + str(len(self.AllWindows)) + ". Active: " + str(self.AllWindows.index(self.ActiveWindow))
+        WindowCounter = 0
         for Window in self.AllWindows:
-            Window.DEBUG_PRINT(Level + 1)
+            WindowCounter += Window.DEBUG_PRINT(Level + 1)
+        return WindowCounter
 
     """Ripple gap correction requests up to the root screen
     """
@@ -562,9 +574,8 @@ class Window:
         self.Maximized = False
 
     def DEBUG_PRINT(self, Level):
-        # L, D, U, R = self.Parent.get_borders(self)
-        # print "\t" * Level + "WindowID: " + str(self.WindowIdDec) + ": " + str(L) + ", " + str(D) + ", " + str(U) + ", " + str(R)
-        print "\t" * Level + "WindowID: " + str(self.WindowIdDec) + ": " + call(['xdotool getwindowname', self.WindowIdDec]).rstrip() + str(self.Maximized)
+        print "\t" * Level + "WindowID: " + str(self.WindowIdDec) + ": " + call(['xdotool getwindowname', self.WindowIdDec]).rstrip()[:20] + ". Class: " + self.get_window_class()
+        return 1
 
     """Get the size of the current window
 
@@ -609,11 +620,14 @@ class Window:
     +-----------------------------+
     """
     def border_multiplier(self):
-        WindowClass = call(['xprop -id', self.WindowIdDec, '| grep WM_CLASS | sed \'s/.* = "//\' | sed \'s/".*//\'']).rstrip()
+        WindowClass = self.get_window_class()
         for Name in BORDER_WHITELIST:
             if Name in WindowClass:
                 return 1
         return 0
+    
+    def get_window_class(self):
+        return call(['xprop -id', self.WindowIdDec, '| grep WM_CLASS | sed \'s/.* = "//\' | sed \'s/".*//\'']).rstrip()
 
     """Calculate window size parameters taking gap and borders into account
     
@@ -776,11 +790,25 @@ class Windows:
         self.LastResizeTS = 0
 
     def DEBUG_PRINT(self):
-        for WinID, Win in self.Windows.iteritems():
-            print WinID
+        print "LIST"
+        print "----"
+        for _WinID, Win in self.Windows.iteritems():
+            print "-" * 40
             Win.DEBUG_PRINT(0)
+            if Win.is_shaded():
+                print "Window is shaded"
+            else:
+                print "Window is not shaded"
 
-        self.WorkSpace.DEBUG_PRINT()
+        print
+        print "TREE"
+        print "----"
+        WindowsInTree = self.WorkSpace.DEBUG_PRINT()
+
+        print
+        print "----"
+        print "Windows in list: " + str(len(self.Windows))
+        print "Windows in tree: " + str(WindowsInTree)
 
     def update_resize_ts(self):
         Now = time.time() * 1000
