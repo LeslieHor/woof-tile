@@ -44,7 +44,13 @@ else
         ARGS=$(echo ${1} | sed 's/swap //')
         ${WOOF} swaprofi $ARGS
     elif [[ ${1} == "kill" ]]; then
-        ${WOOF} $@ && wmctrl -c :ACTIVE:
+        NextActiveWindow=$(${WOOF} $@)
+        if [ $? == 0 ]; then
+            wmctrl -c :ACTIVE:
+            if [ -z NextActiveWindow ]; then
+                xdotool windowactivate ${NextActiveWindow}
+            fi
+        fi
     elif [[ ${1} == "move-to" ]]; then
         ${WOOF} list "move-to " | grep -v $(xdotool getactivewindow)
     elif [[ ${1} == "add-to-group" ]]; then

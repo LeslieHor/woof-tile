@@ -167,6 +167,8 @@ class Screen:
         if CallerChild != self.Child:
             return False
         self.Child = None
+        
+        return ""
 
     """Replace current child with a new one.
 
@@ -435,6 +437,8 @@ class Node:
 
         self.Parent.set_size()
 
+        return ""
+
     """Request the parent to list all their windows (including yourself)
     """
     def list_screen_windows(self):
@@ -547,15 +551,21 @@ class WindowGroup:
             # The remaining window will be a single, so we
             # turn it into a normal window
             self.AllWindows.remove(CallerChild)
+            log_debug(['Removed calling child: ', CallerChild.WindowIdDec])
+            log_debug(['AllWindows lenth:', len(self.AllWindows)])
             SurvivingChild = self.AllWindows[0]
+            log_debug(['SurvivingChild:', SurvivingChild.WindowIdDec])
             self.Parent.replace_child(self, SurvivingChild)
+            log_debug(['Replacing parent child with surviving child'])
             SurvivingChild.parent = self.Parent
+            log_debug(['Replacing child parent with windowgroup parent'])
             SurvivingChild.unshade()
             SurvivingChild.set_size()
-            SurvivingChild.activate()
+            return str(SurvivingChild.WindowIdDec)
         else:
             self.AllWindows.remove(CallerChild)
             self.activate_next_window(0)
+            return str(self.ActiveWindow.WindowIdDec)
         
     def split(self, _CallerChild, NewWindow, PlaneType, Direction):
         self.Parent.split(self, NewWindow, PlaneType, Direction)
@@ -574,7 +584,13 @@ class Window:
         self.Maximized = False
 
     def DEBUG_PRINT(self, Level):
-        print "\t" * Level + "WindowID: " + str(self.WindowIdDec) + ": " + call(['xdotool getwindowname', self.WindowIdDec]).rstrip()[:20] + ". Class: " + self.get_window_class()
+        ParentType = "unknown"
+        if isinstance(self.Parent, WindowGroup):
+            ParentType = "WindowGroup"
+        elif isinstance(self.Parent, Node):
+            ParentType = "Node"
+
+        print "\t" * Level + "WindowID: " + str(self.WindowIdDec) + ": " + call(['xdotool getwindowname', self.WindowIdDec]).rstrip()[:20] + ". Class: " + self.get_window_class() + ". Parent Type: " + ParentType
         return 1
 
     """Get the size of the current window
@@ -720,7 +736,7 @@ class Window:
     """Request parent to kill self (this window)
     """
     def kill_window(self):
-        self.Parent.kill_window(self)
+        return self.Parent.kill_window(self)
 
     """Call into WM to minimize the window
     """
@@ -833,8 +849,9 @@ class Windows:
     """
     def kill_window(self, WindowId):
         Window = self.Windows[WindowId]
-        Window.kill_window()
+        NextActiveWindow = Window.kill_window()
         del self.Windows[WindowId]
+        return NextActiveWindow
 
     """Given a window id, swap the active and target positions in the tree
     # TODO: This really should work even in the same pane. Fix it and use this to 
@@ -1222,10 +1239,6 @@ class Windows:
         
         Window.Parent.activate_next_window(Increment)
 
-
-
-        
-
 # TODO: All of these functions should be moved to Windows
 """Join a list of items into a single string
 """
@@ -1399,8 +1412,9 @@ def main(ARGS):
     elif Cmd == 'kill':
         WinId = WindowsObj.get_active_window()
         if not WindowsObj.exists(WinId):
-            return
-        WindowsObj.kill_window(WinId)
+            exit(1)
+        NextActiveWindow = WindowsObj.kill_window(WinId)
+        print str(NextActiveWindow)
     elif Cmd == 'remove':
         WinId = WindowsObj.get_active_window()
         if not WindowsObj.exists(WinId):
