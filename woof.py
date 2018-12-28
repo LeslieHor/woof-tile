@@ -557,7 +557,7 @@ class WindowGroup:
             log_debug(['SurvivingChild:', SurvivingChild.WindowIdDec])
             self.Parent.replace_child(self, SurvivingChild)
             log_debug(['Replacing parent child with surviving child'])
-            SurvivingChild.parent = self.Parent
+            SurvivingChild.Parent = self.Parent
             log_debug(['Replacing child parent with windowgroup parent'])
             SurvivingChild.unshade()
             SurvivingChild.set_size()
@@ -589,6 +589,8 @@ class Window:
             ParentType = "WindowGroup"
         elif isinstance(self.Parent, Node):
             ParentType = "Node"
+        elif isinstance(self.Parent, Screen):
+            ParentType = "Screen"
 
         print "\t" * Level + "WindowID: " + str(self.WindowIdDec) + ": " + call(['xdotool getwindowname', self.WindowIdDec]).rstrip()[:20] + ". Class: " + self.get_window_class() + ". Parent Type: " + ParentType
         return 1
