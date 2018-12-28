@@ -1,9 +1,9 @@
 #!/usr/bin/python
 
-import subprocess
-import pickle
-import sys
-import time
+import subprocess # For calling into the system
+import pickle # For saving the window structure to disk
+import sys # For getting args
+import time # For calculating acceleration when resizing windows
 
 """Enum for directions
 """
@@ -162,6 +162,8 @@ class Screen:
         return False
 
     """Reset pointer to child to None
+    Return an empty string, as we don't want to activate any particular window, since the call must've come from the only
+    window on the screen (i.e. This screen only had one window in it)
     """
     def kill_window(self, CallerChild):
         if CallerChild != self.Child:
@@ -197,9 +199,14 @@ class Screen:
     def get_screen_borders(self):
         return self.L, self.D, self.U, self.R
 
+    """If call has gotten to this point, all children to this point must have been 'ChildB'
+    So just return true
+    """
     def all_are_bees(self, _CallerChild):
         return True
 
+    """If call has gotton to this point, we could not find a 'ChildA' that was not part of the calling stack
+    """
     def find_earliest_a_but_not_me(self, _CallerChild):
         return None
 
@@ -374,16 +381,24 @@ class Node:
         self.set_size()
         return True
     
+    """If the calling child is 'ChildB', ripple the call up to check if THIS caller is also ChildB'
+    Returns True if the entire call stack up to the screen are all 'ChildB's.
+    Returns False if any along the call stack are 'ChildA'
+    """
     def all_are_bees(self, CallerChild):
         if CallerChild == self.ChildB:
             return self.Parent.all_are_bees(self)
         return False
 
+    """Returns the earliest (deepest in the tree, but above the caller) 'ChildA' that is not part of the call stack
+    """
     def find_earliest_a_but_not_me(self, CallerChild):
         if CallerChild == self.ChildA:
             return self.Parent.find_earliest_a_but_not_me(self)
         return self.ChildA
 
+    """Return 'ChildA'
+    """
     def get_childa(self):
         return self.ChildA
 
@@ -454,9 +469,20 @@ class Node:
     def get_screen_borders(self):
         return self.Parent.get_screen_borders()
 
+    """Return PlaneType
+    """
     def get_planetype(self):
         return self.PlaneType
 
+""" Window Groups allow mutliple windows to take the position where normally a single window would appear.
+It shades inactive windows and creates fake (non-functional) tabs to display which windows are a part of the group.
+
+Note: The active window of a window group is different from the active window of the entire system. A window group's
+active window simply says which window is unshaded, and which window can be focused.
+
+The structure contains a list for all windows in the window group, along with a separate list for the inactive windows
+to build the tabs with.
+"""
 class WindowGroup:
     def __init__(self, Parent, ActiveWindow, InactiveWindows):
         self.AllWindows = [ActiveWindow] + InactiveWindows
@@ -484,6 +510,8 @@ class WindowGroup:
     def gap_correct_right(self, R):
         return self.Parent.gap_correct_right(R)
 
+    """ Calculates the shaded size of the particular index
+    """
     def get_shaded_size(self, Index):
         L, D, U, R = self.Parent.get_borders(self)
         Increment = (R - L) / len(self.InactiveWindows)
@@ -491,6 +519,8 @@ class WindowGroup:
         log_debug(Borders)
         return Borders[Index], D, U, Borders[Index + 1]
     
+    """Adds a new window to the window group and focuses it
+    """
     def add_window(self, NewWindow):
         self.AllWindows.append(NewWindow)
         self.InactiveWindows.append(NewWindow)
@@ -498,6 +528,12 @@ class WindowGroup:
         Offset = NewWindowIndex - self.ActiveWindowIndex
         self.activate_next_window(Offset)
 
+    """Sets the size of the tabs and active window
+    Implemented separately from the normal set_size due to
+    having to calculate shaded sizes.
+
+    # TODO: Decide if you want the gap appearing between tabs or not. Currently gaps appear.
+    """
     def set_size(self, _ResizeDefault = False):
         for I in range(len(self.InactiveWindows)):
             InactiveWindow = self.InactiveWindows[I]
@@ -514,12 +550,17 @@ class WindowGroup:
         SY -= SHADEDSIZE
         ActiveWindow.set_size_override(PX, PY, SX, SY)
         ActiveWindow.unshade()
-
+        
+    """Activates whatever window is currently defined as active
+    """
     def activate_active_window(self):
         log_debug(['Activating active window'])
         self.set_size()
         self.ActiveWindow.activate()
 
+    """Increments the counter by Increment and activates whatever
+    window that is in the list.
+    """
     def activate_next_window(self, Increment):
         self.ActiveWindowIndex += Increment
         self.ActiveWindowIndex %= len(self.AllWindows)
@@ -532,27 +573,44 @@ class WindowGroup:
 
         self.activate_active_window()
 
+    """Resizes window group
+    """
     def resize_vert(self, _CallerChild, Increment):
         return self.Parent.resize_vert(self, Increment)
     def resize_horz(self, _CallerChild, Increment):
         return self.Parent.resize_horz(self, Increment)
 
+    """Returns the earliest 'ChildA' not part of the call stack
+    Rippled up as window groups have no ChildA/ChildB
+    """
     def find_earliest_a_but_not_me(self, CallerChild):
         return self.Parent.find_earliest_a_but_not_me(self)
 
+    """Returns if all objects in call stack are 'ChildB'
+    Rippled up as window groups have no ChildA/ChildB
+    """
     def all_are_bees(self, CallerChild):
         return self.Parent.all_are_bees(self)
     
+    """Returns borders of the current pane
+    """
     def get_borders(self, CallingChild):
         return self.Parent.get_borders(self)
 
+    """Removes the calling window from the windowgroup
+
+    If the size of the window group is two, then removing a window leaves a window group with
+    only one window, which should be converted back into a regular window
+
+    Return the ID of which window to activate to keep the system focus within the window group
+    """
     def kill_window(self, CallerChild):
         if len(self.AllWindows) == 2:
             # The remaining window will be a single, so we
             # turn it into a normal window
             self.AllWindows.remove(CallerChild)
-            log_debug(['Removed calling child: ', CallerChild.WindowIdDec])
-            log_debug(['AllWindows lenth:', len(self.AllWindows)])
+            log_debug(['Removed calling child:', CallerChild.WindowIdDec])
+            log_debug(['AllWindows length:', len(self.AllWindows)])
             SurvivingChild = self.AllWindows[0]
             log_debug(['SurvivingChild:', SurvivingChild.WindowIdDec])
             self.Parent.replace_child(self, SurvivingChild)
@@ -566,10 +624,14 @@ class WindowGroup:
             self.AllWindows.remove(CallerChild)
             self.activate_next_window(0)
             return str(self.ActiveWindow.WindowIdDec)
-        
+
+    """Splits the window to add a new window beside it
+    """    
     def split(self, _CallerChild, NewWindow, PlaneType, Direction):
         self.Parent.split(self, NewWindow, PlaneType, Direction)
 
+    """Returns parent PlaneType
+    """
     def get_planetype(self):
         return self.Parent.PlaneType
 
@@ -786,12 +848,19 @@ class Window:
         WindowName = call(['xdotool getwindowname', self.WindowIdDec]).rstrip()
         return Prepend + str(self.WindowIdDec) + " : " + WindowName
 
+    """Gets the windows state using xprop
+
+    States:
+    <BLANK> : Normal
+    _NET_WM_STATE_SHADED : Shaded
+    _NET_WM_STATE_HIDDEN : Minimized
+
+    """
     def get_state(self):
         return call(['xprop', '-id', self.WindowIdDec, ' | grep "NET_WM_STATE" | sed \'s/_NET_WM_STATE(ATOM) = //\'']).rstrip()
 
     def is_shaded(self):
         return self.get_state() == "_NET_WM_STATE_SHADED"
-
     def shade(self):
         call(['wmctrl', '-ir', self.WindowIdHex, '-b', 'add,shaded'])
     def unshade(self):
@@ -828,6 +897,10 @@ class Windows:
         print "Windows in list: " + str(len(self.Windows))
         print "Windows in tree: " + str(WindowsInTree)
 
+    """Updates timing variable for resizing
+    Returns normal resize increment if last resize was beyond the timing period
+    If within the timing period, returns the rapid resizing increment
+    """
     def update_resize_ts(self):
         Now = time.time() * 1000
         RI = RESIZEINCREMENT
