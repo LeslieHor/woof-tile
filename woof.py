@@ -516,7 +516,6 @@ class WindowGroup:
         L, D, U, R = self.Parent.get_borders(self)
         Increment = (R - L) / len(self.InactiveWindows)
         Borders = range(L, R, Increment) + [R]
-        log_debug(Borders)
         return Borders[Index], D, U, Borders[Index + 1]
     
     """Adds a new window to the window group and focuses it
@@ -537,7 +536,7 @@ class WindowGroup:
     def set_size(self, _ResizeDefault = False):
         for I in range(len(self.InactiveWindows)):
             InactiveWindow = self.InactiveWindows[I]
-            log_debug(['Shading window', InactiveWindow.WindowIdHex])
+            log_debug(['Shading window', InactiveWindow.WindowIdDec])
             L, D, U, R = self.get_shaded_size(I)
             PX, PY, SX, SY = InactiveWindow.border_gap_correct(L, D, U, R)
             InactiveWindow.set_size_override(PX, PY, SX, SY)
