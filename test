@@ -138,7 +138,7 @@ WIN6DEC=$(printf "%d\n" ${WIN6HEX})
 echo "---------- Window Split Tests ----------"
 echo "----- Adding Win 1 to Screen 0 -----"
 xdotool windowactivate ${WIN1HEX}
-woof addrofi h Screen 0
+woof add h Screen 0
 sleep ${DELAY}
 
 echo -n "Window 1 - "
@@ -146,7 +146,7 @@ assert_border ${WIN1HEX} 12 35 1896 1031
 
 echo "----- Adding Win 2 to Win 1 (horz) -----"
 xdotool windowactivate ${WIN2HEX}
-woof addrofi h ${WIN1DEC}
+woof add h ${WIN1DEC}
 sleep ${DELAY}
 
 echo -n "Window 1 - "
@@ -156,7 +156,7 @@ assert_border ${WIN2HEX} 967 35 941 1031
 
 echo "----- Adding Win 3 to Win 1 (vert) -----"
 xdotool windowactivate ${WIN3HEX}
-woof addrofi v ${WIN1DEC}
+woof add v ${WIN1DEC}
 sleep ${DELAY}
 
 echo -n "Window 1 - "
@@ -180,7 +180,7 @@ assert_border ${WIN3HEX} 12 35 941 496
 
 echo "----- Adding Win 4 to Win 3 (horz) -----"
 xdotool windowactivate ${WIN4HEX}
-woof addrofi h ${WIN3DEC}
+woof add h ${WIN3DEC}
 sleep ${DELAY}
 
 echo -n "Window 1 - "
@@ -194,7 +194,7 @@ assert_border ${WIN4HEX} 487 35 466 496
 
 echo "----- Adding Win 5 to Win 2 (vert) -----"
 xdotool windowactivate ${WIN5HEX}
-woof addrofi v ${WIN2DEC}
+woof add v ${WIN2DEC}
 sleep ${DELAY}
 
 echo -n "Window 1 - "
@@ -210,7 +210,7 @@ assert_border ${WIN5HEX} 967 570 941 496
 
 echo "----- Adding Win 6 to Win 5 (horz) -----"
 xdotool windowactivate ${WIN6HEX}
-woof addrofi h ${WIN5DEC}
+woof add h ${WIN5DEC}
 sleep ${DELAY}
 
 echo -n "Window 1 - "
@@ -231,7 +231,7 @@ function horz_test {
     wait_for_user
 
     xdotool windowactivate ${2}
-    woof expand-horz 50
+    woof eh 50
     sleep ${DELAY}
 }
 
@@ -240,7 +240,7 @@ function horz_test_2 {
     wait_for_user
     
     xdotool windowactivate ${2}
-    woof reduce-horz 50
+    woof rh 50
     sleep ${DELAY}
 
     echo -n "Window 1 - "
@@ -358,7 +358,7 @@ function vert_test {
     wait_for_user
 
     xdotool windowactivate ${2}
-    woof expand-vert 50
+    woof ev 50
     sleep ${DELAY}
 }
 
@@ -367,7 +367,7 @@ function vert_test_2 {
     wait_for_user
     
     xdotool windowactivate ${2}
-    woof reduce-vert 50
+    woof rv 50
     sleep ${DELAY}
 
     echo -n "Window 1 - "
@@ -492,7 +492,7 @@ function swap_test {
     XSIZEB=$(get_x_size ${4})
     YSIZEB=$(get_y_size ${4})
 
-    woof "swap ${6}"
+    woof swap ${6}
     sleep ${DELAY}
 
     echo -n "Win ${1} in correct position - "
@@ -501,7 +501,7 @@ function swap_test {
     echo -n "Win ${2} in correct position - "
     assert_border ${4} ${XPOSA} ${YPOSA} ${XSIZEA} ${YSIZEA}
 
-    [ -z ${7} ] || swap_test ${2} ${1} ${4} ${3} ${6} ${5}
+    [ -z ${7} ] || swap_test ${2} ${1} ${4} ${3} ${6} ${5} # Run the test again in the opposite direction
 }
 
 echo "---------- Swap tests ----------"
@@ -783,7 +783,7 @@ echo "---------- Moving tests ----------"
 
 echo "----- Moving win 6 to win 1 -----"
 xdotool windowactivate ${WIN6HEX}
-woof "move-to ${WIN1DEC}"
+woof move-to ${WIN1DEC}
 sleep ${DELAY}
 
 echo -n "Win 1 in correct pos - "
@@ -795,7 +795,7 @@ assert_border ${WIN5HEX} 967 570 941 496
 echo -n "Win 6 in correct pos - "
 assert_border ${WIN6HEX} 487 570 466 496
 
-woof "move-to ${WIN5DEC}"
+woof move-to ${WIN5DEC}
 
 echo "---------- Navigation tests ----------"
 
@@ -856,7 +856,7 @@ WIN9DEC=$(printf "%d\n" ${WIN9HEX})
 
 echo "----- Adding win 7 to 2 as window group -----"
 xdotool windowactivate ${WIN7HEX}
-woof "add-to-group ${WIN2DEC}"
+woof add-to-group ${WIN2DEC}
 is_shaded 2 ${WIN2HEX}
 XPOS=$(get_x_pos ${WIN2DEC})
 YPOS=$(get_y_pos ${WIN2DEC})
@@ -873,7 +873,7 @@ assert_border ${WIN7HEX} 967 60 941 471
 
 echo "----- Adding win 8 to 1 as window group -----"
 xdotool windowactivate ${WIN8HEX}
-woof "add-to-group ${WIN1DEC}"
+woof add-to-group ${WIN1DEC}
 is_shaded 1 ${WIN1HEX}
 XPOS=$(get_x_pos ${WIN1DEC})
 YPOS=$(get_y_pos ${WIN1DEC})
@@ -890,7 +890,7 @@ assert_border ${WIN8HEX} 12 595 941 471
 
 echo "----- Adding win 9 to 8 as window group -----"
 xdotool windowactivate ${WIN9HEX}
-woof "add-to-group ${WIN8DEC}"
+woof add-to-group ${WIN8DEC}
 is_shaded 8 ${WIN8HEX}
 XPOS=$(get_x_pos ${WIN1DEC})
 YPOS=$(get_y_pos ${WIN1DEC})

@@ -1001,10 +1001,14 @@ class Windows:
     Generates a list of all windows in the tree, with a prepended string.
     Empty screens are also returned in the list.
     """
-    def list_add_windows(self, Prepend):
+    def list_add_windows(self, Prepend, ExcludeActive = False):
         List = []
+        ActiveWindow = None
+        if ExcludeActive:
+            ActiveWindow = self.Windows[self.get_active_window()]
+
         for _WinId, Win in self.Windows.iteritems():
-            if not Win.is_shaded():
+            if (not Win.is_shaded()) and (not Win == ActiveWindow):
                 List.append(Win.list_add_window(Prepend))
 
         List.sort()
@@ -1101,7 +1105,7 @@ class Windows:
 
     """Get ID of current active window
     """
-    def get_active_window(self):
+    def get_active_window(self): # Really should be called get_active_window_id
         return int(call('xdotool getactivewindow').rstrip())
 
     def add_to_window(self, PlaneType, Direction, TargetId):
@@ -1146,6 +1150,8 @@ class Windows:
 
     def nav_left(self):
         WinID = self.get_active_window()
+        if not self.exists():
+            return False
         L, _, T, _ = self.Windows[WinID].get_size()
         ClosestRightBorder = 0
         LowestTopDiff = sys.maxint
@@ -1179,6 +1185,8 @@ class Windows:
     
     def nav_right(self):
         WinID = self.get_active_window()
+        if not self.exists():
+            return False
         _, _, T, R = self.Windows[WinID].get_size()
         ClosestLeftBorder = sys.maxint
         LowestTopDiff = sys.maxint
@@ -1212,6 +1220,8 @@ class Windows:
 
     def nav_up(self):
         WinID = self.get_active_window()
+        if not self.exists():
+            return False
         L, _, T, _ = self.Windows[WinID].get_size()
         ClosestBottomBorder = 0
         LowestLeftDiff = sys.maxint
@@ -1245,6 +1255,8 @@ class Windows:
 
     def nav_down(self):
         WinID = self.get_active_window()
+        if not self.exists():
+            return False
         L, B, _, _ = self.Windows[WinID].get_size()
         ClosestTopBorder = sys.maxint
         LowestLeftDiff = sys.maxint
@@ -1398,30 +1410,27 @@ def main(ARGS):
         WindowsObj.restore_all()
     elif Cmd == 'list':
         print(WindowsObj.list_add_windows(ARGS[2]))
-    elif Cmd == 'addrofi':
+    elif Cmd == 'add':
+        # Adding to a window : "add h 32478239 : window title"
+        # Adding to a screen : "add h Screen 1"
+
+        if len(ARGS) < 4: # We have no target id
+            log_debug(['No target id. Listing windows.'])
+            print(WindowsObj.list_add_windows("add " + ARGS[2] + " ")) 
+            return
+
+        Plane = ARGS[2]
         TargetId = ARGS[3]
-        log_debug(['TargetId:', TargetId])
-        if len(ARGS) > 4:
+        log_debug(['Target ID found. TargetId:', TargetId])
+
+        if TargetId == 'Screen':
             ScreenIndex = ARGS[4]
             log_debug(['Detected screen add. Screen Index:', ScreenIndex])
         else:
             log_debug(['Not a screen add'])
             ScreenIndex = None
 
-        PlaneType, Direction = dir_str_to_plane_dir(ARGS[2])
-
-        WindowsObj.add(PlaneType, Direction, TargetId, ScreenIndex)
-    elif Cmd == 'add':
-        TargetId = mouse_select_window()
-        ScreenIndex = None
-
-        # If the selected window doesn't exist, assume it's a screen
-        if not WindowsObj.exists(TargetId):
-            XCoord = int(call(['xdotool getwindowgeometry', TargetId, '| grep Position | sed \'s/.*Position: //\' | sed \'s/,.*//\'']).rstrip())
-            ScreenIndex = WindowsObj.WorkSpace.Desktops[0].which_screen(XCoord)
-            TargetId = 'Screen'
-
-        PlaneType, Direction = dir_str_to_plane_dir(ARGS[2])
+        PlaneType, Direction = dir_str_to_plane_dir(Plane)
 
         WindowsObj.add(PlaneType, Direction, TargetId, ScreenIndex)
     elif Cmd == 'ev':
@@ -1452,11 +1461,13 @@ def main(ARGS):
         WindowsObj.change_plane()
     elif Cmd == 'swap-pane':
         WindowsObj.swap_pane_position()
-    elif Cmd == 'swaprofi':
-        TargetId = int(ARGS[2])
-        WindowsObj.swap_windows(TargetId)
     elif Cmd == 'swap':
-        TargetId = mouse_select_window()
+        if len(ARGS) < 3:
+            log_debug(['No target found. Listing windows'])
+            print(WindowsObj.list_add_windows("swap ", True))
+            return
+
+        TargetId = int(ARGS[2])
         WindowsObj.swap_windows(TargetId)
     elif Cmd == 'min':
         WindowsObj.minimize_all()
@@ -1495,8 +1506,13 @@ def main(ARGS):
             exit(1)
         WindowsObj.kill_window(WinId)
     elif Cmd == 'move-to':
+        if len(ARGS) < 3:
+            log_debug(['No target id. Listing windows.'])
+            print(WindowsObj.list_add_windows("move-to ", True))
+            return
+
         main(['', 'remove'])
-        main(['', 'addrofi', 'h', ARGS[2]])
+        main(['', 'add', 'h', ARGS[2]])
     elif Cmd == 'nav-right':
         WindowsObj.nav_right()
     elif Cmd == 'nav-left':
@@ -1506,6 +1522,11 @@ def main(ARGS):
     elif Cmd == 'nav-down':
         WindowsObj.nav_down()
     elif Cmd == 'add-to-group':
+        if len(ARGS) < 3:
+            log_debug(['No target id. Listing windows.'])
+            print(WindowsObj.list_add_windows("move-to ", True))
+            return
+
         TargetId = ARGS[2]
         WindowsObj.add_to_window_group(TargetId)
     elif Cmd == 'activate-next-window':
