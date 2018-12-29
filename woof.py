@@ -634,6 +634,18 @@ class WindowGroup:
     def get_planetype(self):
         return self.Parent.PlaneType
 
+    def list_screen_windows(self):
+        return self.Parent.list_screen_windows()
+
+    def window_ids(self):
+        WindowIds = []
+        for Win in self.AllWindows:
+            WindowIds.append(Win.WindowIdDec)
+        return WindowIds
+    
+    def get_screen_borders(self):
+        return self.Parent.get_screen_borders()
+
 """Leaf node, representing a viewable window
 """
 class Window:
@@ -746,9 +758,12 @@ class Window:
     """Set the window location / size
     """
     def set_size(self, _ResetDefault = False):
-        L, D, U, R = self.get_size()
-        PX, PY, SX, SY = self.border_gap_correct(L, D, U, R)
-        self.set_size_override(PX, PY, SX, SY)
+        if isinstance(self.Parent, WindowGroup):
+            self.Parent.set_size()
+        else:
+            L, D, U, R = self.get_size()
+            PX, PY, SX, SY = self.border_gap_correct(L, D, U, R)
+            self.set_size_override(PX, PY, SX, SY)
 
     """Request the parent to split to add a new window
     """
