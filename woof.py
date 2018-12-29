@@ -1413,22 +1413,20 @@ def main(ARGS):
     elif Cmd == 'add':
         # Adding to a window : "add h 32478239 : window title"
         # Adding to a screen : "add h Screen 1"
+        Plane = element(ARGS, 2, None)
+        TargetId = element(ARGS, 3, None)
+        ScreenIndex = element(ARGS, 4, None)
 
-        if len(ARGS) < 4: # We have no target id
+        if TargetId == None:
             log_debug(['No target id. Listing windows.'])
-            print(WindowsObj.list_add_windows("add " + ARGS[2] + " ")) 
+            print(WindowsObj.list_add_windows("add " + Plane + " ")) 
             return
 
-        Plane = ARGS[2]
-        TargetId = ARGS[3]
         log_debug(['Target ID found. TargetId:', TargetId])
-
         if TargetId == 'Screen':
-            ScreenIndex = ARGS[4]
             log_debug(['Detected screen add. Screen Index:', ScreenIndex])
         else:
             log_debug(['Not a screen add'])
-            ScreenIndex = None
 
         PlaneType, Direction = dir_str_to_plane_dir(Plane)
 
