@@ -1535,9 +1535,11 @@ def main(ARGS):
     elif Cmd == 'nav-down':
         WindowsObj.nav_down()
     elif Cmd == 'add-to-group':
+        if WindowsObj.exists(WindowsObj.get_active_window()):
+            exit(1)
         if len(ARGS) < 3:
             log_debug(['No target id. Listing windows.'])
-            print(WindowsObj.list_add_windows("move-to ", True))
+            print(WindowsObj.list_add_windows("add-to-group "))
             return
 
         TargetId = ARGS[2]
