@@ -26,11 +26,16 @@ activate-prev-window
 else
     echo $@ >> ~/log
     if [[ ${1} == "kill" ]]; then
-        NextActiveWindow=$(${WOOF} $@)
+        CurrNextActiveWindow=$(${WOOF} $@)
+        ActiveWindow=$(echo ${CurrNextActiveWindow} | sed 's/,.*//')
+        NextWindow=$(echo ${CurrNextActiveWindow} | sed 's/.*,//')
         if [ $? == 0 ]; then
-            wmctrl -c :ACTIVE:
-            if [ -z NextActiveWindow ]; then
-                xdotool windowactivate ${NextActiveWindow}
+            if [ ! -z ${ActiveWindow} ]; then
+                wmctrl -ic ${ActiveWindow}
+            fi
+
+            if [ ! -z ${NextWindow} ]; then
+                xdotool windowactivate ${NextWindow}
             fi
         fi
     else

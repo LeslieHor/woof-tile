@@ -1511,8 +1511,11 @@ def main(ARGS):
         WinId = WindowsObj.get_active_window()
         if not WindowsObj.exists(WinId):
             exit(1)
+        WinIdHex = WindowsObj.Windows[WinId].WindowIdHex
         NextActiveWindow = WindowsObj.kill_window(WinId)
-        print str(NextActiveWindow)
+        ReturnString = WinIdHex + "," + str(NextActiveWindow)
+        log_debug(['ReturnString:', ReturnString])
+        print ReturnString
     elif Cmd == 'remove':
         WinId = WindowsObj.get_active_window()
         if not WindowsObj.exists(WinId):
@@ -1564,7 +1567,8 @@ SHADEDSIZE = 25
 # Include border calculations for the following programs
 BORDER_WHITELIST = [
     'konsole',
-    'spotify'
+    'spotify',
+    'libreoffice'
 ]
 
 RESIZEINCREMENT = 10
