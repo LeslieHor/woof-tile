@@ -1,41 +1,44 @@
 #!/bin/bash
 
-WOOF=~/Git/woof-tile/woof.py
+WOOF=~/.woof/woof.py
 
 if [[ -z "$@" ]]; then
     echo "add h
 add v
+add-to-group
 maximize
 min
 unmin
 swap
-swap_pane
-change_plane
+swap-pane
+change-plane
 kill
 remove
 restore
+move-to
+eh
+ev
+rh
+rv
+activate-next-window
+activate-prev-window
 "
 else
     echo $@ >> ~/log
-    if [[ ${1} == "add h" ]]; then
-        ${WOOF} list "add h "
-    elif [[ ${1} == "add h"* ]]; then
-        ARGS=$(echo ${1} | sed 's/add h //')
-        ${WOOF} addrofi h $ARGS
-    elif [[ ${1} == "add v" ]]; then
-        ${WOOF} list "add v "
-    elif [[ ${1} == "add v"* ]]; then
-        ARGS=$(echo ${1} | sed 's/add v //')
-        ${WOOF} addrofi v $ARGS
-    elif [[ ${1} == "swap_pane" ]]; then
-        ${WOOF} $@
-    elif [[ ${1} == "swap" ]]; then
-        WINID=$(xdotool getactivewindow)
-        ${WOOF} list "swap " | grep -v ${WINID}
-    elif [[ ${1} == "swap"* ]]; then
-        ARGS=$(echo ${1} | sed 's/swap //')
-        ${WOOF} swaprofi $ARGS
+    if [[ ${1} == "kill" ]]; then
+        CurrNextActiveWindow=$(${WOOF} $@)
+        ActiveWindow=$(echo ${CurrNextActiveWindow} | sed 's/,.*//')
+        NextWindow=$(echo ${CurrNextActiveWindow} | sed 's/.*,//')
+        if [ $? == 0 ]; then
+            if [ ! -z ${ActiveWindow} ]; then
+                wmctrl -ic ${ActiveWindow}
+            fi
+
+            if [ ! -z ${NextWindow} ]; then
+                xdotool windowactivate ${NextWindow}
+            fi
+        fi
     else
-        ${WOOF} $@ >> ~/log
+        ${WOOF} $@
     fi
 fi
