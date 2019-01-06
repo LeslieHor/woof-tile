@@ -873,8 +873,11 @@ class Window:
     def get_state(self):
         return call(['xprop', '-id', self.WindowIdDec, ' | grep "NET_WM_STATE" | sed \'s/_NET_WM_STATE(ATOM) = //\'']).rstrip()
 
+    def is_minimized(self):
+        return self.get_state() == "_NET_WM_STATE_HIDDEN"
     def is_shaded(self):
         return self.get_state() == "_NET_WM_STATE_SHADED"
+
     def shade(self):
         call(['wmctrl', '-ir', self.WindowIdHex, '-b', 'add,shaded'])
     def unshade(self):
@@ -1173,7 +1176,7 @@ class Windows:
         ClosestWindow = None
 
         for _WinId, Win in self.Windows.iteritems():
-            if Win.is_shaded():
+            if Win.is_shaded() or Win.is_minimized():
                 continue
 
             _, _, WT, WR = Win.get_size()
@@ -1208,7 +1211,7 @@ class Windows:
         ClosestWindow = None
 
         for _WinId, Win in self.Windows.iteritems():
-            if Win.is_shaded():
+            if Win.is_shaded() or Win.is_minimized():
                 continue
 
             WL, _, WT, _ = Win.get_size()
@@ -1243,7 +1246,7 @@ class Windows:
         ClosestWindow = None
 
         for _WinId, Win in self.Windows.iteritems():
-            if Win.is_shaded():
+            if Win.is_shaded() or Win.is_minimized():
                 continue
 
             WL, WB, _, _ = Win.get_size()
@@ -1278,7 +1281,7 @@ class Windows:
         ClosestWindow = None
 
         for _WinId, Win in self.Windows.iteritems():
-            if Win.is_shaded():
+            if Win.is_shaded() or Win.is_minimized():
                 continue
 
             WL, _, WT, _ = Win.get_size()
