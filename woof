@@ -24,7 +24,6 @@ activate-next-window
 activate-prev-window
 "
 else
-    echo $@ >> ~/log
     if [[ ${1} == "kill" ]]; then
         CurrNextActiveWindow=$(${WOOF} $@)
         ActiveWindow=$(echo ${CurrNextActiveWindow} | sed 's/,.*//')

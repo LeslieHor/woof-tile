@@ -718,7 +718,7 @@ class Window:
         return 0
     
     def get_window_class(self):
-        return call(['xprop -id', self.WindowIdDec, '| grep WM_CLASS | sed \'s/.* = "//\' | sed \'s/".*//\'']).rstrip()
+        return call(['xprop -id', self.WindowIdDec, '| grep WM_CLASS |  sed \'s/^.*, "//\' | sed \'s/"//\'']).rstrip()
 
     """Calculate window size parameters taking gap and borders into account
     
@@ -741,10 +741,15 @@ class Window:
             RB = LEFTBORDER + RIGHTBORDER
             BB = TOPBORDER + BOTTOMBORDER
 
-        PX = L + LB + self.Parent.gap_correct_left(L)
-        PY = U + TB + self.Parent.gap_correct_up(U)
-        SX = R - PX - RB - self.Parent.gap_correct_right(R)
-        SY = D - PY - BB - self.Parent.gap_correct_down(D)
+        SCX, SCY = 0, 0
+        Class = self.get_window_class()
+        if Class in SPECIAL_SHITS:
+            SCX, SCY = SPECIAL_SHITS[Class][0], SPECIAL_SHITS[Class][1]
+
+        PX = L + LB + SCX + self.Parent.gap_correct_left(L)
+        PY = U + TB + SCY + self.Parent.gap_correct_up(U)
+        SX = R - PX + SCX - RB - self.Parent.gap_correct_right(R)
+        SY = D - PY + SCY - BB - self.Parent.gap_correct_down(D)
         return PX, PY, SX, SY
 
     """Call into the WM to resize the window
@@ -1570,9 +1575,13 @@ SHADEDSIZE = 25
 # Include border calculations for the following programs
 BORDER_WHITELIST = [
     'konsole',
-    'spotify',
+    'Spotify',
     'libreoffice'
 ]
+
+SPECIAL_SHITS = {
+    'mpv': [2, 12]
+}
 
 RESIZEINCREMENT = 10
 RAPIDINCREMENT = 80
