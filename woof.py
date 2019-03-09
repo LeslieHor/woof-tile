@@ -1576,7 +1576,8 @@ SHADEDSIZE = 25
 BORDER_WHITELIST = [
     'konsole',
     'Spotify',
-    'libreoffice'
+    'libreoffice',
+    'dolphin'
 ]
 
 SPECIAL_SHITS = {
