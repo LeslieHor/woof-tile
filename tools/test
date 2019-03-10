@@ -93,8 +93,8 @@ woof min
 mv ~/.woof/windows.dat ~/.woof/windows.dat.backup
 mv ~/.woof/woof.py ~/.woof/woof.py.backup
 mv ~/bin/woof ~/bin/woof.backup
-cp ../lib/src/woof.py ~/.woof/woof.py
-cp ../lib/src/woof ~/bin/woof
+cp ./lib/src/woof.py ~/.woof/woof.py
+cp ./lib/src/woof ~/bin/woof
 woof reload
 
 echo "Creating 6 test windows"
