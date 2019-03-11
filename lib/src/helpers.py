@@ -1,0 +1,17 @@
+def join_and_sanitize(list_):
+    """Join a list of items into a single string"""
+    if isinstance(list_, str):
+        return list_
+
+    new_list = []
+    for item in list_:
+        if isinstance(item, str):
+            new_list.append(item)
+            continue
+        elif isinstance(item, int):
+            new_list.append(str(item))
+            continue
+        else:
+            raise Exception('Invalid type when attempting to join and sanitize')
+
+    return ' '.join(new_list)

@@ -1,0 +1,18 @@
+#!/bin/bash
+
+ROOT_DIR=$(pwd)
+BIN_DIR=~/bin/
+WOOF_DIR=~/.woof/
+BUILD_DIR=${ROOT_DIR}/_build/
+
+mkdir -p ${BUILD_DIR}
+rm ${BUILD_DIR}/*
+
+cd ${ROOT_DIR}/lib/src/
+zip -r ${BUILD_DIR}/woof.zip *
+cd ${ROOT_DIR}
+echo '#!/usr/bin/env python' | cat - ${BUILD_DIR}/woof.zip > ${BUILD_DIR}/woof
+chmod +x ${BUILD_DIR}/woof
+rm ${BUILD_DIR}/woof.zip
+
+echo "woof built"

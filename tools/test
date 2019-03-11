@@ -90,11 +90,8 @@ function get_y_pos {
 }
 
 woof min
-mv ~/.woof/windows.dat ~/.woof/windows.dat.backup
-mv ~/.woof/woof.py ~/.woof/woof.py.backup
-mv ~/bin/woof ~/bin/woof.backup
-cp ./lib/src/woof.py ~/.woof/woof.py
-cp ./lib/src/woof ~/bin/woof
+./tools/backup
+./tools/install
 woof reload
 
 echo "Creating 6 test windows"
@@ -896,7 +893,7 @@ XPOS=$(get_x_pos ${WIN1DEC})
 YPOS=$(get_y_pos ${WIN1DEC})
 XSIZE=$(get_x_size ${WIN1DEC})
 echo -n "Win 1 X pos correct - "
-assert_equal ${XPOS} 12
+assert_equal ${XPOS} 487
 echo -n "Win 1 Y pos correct - "
 assert_equal ${YPOS} 570
 echo -n "Win 1 X size correct - "
@@ -910,10 +907,12 @@ assert_border ${WIN9HEX} 12 595 941 471
 if [ "hackyfix"${CLEANUP} == "hackyfixclean" ]; then
     echo
     echo "---------- Cleaning up ----------"
-    ./clean_up
+    ./tools/cleanup
 fi
 
 echo
 echo "---------- RESULTS ----------"
 echo "Passed: ${PASS_COUNTER}"
 echo "Failed: ${FAIL_COUNTER}"
+
+xdotool windowactivate ${MAINWIN}

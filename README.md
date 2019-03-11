@@ -10,16 +10,15 @@ Dependencies:
 * xdotool
 * xprop
 
+## Warning
+This only works for a triple monitor set up with three 1920x1080 monitors arranged landscape in a single row. I hardcoded some stuff for my own set up. Don't worry. Eventually I will make it generalised for other configurations.
+
 ## Installation
 
-Clone the repo, and run `./install`.
+Clone the repo, and run `./tools/install`.
 
-It will copy the `woof` bash script into `~/bin/` and copy `woof.py` into `~/.woof/`.
+It will copy the `woof` bash script into `~/bin/` and copy the `woof` python package into `~/.woof/`.
 
-It might error out if the following directories don't exist (haven't bothered to fix this):
-* ~/bin/
-* ~/.woof/
-* ~/.woof/log/
 
 ## Usage
 

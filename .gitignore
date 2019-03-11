@@ -1,3 +1,6 @@
 # IDEA
 .idea/
 *.iml
+
+# Project
+_build/
