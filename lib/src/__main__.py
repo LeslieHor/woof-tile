@@ -4,6 +4,7 @@ from windows import Windows
 from log import log_info, log_debug
 from config import *
 from enums import PLANE, DIR
+from helpers import element
 
 
 def debug_print():
@@ -28,16 +29,10 @@ def dir_str_to_plane_dir(direction):
         return False
 
 
-def element(list_, index, default):
-    try:
-        return list_[index]
-    except:
-        return default
-
-
 def main(args):
     cmd = args[1]
     log_info(['------- Start --------', 'Args:'] + args[1:])
+
     if cmd == 'debug':
         debug_print()
     elif cmd == 'restore':
@@ -177,7 +172,7 @@ def main(args):
 # TODO: Seriously, clean up this code
 # Initialise a tree
 if sys.argv[1] == 'reload':
-    WINDOWS_OBJ = Windows(4, 3, 5760, 1080)
+    WINDOWS_OBJ = Windows(WORKSPACES, SCREENS, HORIZONTAL_DIMENSION, VERTICAL_DIMENSION)
 else:
     WINDOWS_OBJ = pickle.load(open(DATA_PATH, "rb"))
     if WINDOWS_OBJ.check_windows():

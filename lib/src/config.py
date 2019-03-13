@@ -29,6 +29,11 @@ RESIZE_RAPID_TIME = 200  # milliseconds
 
 DEBUG = False
 
+WORKSPACES = 4
+SCREENS = 3
+HORIZONTAL_DIMENSION = 5760
+VERTICAL_DIMENSION = 1080
+
 # Initialising Config
 DATA_PATH = os.path.expanduser(DATA_PATH)  # Convert relative path to global path
 LOG_PATH = os.path.expanduser(LOG_PATH)  # Convert relative path to global path

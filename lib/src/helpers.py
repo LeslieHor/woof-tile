@@ -15,3 +15,10 @@ def join_and_sanitize(list_):
             raise Exception('Invalid type when attempting to join and sanitize')
 
     return ' '.join(new_list)
+
+
+def element(list_, index, default):
+    try:
+        return list_[index]
+    except:
+        return default
