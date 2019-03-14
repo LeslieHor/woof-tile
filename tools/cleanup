@@ -20,8 +20,3 @@ wmctrl -ic ${WIN6HEX}
 wmctrl -ic ${WIN7HEX}
 wmctrl -ic ${WIN8HEX}
 wmctrl -ic ${WIN9HEX}
-
-echo "Restoring window data"
-./tools/restore
-woof unmin
-woof restore
