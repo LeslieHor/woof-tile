@@ -16,8 +16,8 @@ build: clean
 
 install: build
 	mkdir -p ${BIN_DIR}
-	mkdir -p ${WOOF_DIR}
-	mkdir -p ${WOOF_DIR}/log
+	mkdir -p ${INSTALL_DIR}${WOOF_DIR}
+	mkdir -p ${INSTALL_DIR}${WOOF_DIR}/log
 
 	cp -v ${ROOT_DIR}/lib/helpers/woof ${BIN_DIR}
 	cp -v ${BUILD_DIR}/woof ${INSTALL_DIR}${WOOF_DIR}
@@ -32,15 +32,15 @@ backup:
 	mkdir ~/woof_backup/.woof/
 	cp ~/bin/woof ~/woof_backup/bin/
 	cp -r ~/.woof/* ~/woof_backup/.woof/
-	cd ~ ; zip -r woof_backup.zip woof_backup/
+	cd ~ ; tar -cvf woof_backup.tar woof_backup/
 	rm -r ~/woof_backup/
 
 restore:
-	cd ~ ; unzip woof_backup.zip
+	cd ~ ; tar -xvf woof_backup.tar
 	cp -f ~/woof_backup/bin/woof ~/bin/
-	cp -fr ~/woof_backup/.woof ~/.woof
+	cp -fr ~/woof_backup/.woof/* ~/.woof/
 	rm -r ~/woof_backup/
-	rm -r ~/woof_backup.zip
+	rm ~/woof_backup.tar
 
 clean:
 	rm ${BUILD_DIR} -rf
@@ -48,9 +48,15 @@ clean:
 clean-tests:
 	./tools/cleanup
 
-test: backup install run-tests clean-tests restore
-	woof unmin
-	woof restore
+pre-test: backup uninstall install
 
 run-tests:
 	./tools/test
+
+post-test: clean-tests uninstall restore
+	woof unmin
+	woof restore
+
+test-no-clean: pre-test run-tests
+
+test: pre-test run-tests post-test
