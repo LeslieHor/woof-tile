@@ -46,12 +46,12 @@ clean:
 	rm ${BUILD_DIR} -rf
 
 clean-tests:
-	./tools/cleanup
+	./tests/cleanup
 
 pre-test: backup uninstall install
 
 run-tests:
-	./tools/test
+	./tests/test
 
 post-test: clean-tests uninstall restore
 	woof unmin

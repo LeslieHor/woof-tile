@@ -1,5 +1,0 @@
-#!/bin/bash
-
-mv ~/.woof/windows.dat.backup ~/.woof/windows.dat
-mv ~/.woof/woof.py.backup ~/.woof/woof.py
-mv ~/bin/woof.backup ~/bin/woof
