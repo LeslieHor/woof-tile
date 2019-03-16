@@ -3,26 +3,7 @@
 WOOF=~/.woof/woof
 
 if [[ -z "$@" ]]; then
-    echo "add h
-add v
-add-to-group
-maximize
-min
-unmin
-swap
-swap-pane
-change-plane
-kill
-remove
-restore
-move-to
-eh
-ev
-rh
-rv
-activate-next-window
-activate-prev-window
-"
+    ${WOOF}
 else
     if [[ ${1} == "kill" ]]; then
         CurrNextActiveWindow=$(${WOOF} $@)
