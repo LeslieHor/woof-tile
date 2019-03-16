@@ -20,10 +20,3 @@ wmctrl -ic ${WIN6HEX}
 wmctrl -ic ${WIN7HEX}
 wmctrl -ic ${WIN8HEX}
 wmctrl -ic ${WIN9HEX}
-
-echo "Restoring window data"
-mv ~/.woof/windows.dat.backup ~/.woof/windows.dat
-mv ~/.woof/woof.py.backup ~/.woof/woof.py
-mv ~/bin/woof.backup ~/bin/woof
-woof unmin
-woof restore
