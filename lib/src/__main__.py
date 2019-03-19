@@ -176,12 +176,12 @@ def main(args):
                 return
         else:
             screen_index_b = parse_screen_index(args[2])
-            if len(args) >= 4:
+            try:
                 screen_index_a = parse_screen_index(args[3])
                 if screen_index_a is None:
                     print("Invalid window 1")
                     return
-            else:
+            except:
                 screen_index_a = WINDOWS_OBJ.get_active_screen()
                 if screen_index_a is None:
                     print("Invalid window 2")
