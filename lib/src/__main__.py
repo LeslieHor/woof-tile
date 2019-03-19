@@ -166,8 +166,47 @@ def main(args):
         WINDOWS_OBJ.activate_next_window(1)
     elif cmd == OPTIONS.ACTIVATE_PREV_WINDOW_IN_GROUP:
         WINDOWS_OBJ.activate_next_window(-1)
+    elif cmd == OPTIONS.SWAP_SCREENS:
+        if len(args) < 3:
+            if WINDOWS_OBJ.exists(WINDOWS_OBJ.get_active_window()):
+                active_screen_index = WINDOWS_OBJ.get_active_screen()
+                WINDOWS_OBJ.list_screens('swap-screen', [active_screen_index])
+            else:
+                print("Invalid window")
+                return
+        else:
+            print(args[2])
+            screen_index_b = parse_screen_index(args[2])
+            print(screen_index_b)
+            if len(args) >= 4:
+                screen_index_a = parse_screen_index(args[3])
+                if screen_index_a is None:
+                    print("Invalid window 1")
+                    return
+            else:
+                screen_index_a = WINDOWS_OBJ.get_active_screen()
+                if screen_index_a is None:
+                    print("Invalid window 2")
+                    return
+
+            WINDOWS_OBJ.work_space.swap_screens(screen_index_a, screen_index_b)
+    elif cmd == OPTIONS.NEW_SCREEN:
+        WINDOWS_OBJ.work_space.new_screen()
+    elif cmd == OPTIONS.LIST_SCREENS:
+        WINDOWS_OBJ.list_screens()
+    elif cmd == OPTIONS.RENAME_SCREEN:
+        name = ' '.join(args[2:])
+        active_screen_index = WINDOWS_OBJ.get_active_screen()
+        WINDOWS_OBJ.work_space.screens[active_screen_index].set_name(name)
 
     pickle.dump(WINDOWS_OBJ, open(DATA_PATH, "wb"))
+
+
+def parse_screen_index(index):
+    if index[0] == 'v':
+        return WINDOWS_OBJ.work_space.viewable_screen_index_to_index(int(index[1:]))
+    else:
+        return int(index)
 
 
 ARGS = sys.argv
@@ -179,11 +218,14 @@ if len(ARGS) == 1:
 # TODO: Seriously, clean up this code
 # Initialise a tree
 if ARGS[1] == 'reload':
-    WINDOWS_OBJ = Windows(WORKSPACES, SCREENS, HORIZONTAL_DIMENSION, VERTICAL_DIMENSION)
+    WINDOWS_OBJ = Windows(SCREEN_CONFIG)
 else:
-    WINDOWS_OBJ = pickle.load(open(DATA_PATH, "rb"))
-    if WINDOWS_OBJ.check_windows():
-        WINDOWS_OBJ.restore_all()
+    try:
+        WINDOWS_OBJ = pickle.load(open(DATA_PATH, "rb"))
+        if WINDOWS_OBJ.check_windows():
+            WINDOWS_OBJ.restore_all()
+    except:
+        WINDOWS_OBJ = Windows(SCREEN_CONFIG)
 
 if __name__ == '__main__':
     main(ARGS)

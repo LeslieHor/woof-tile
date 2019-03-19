@@ -12,6 +12,11 @@ class PLANE:
     VERTICAL = 1
 
 
+class SCREEN_STATE:
+    ACTIVE = 0
+    INACTIVE = 1
+
+
 class OPTIONS:
     NONE = ''
     DEBUG = 'debug'
@@ -38,6 +43,10 @@ class OPTIONS:
     ADD_TO_GROUP = 'add-to-group'
     ACTIVATE_NEXT_WINDOW_IN_GROUP = 'activate-next-window'
     ACTIVATE_PREV_WINDOW_IN_GROUP = 'activate-prev-window'
+    SWAP_SCREENS = 'swap-screen'
+    NEW_SCREEN = 'new-screen'
+    LIST_SCREENS = 'list-screens'
+    RENAME_SCREEN = 'rename-screen'
 
 
 def print_options():
