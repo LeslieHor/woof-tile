@@ -34,6 +34,12 @@ SCREENS = 3
 HORIZONTAL_DIMENSION = 5760
 VERTICAL_DIMENSION = 1080
 
+SCREEN_CONFIG = [
+    ((0, 0), (1920, 1080)),
+    ((1920, 0), (1920, 1080)),
+    ((3840, 0), (1920, 1080))
+]
+
 # Initialising Config
 DATA_PATH = os.path.expanduser(DATA_PATH)  # Convert relative path to global path
 LOG_PATH = os.path.expanduser(LOG_PATH)  # Convert relative path to global path

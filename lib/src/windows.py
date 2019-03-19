@@ -14,8 +14,8 @@ class Windows:
     Contains pointer to workspace and a dictionary of windows ID --> Window Object
     """
 
-    def __init__(self, desktop_count, screens_count, res_horz, res_vert):
-        self.work_space = WorkSpace(desktop_count, screens_count, res_horz, res_vert)
+    def __init__(self, screen_config):
+        self.work_space = WorkSpace(screen_config)
         self.windows = {}
         self.last_resize_ts = 0
 
@@ -102,8 +102,8 @@ class Windows:
 
         Restores all windows to their intended positions
         """
-        self.unminimize_all()
-        for _window_id, window in self.windows.iteritems():
+        for window in self.work_space.get_viewable_windows():
+            window.activate()
             window.Maximized = False
             if isinstance(window.parent, WindowGroup):
                 window.parent.set_size()
@@ -154,7 +154,9 @@ class Windows:
 
         window_list.sort()
         counter = 0
-        for screen in self.work_space.desktops[0].screens:
+        for viewable_screen in range(self.work_space.viewable_screen_count):
+            screen_index = self.work_space.viewable_screen_index_to_index(viewable_screen)
+            screen = self.work_space.screens[screen_index]
             if screen.child is None:
                 window_list.append(prepend + "Screen " + str(counter))
             counter += 1
@@ -267,12 +269,9 @@ class Windows:
         new_window.remove_wm_maximize()
 
         if target_id == 'Screen':
-            try:
-                screen_index = int(screen_index)
-            except:
-                return False
+            screen_index = int(self.work_space.viewable_screen_index_to_index(int(screen_index)))
 
-            screen = self.work_space.desktops[0].screens[screen_index]
+            screen = self.work_space.screens[screen_index]
             if screen.child is not None:
                 return False
             screen.initialise(new_window)
@@ -490,3 +489,19 @@ class Windows:
             return False
 
         window.parent.activate_next_window(increment)
+
+    def list_screens(self, prepend='', exclude=[]):
+        screens_list = range(len(self.work_space.screens))
+        print_out = ''
+        for index in screens_list:
+            if index in exclude:
+                continue
+            viewable_screen_index = self.work_space.viewable_screen_index(index)
+            name = self.work_space.screens[index].name
+            print_out += prepend + " " + str(index) + " VS: " + str(viewable_screen_index) + " - " + name + "\n"
+
+        print(print_out)
+
+    def get_active_screen(self):
+        active_window_id = self.get_active_window()
+        return self.windows[active_window_id].get_screen_index()

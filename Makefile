@@ -37,6 +37,7 @@ backup:
 
 restore:
 	cd ~ ; tar -xvf woof_backup.tar
+	mkdir -p ~/.woof/
 	cp -f ~/woof_backup/bin/woof ~/bin/
 	cp -fr ~/woof_backup/.woof/* ~/.woof/
 	rm -r ~/woof_backup/

@@ -27,7 +27,7 @@ class Window:
         elif isinstance(self.parent, Screen):
             parent_type = "Screen"
 
-        print("\t" * level + "WindowID: " + str(self.window_id_dec) + ": " + call(
+        print(" " * level + "WindowID: " + str(self.window_id_dec) + ": " + call(
             ['xdotool getwindowname', self.window_id_dec]).rstrip()[
                                                                              :20] + ". Class: " + self.get_window_class() + ". Parent Type: " + parent_type)
         return 1
@@ -243,3 +243,12 @@ class Window:
 
     def unshade(self):
         call(['wmctrl', '-ir', self.window_id_hex, '-b', 'remove,shaded'])
+
+    def get_screen_index(self):
+        return self.parent.get_screen_index(self)
+
+    def get_window_list(self):
+        return [self]
+
+    def is_any_maximized(self):
+        return self.maximized

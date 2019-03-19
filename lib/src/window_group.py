@@ -22,7 +22,7 @@ class WindowGroup:
         self.parent = parent
 
     def debug_print(self, level):
-        print("\t" * level + "WG WinCount: " + str(len(self.all_windows)) + ". Active: " + str(
+        print(" " * level + "WG WinCount: " + str(len(self.all_windows)) + ". Active: " + str(
             self.all_windows.index(self.active_window)))
         window_counter = 0
         for window in self.all_windows:
@@ -176,3 +176,19 @@ class WindowGroup:
 
     def get_screen_borders(self):
         return self.parent.get_screen_borders()
+
+    def minimize(self):
+        for window in self.all_windows:
+            window.minimize()
+
+    def get_screen_index(self, _calling_child):
+        return self.parent.get_screen_index(self)
+
+    def get_window_list(self):
+        return self.all_windows()
+
+    def is_any_maximized(self):
+        any_maximized = False
+        for window in self.all_windows():
+            any_maximized = any_maximized or window.maximized
+        return any_maximized

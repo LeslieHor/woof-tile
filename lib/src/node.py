@@ -21,7 +21,7 @@ class Node:
         else:
             plane_type_str = "V"
         l, d, u, r = self.parent.get_borders(self)
-        print("\t" * level + "N (" + plane_type_str + ") " + str(self.split_coordinate) + " " + str(l) + "," + str(d) + "," + str(
+        print(" " * level + "N (" + plane_type_str + ") " + str(self.split_coordinate) + " " + str(l) + "," + str(d) + "," + str(
             u) + "," + str(r))
 
         window_counter = 0
@@ -265,3 +265,16 @@ class Node:
     def get_plane_type(self):
         """Return PlaneType"""
         return self.plane_type
+
+    def minimize(self):
+        self.child_a.minimize()
+        self.child_b.minimize()
+
+    def get_screen_index(self, _calling_child):
+        return self.parent.get_screen_index(self)
+
+    def get_window_list(self):
+        return self.child_a.get_window_list() + self.child_b.get_window_list()
+
+    def is_any_maximized(self):
+        return self.child_a.is_any_maximized() or self.child_a.is_any_maximized()

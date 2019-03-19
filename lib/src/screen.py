@@ -4,16 +4,87 @@ from enums import *
 
 
 class Screen:
-    def __init__(self, left, down, up, right):
+    def __init__(self, parent, name, config=None, state=SCREEN_STATE.INACTIVE):
+        self.parent = parent
+        self.name = name
+        self.config = config
+        self.state = state
+        self.left = None
+        self.down = None
+        self.up = None
+        self.right = None
+
+        self.child = None
+
+        self.set_config(config)
+
+    def parse_config(self, config=None):
+        if config is None:
+            return None, None, None, None
+        ((left_coord, top_coord), (width, height)) = config
+        up = top_coord
+        left = left_coord
+
+        down = top_coord + height
+        right = left_coord + width
+
+        return left, down, up, right
+
+    def set_config(self, config):
+        self.config = config
+        left, down, up, right = self.parse_config(config)
         self.left = left
         self.down = down
         self.up = up
         self.right = right
 
-        self.child = None
+    def set_active(self, config):
+        self.state = SCREEN_STATE.ACTIVE
+        self.set_config(config)
+        self.unminimize_preserve_maximized()
+        self.set_size()
+
+    def set_inactive(self):
+        self.state = SCREEN_STATE.INACTIVE
+        self.config = None
+        self.minimize()
+
+    def set_name(self, name):
+        self.name = name
+
+    def unminimize_preserve_maximized(self):
+        window_list = self.get_window_list()
+        if window_list is None:
+            return
+        if self.is_any_maximized():
+            for window in window_list:
+                if not window.maximized:
+                    continue
+                window.activate()
+        else:
+            for window in window_list:
+                window.activate()
+
+    def get_window_list(self):
+        if self.child is not None:
+            return self.child.get_window_list()
+        else:
+            return None
+
+    def is_any_maximized(self):
+        return self.child.is_any_maximized()
+
+    def get_config(self):
+        return self.config
+
+    def get_state(self):
+        return self.state
+
+    def is_active(self):
+        return self.state == SCREEN_STATE.ACTIVE
 
     def debug_print(self, level):
-        print("\t" * level + "Screen")
+        print(" " * level + "Screen" + str(self.config))
         if self.child is not None:
             return self.child.debug_print(level + 1)
         else:
@@ -124,7 +195,8 @@ class Screen:
 
         ResetDefault is unused.
         """
-        self.child.set_size()
+        if self.child is not None:
+            self.child.set_size()
 
     def list_screen_windows(self):
         """Request that the child return a list of window ids"""
@@ -149,3 +221,10 @@ class Screen:
     def find_earliest_a_but_not_me(_caller_child):
         """If call has gotten to this point, we could not find a 'ChildA' that was not part of the calling stack"""
         return None
+
+    def minimize(self):
+        if self.child is not None:
+            self.child.minimize()
+
+    def get_screen_index(self, _calling_child):
+        return self.parent.get_screen_index(self)
