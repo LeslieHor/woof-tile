@@ -3,14 +3,27 @@ BUILD_DIR=${ROOT_DIR}_build/
 BIN_DIR=~/bin/
 INSTALL_DIR=~/
 WOOF_DIR=.woof/
+VERSION=`cat ${ROOT_DIR}version`
 
+PACKAGE_NAME=woof_v${VERSION}
 build: clean
 	mkdir -p ${BUILD_DIR}
 
 	cd ${ROOT_DIR}/lib/src/ ; zip -r ${BUILD_DIR}/woof.zip *
 	echo '#!/usr/bin/env python' | cat - ${BUILD_DIR}/woof.zip > ${BUILD_DIR}/woof
 	chmod +x ${BUILD_DIR}/woof
-	#rm ${BUILD_DIR}/woof.zip
+	rm ${BUILD_DIR}/woof.zip
+
+	echo "Version: ${VERSION}"
+	echo "Package name: ${PACKAGE_NAME}"
+	mkdir ${BUILD_DIR}${PACKAGE_NAME}/
+	mkdir ${BUILD_DIR}${PACKAGE_NAME}/woof/
+	mkdir ${BUILD_DIR}${PACKAGE_NAME}/woof/log/
+	mkdir ${BUILD_DIR}${PACKAGE_NAME}/bin/
+	cp ${BUILD_DIR}woof ${BUILD_DIR}${PACKAGE_NAME}/woof/
+	cp ${ROOT_DIR}/lib/helpers/woof ${BUILD_DIR}${PACKAGE_NAME}/bin/
+	cd ${BUILD_DIR} ; zip -r ${PACKAGE_NAME}.zip ${PACKAGE_NAME}
+	rm ${BUILD_DIR}${PACKAGE_NAME} -rf
 
 	echo "woof built"
 

@@ -175,9 +175,7 @@ def main(args):
                 print("Invalid window")
                 return
         else:
-            print(args[2])
             screen_index_b = parse_screen_index(args[2])
-            print(screen_index_b)
             if len(args) >= 4:
                 screen_index_a = parse_screen_index(args[3])
                 if screen_index_a is None:

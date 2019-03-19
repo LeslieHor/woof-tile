@@ -78,8 +78,6 @@ class WorkSpace:
         Given an index for a monitor, get the index of where it is in self.screens
         """
         viewable_screen_config = self.screen_config[viewable_screen_index]
-        print(viewable_screen_index)
-        print(viewable_screen_config)
         for i in range(len(self.screens)):
             config = self.screens[i].config
             if viewable_screen_config == config:
