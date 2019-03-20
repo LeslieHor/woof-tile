@@ -214,7 +214,6 @@ if len(ARGS) == 1:
     print_options()
     exit(0)
 
-# TODO: Seriously, clean up this code
 # Initialise a tree
 if ARGS[1] == 'reload':
     WINDOWS_OBJ = Windows(SCREEN_CONFIG)
@@ -225,6 +224,9 @@ else:
             WINDOWS_OBJ.restore_all()
     except:
         WINDOWS_OBJ = Windows(SCREEN_CONFIG)
+
+if ARGS[1] == "benchmark":
+    exit(0)
 
 if __name__ == '__main__':
     main(ARGS)

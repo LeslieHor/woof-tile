@@ -14,6 +14,7 @@ class Window:
     def __init__(self, window_id):
         self.window_id_dec = window_id
         self.window_id_hex = hex(int(window_id))
+        self.state = WINDOW_STATE.NORMAL
 
         self.parent = None
         self.maximized = False
@@ -132,6 +133,7 @@ class Window:
             l, d, u, r = self.get_size()
             px, py, sx, sy = self.border_gap_correct(l, d, u, r)
             self.set_size_override(px, py, sx, sy)
+            self.state = WINDOW_STATE.NORMAL
 
     def split(self, new_window, plane_type, direction):
         """Request the parent to split to add a new window"""
@@ -182,6 +184,7 @@ class Window:
     def minimize(self):
         """Call into WM to minimize the window"""
         call(['xdotool windowminimize', self.window_id_dec])
+        self.state = WINDOW_STATE.MINIMIZED
 
     def activate(self, set_last_active=False):
         """Call into WM to focus the window"""
@@ -204,6 +207,7 @@ class Window:
     def maximize(self):
         """Set size of window as if this were the only window on the screen"""
         self.maximized = True
+        self.state = WINDOW_STATE.MAXIMIZED
         l, d, u, r = self.parent.get_screen_borders()
         px, py, sx, sy = self.border_gap_correct(l, d, u, r)
         self.set_size_override(px, py, sx, sy)
@@ -236,16 +240,18 @@ class Window:
                      ' | grep "NET_WM_STATE" | sed \'s/_NET_WM_STATE(ATOM) = //\'']).rstrip()
 
     def is_minimized(self):
-        return self.get_state() == "_NET_WM_STATE_HIDDEN"
+        return self.state == WINDOW_STATE.MINIMIZED
 
     def is_shaded(self):
-        return self.get_state() == "_NET_WM_STATE_SHADED"
+        return self.state == WINDOW_STATE.SHADED
 
     def shade(self):
         call(['wmctrl', '-ir', self.window_id_hex, '-b', 'add,shaded'])
+        self.state = WINDOW_STATE.SHADED
 
     def unshade(self):
         call(['wmctrl', '-ir', self.window_id_hex, '-b', 'remove,shaded'])
+        self.state = WINDOW_STATE.NORMAL
 
     def get_screen_index(self):
         return self.parent.get_screen_index(self)

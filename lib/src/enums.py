@@ -17,6 +17,13 @@ class SCREEN_STATE:
     INACTIVE = 1
 
 
+class WINDOW_STATE:
+    NORMAL = 0
+    SHADED = 1
+    MINIMIZED = 2
+    MAXIMIZED = 3
+
+
 class OPTIONS:
     NONE = ''
     DEBUG = 'debug'
