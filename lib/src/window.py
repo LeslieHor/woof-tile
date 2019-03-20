@@ -27,10 +27,11 @@ class Window:
         elif isinstance(self.parent, Screen):
             parent_type = "Screen"
 
-        print(" " * level + "WindowID: " + str(self.window_id_dec) + ": " + call(
-            ['xdotool getwindowname', self.window_id_dec]).rstrip()[
-                                                                             :20] + ". Class: " + self.get_window_class() + ". Parent Type: " + parent_type)
+        print(" " * level + "WindowID: " + str(self.window_id_dec) + ": " + self.get_window_title()[:20] + ". Class: " + self.get_window_class() + ". Parent Type: " + parent_type)
         return 1
+
+    def get_window_title(self):
+        return call(['xdotool getwindowname', self.window_id_dec]).rstrip()
 
     def get_size(self):
         """Get the size of the current window
@@ -182,8 +183,10 @@ class Window:
         """Call into WM to minimize the window"""
         call(['xdotool windowminimize', self.window_id_dec])
 
-    def activate(self):
+    def activate(self, set_last_active=False):
         """Call into WM to focus the window"""
+        if set_last_active:
+            self.parent.set_window_active(self)
         call(['xdotool windowactivate', self.window_id_dec])
 
     def list_screen_windows(self):

@@ -87,7 +87,7 @@ class WindowGroup:
         """Activates whatever window is currently defined as active"""
         log_debug(['Activating active window'])
         self.set_size()
-        self.active_window.activate()
+        self.active_window.activate(True)
 
     def activate_next_window(self, increment):
         """Increments the counter by Increment and activates whatever
@@ -201,3 +201,7 @@ class WindowGroup:
 
     def backup_split(self):
         return None
+
+    def set_window_active(self, calling_child):
+        self.parent.set_window_active(calling_child)
+

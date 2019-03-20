@@ -15,6 +15,7 @@ class Screen:
         self.right = None
 
         self.child = None
+        self.last_active_window = None
 
         self.set_config(config)
 
@@ -44,6 +45,7 @@ class Screen:
         self.unminimize_preserve_maximized()
         self.restore_split()
         self.set_size()
+        self.activate_last_active_window()
 
     def set_inactive(self):
         self.state = SCREEN_STATE.INACTIVE
@@ -100,7 +102,11 @@ class Screen:
         return self.state == SCREEN_STATE.ACTIVE
 
     def debug_print(self, level):
-        print(" " * level + "Screen" + str(self.config))
+        if self.last_active_window is not None:
+            last_active_window = self.last_active_window.get_window_title()[:20]
+        else:
+            last_active_window = "unknown"
+        print(" " * level + "Screen " + str(self.config) + " " + self.name + " LAW: " + last_active_window)
         if self.child is not None:
             return self.child.debug_print(level + 1)
         else:
@@ -244,3 +250,10 @@ class Screen:
 
     def get_screen_index(self, _calling_child):
         return self.parent.get_screen_index(self)
+
+    def set_window_active(self, calling_child):
+        self.last_active_window = calling_child
+
+    def activate_last_active_window(self):
+        if self.last_active_window is not None:
+            self.last_active_window.activate()

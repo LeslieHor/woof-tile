@@ -114,7 +114,7 @@ def main(args):
                 WINDOWS_OBJ.windows[win_id].activate()
                 WINDOWS_OBJ.windows[win_id].set_size()
 
-            WINDOWS_OBJ.windows[target_win_id].activate()
+            WINDOWS_OBJ.windows[target_win_id].activate(True)
             WINDOWS_OBJ.windows[target_win_id].maximized = False
         else:
             for win_id in win_ids:
@@ -181,13 +181,14 @@ def main(args):
                 if screen_index_a is None:
                     print("Invalid window 1")
                     return
+                WINDOWS_OBJ.work_space.swap_screens(screen_index_a, screen_index_b)
             except:
                 screen_index_a = WINDOWS_OBJ.get_active_screen()
                 if screen_index_a is None:
                     print("Invalid window 2")
                     return
-
-            WINDOWS_OBJ.work_space.swap_screens(screen_index_a, screen_index_b)
+                WINDOWS_OBJ.work_space.swap_screens(screen_index_a, screen_index_b)
+                WINDOWS_OBJ.work_space.screens[screen_index_b].activate_last_active_window()
     elif cmd == OPTIONS.NEW_SCREEN:
         WINDOWS_OBJ.work_space.new_screen()
     elif cmd == OPTIONS.LIST_SCREENS:

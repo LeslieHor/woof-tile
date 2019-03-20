@@ -326,3 +326,6 @@ class Node:
         self.split_coordinate = split_coordinate
         self.child_a.restore_split()
         self.child_b.restore_split()
+
+    def set_window_active(self, calling_child):
+        self.parent.set_window_active(calling_child)

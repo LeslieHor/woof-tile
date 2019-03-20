@@ -335,7 +335,7 @@ class Windows:
             log_debug(['No valid window found'])
             return
         log_debug(['Closest left window:', closest_window.list_add_window()])
-        closest_window.activate()
+        closest_window.activate(True)
 
     def nav_right(self):
         win_id = self.get_active_window()
@@ -374,7 +374,7 @@ class Windows:
             log_debug(['No valid window found'])
             return
         log_debug(['Closest right window:', closest_window.list_add_window()])
-        closest_window.activate()
+        closest_window.activate(True)
 
     def nav_up(self):
         win_id = self.get_active_window()
@@ -413,7 +413,7 @@ class Windows:
             log_debug(['No valid window found'])
             return
         log_debug(['Closest top window:', closest_window.list_add_window()])
-        closest_window.activate()
+        closest_window.activate(True)
 
     def nav_down(self):
         win_id = self.get_active_window()
@@ -452,7 +452,7 @@ class Windows:
             log_debug(['No valid window found'])
             return
         log_debug(['Closest top window:', closest_window.list_add_window()])
-        closest_window.activate()
+        closest_window.activate(True)
 
     def add_to_window_group(self, target_id):
         win_id = self.get_active_window()
