@@ -286,7 +286,9 @@ class Node:
         if isinstance(self.split_coordinate, float):
             return self.split_coordinate
         length = self.get_length()
-        return float(self.split_coordinate) / float(length)
+        start_coord = self.get_start_coord()
+        offset = self.split_coordinate - start_coord
+        return float(offset) / float(length)
 
     def get_length(self):
         left, down, up, right = self.parent.get_borders(self)
@@ -296,6 +298,13 @@ class Node:
             length = right - left
 
         return length
+
+    def get_start_coord(self):
+        left, _, up, _ = self.parent.get_borders(self)
+        if self.plane_type == PLANE.HORIZONTAL:
+            return up
+        else:
+            return left
 
     def backup_split(self):
         split_ratio = self.split_ratio()
@@ -309,10 +318,7 @@ class Node:
             return self.split_coordinate
         length = self.get_length()
         offset = int(self.split_coordinate * length)
-        if self.plane_type == PLANE.HORIZONTAL:
-            start_coord = up
-        else:
-            start_coord = left
+        start_coord = self.get_start_coord()
         return start_coord + offset
 
     def restore_split(self):
