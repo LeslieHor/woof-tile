@@ -148,7 +148,7 @@ class Windows:
         if exclude_active:
             active_window = self.windows[self.get_active_window()]
 
-        for _WinId, Win in self.windows.iteritems():
+        for Win in self.work_space.get_viewable_windows():
             if (not Win.is_shaded()) and (not Win == active_window):
                 window_list.append(Win.list_add_window(prepend))
 
@@ -178,6 +178,7 @@ class Windows:
 
     def minimize_all(self):
         """Minimize all windows"""
+        # TODO: Doesn't matter, but probably should only minimize viewable windows
         for _Key, Win in self.windows.iteritems():
             Win.minimize()
 

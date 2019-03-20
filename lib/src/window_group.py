@@ -185,7 +185,10 @@ class WindowGroup:
         return self.parent.get_screen_index(self)
 
     def get_window_list(self):
-        return self.all_windows()
+        return self.all_windows
+
+    def get_available_window_list(self):
+        return [self.active_window]
 
     def is_any_maximized(self):
         any_maximized = False

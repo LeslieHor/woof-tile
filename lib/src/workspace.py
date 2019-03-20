@@ -84,6 +84,17 @@ class WorkSpace:
                 return i
         return None
 
+    def get_available_windows(self):
+        windows = []
+        for screen in self.screens:
+            if not screen.is_active():
+                continue
+            window_list = screen.get_available_window_list()
+            if window_list is not None:
+                windows += window_list
+
+        return windows
+
     def get_viewable_windows(self):
         windows = []
         for screen in self.screens:

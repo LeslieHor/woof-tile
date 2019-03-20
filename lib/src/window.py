@@ -250,5 +250,8 @@ class Window:
     def get_window_list(self):
         return [self]
 
+    def get_available_window_list(self):
+        return [self]
+
     def is_any_maximized(self):
         return self.maximized

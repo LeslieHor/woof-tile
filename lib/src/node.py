@@ -276,5 +276,8 @@ class Node:
     def get_window_list(self):
         return self.child_a.get_window_list() + self.child_b.get_window_list()
 
+    def get_window_list(self):
+        return self.child_a.get_available_window_list() + self.child_b.get_available_window_list()
+
     def is_any_maximized(self):
         return self.child_a.is_any_maximized() or self.child_a.is_any_maximized()

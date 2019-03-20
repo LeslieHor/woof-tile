@@ -71,6 +71,12 @@ class Screen:
         else:
             return None
 
+    def get_available_window_list(self):
+        if self.child is not None:
+            return self.child.get_available_window_list()
+        else:
+            return None
+
     def is_any_maximized(self):
         return self.child.is_any_maximized()
 
