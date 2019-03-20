@@ -46,8 +46,15 @@ class WorkSpace:
         screen_a_config = screen_a.get_config()
         screen_b_config = screen_b.get_config()
 
+        screen_a.backup_split()
+        screen_b.backup_split()
+
         screen_a.set_config(screen_b_config)
         screen_b.set_config(screen_a_config)
+
+        screen_a.restore_split()
+        screen_b.restore_split()
+
         screen_a.set_size()
         screen_b.set_size()
 

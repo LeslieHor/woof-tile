@@ -42,12 +42,22 @@ class Screen:
         self.state = SCREEN_STATE.ACTIVE
         self.set_config(config)
         self.unminimize_preserve_maximized()
+        self.restore_split()
         self.set_size()
 
     def set_inactive(self):
         self.state = SCREEN_STATE.INACTIVE
+        self.backup_split()
         self.config = None
         self.minimize()
+
+    def restore_split(self):
+        if self.child is not None:
+            self.child.restore_split()
+
+    def backup_split(self):
+        if self.child is not None:
+            self.child.backup_split()
 
     def set_name(self, name):
         self.name = name

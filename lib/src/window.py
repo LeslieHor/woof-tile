@@ -255,3 +255,9 @@ class Window:
 
     def is_any_maximized(self):
         return self.maximized
+
+    def restore_split(self):
+        return None
+
+    def backup_split(self):
+        return None

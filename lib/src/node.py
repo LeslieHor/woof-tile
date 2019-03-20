@@ -276,8 +276,47 @@ class Node:
     def get_window_list(self):
         return self.child_a.get_window_list() + self.child_b.get_window_list()
 
-    def get_window_list(self):
+    def get_available_window_list(self):
         return self.child_a.get_available_window_list() + self.child_b.get_available_window_list()
 
     def is_any_maximized(self):
         return self.child_a.is_any_maximized() or self.child_a.is_any_maximized()
+
+    def split_ratio(self):
+        if isinstance(self.split_coordinate, float):
+            return self.split_coordinate
+        length = self.get_length()
+        return float(self.split_coordinate) / float(length)
+
+    def get_length(self):
+        left, down, up, right = self.parent.get_borders(self)
+        if self.plane_type == PLANE.HORIZONTAL:
+            length = down - up
+        else:
+            length = right - left
+
+        return length
+
+    def backup_split(self):
+        split_ratio = self.split_ratio()
+        self.split_coordinate = split_ratio
+        self.child_a.backup_split()
+        self.child_b.backup_split()
+
+    def split_coordinates(self):
+        left, _, up, _ = self.parent.get_borders(self)
+        if isinstance(self.split_coordinate, int):
+            return self.split_coordinate
+        length = self.get_length()
+        offset = int(self.split_coordinate * length)
+        if self.plane_type == PLANE.HORIZONTAL:
+            start_coord = up
+        else:
+            start_coord = left
+        return start_coord + offset
+
+    def restore_split(self):
+        split_coordinate = self.split_coordinates()
+        self.split_coordinate = split_coordinate
+        self.child_a.restore_split()
+        self.child_b.restore_split()
