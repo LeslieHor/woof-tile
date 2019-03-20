@@ -192,7 +192,7 @@ class WindowGroup:
 
     def is_any_maximized(self):
         any_maximized = False
-        for window in self.all_windows():
+        for window in self.all_windows:
             any_maximized = any_maximized or window.maximized
         return any_maximized
 
