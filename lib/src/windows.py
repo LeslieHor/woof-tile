@@ -505,4 +505,7 @@ class Windows:
 
     def get_active_screen(self):
         active_window_id = self.get_active_window()
-        return self.windows[active_window_id].get_screen_index()
+        if self.exists(active_window_id):
+            return self.windows[active_window_id].get_screen_index()
+        else:
+            return None

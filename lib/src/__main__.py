@@ -1,7 +1,7 @@
 import pickle  # For saving the window structure to disk
 import sys  # For getting args
 from windows import Windows
-from log import log_info, log_debug
+from log import log_info, log_debug, log_error
 from config import *
 from enums import PLANE, DIR, OPTIONS, print_options
 from helpers import element
@@ -172,20 +172,20 @@ def main(args):
                 active_screen_index = WINDOWS_OBJ.get_active_screen()
                 WINDOWS_OBJ.list_screens('swap-screen', [active_screen_index])
             else:
-                print("Invalid window")
+                log_error(["Attempted to list screens, but current window not registered, so could not exclude current screen"])
                 return
         else:
             screen_index_b = parse_screen_index(args[2])
             try:
                 screen_index_a = parse_screen_index(args[3])
                 if screen_index_a is None:
-                    print("Invalid window 1")
+                    log_error(["Attempted to swap screens but unable to parse second arg:", args[3]])
                     return
                 WINDOWS_OBJ.work_space.swap_screens(screen_index_a, screen_index_b)
             except:
                 screen_index_a = WINDOWS_OBJ.get_active_screen()
                 if screen_index_a is None:
-                    print("Invalid window 2")
+                    log_error(["Attempted to swap screens but active window is not registered"])
                     return
                 WINDOWS_OBJ.work_space.swap_screens(screen_index_a, screen_index_b)
                 WINDOWS_OBJ.work_space.screens[screen_index_b].activate_last_active_window()
