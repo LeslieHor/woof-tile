@@ -12,11 +12,10 @@ class Window:
     """Leaf node, representing a viewable window"""
 
     def __init__(self, window_id):
-        self.window_id_dec = window_id
-        self.window_id_hex = hex(int(window_id))
+        self.window_id = window_id
         self.state = WINDOW_STATE.NORMAL
 
-        self.window_class = system_calls.get_window_class(self.window_id_dec)
+        self.window_class = system_calls.get_window_class(self.window_id)
         self.parent = None
         self.maximized = False
 
@@ -29,7 +28,7 @@ class Window:
         elif isinstance(self.parent, Screen):
             parent_type = "Screen"
 
-        print(" " * level + "WindowID: " + str(self.window_id_dec) + ": " + self.get_window_title()[:20] + ". Class: " + self.get_window_class() + ". Parent Type: " + parent_type)
+        print(" " * level + "WindowID: " + str(self.window_id) + ": " + self.get_window_title()[:20] + ". Class: " + self.get_window_class() + ". Parent Type: " + parent_type)
         return 1
 
     def get_window_title(self):
@@ -86,7 +85,7 @@ class Window:
 
     def get_window_class(self):
         if self.window_class is None:
-            self.window_class = system_calls.get_window_class(self.window_id_dec)
+            self.window_class = system_calls.get_window_class(self.window_id)
         return self.window_class
 
     def border_gap_correct(self, l, d, u, r):
@@ -123,7 +122,7 @@ class Window:
 
     def set_size_override(self, px, py, sx, sy):
         """Call into the WM to resize the window"""
-        system_calls.set_window_geometry(self.window_id_hex, px, py, sx, sy)
+        system_calls.set_window_geometry(self.window_id, px, py, sx, sy)
 
     def set_size(self, _reset_default=False):
         """Set the window location / size"""
@@ -183,14 +182,14 @@ class Window:
 
     def minimize(self):
         """Call into WM to minimize the window"""
-        system_calls.minimise_window(self.window_id_dec)
+        system_calls.minimise_window(self.window_id)
         self.state = WINDOW_STATE.MINIMIZED
 
     def activate(self, set_last_active=False):
         """Call into WM to focus the window"""
         if set_last_active:
             self.parent.set_window_active(self)
-        system_calls.activate_window(self.window_id_dec)
+        system_calls.activate_window(self.window_id)
 
     def list_screen_windows(self):
         """Request parent to list all their windows
@@ -202,7 +201,7 @@ class Window:
 
     def window_ids(self):
         """Return window ID in a single-item list"""
-        return [self.window_id_dec]
+        return [self.window_id]
 
     def maximize(self):
         """Set size of window as if this were the only window on the screen"""
@@ -217,18 +216,18 @@ class Window:
 
         WM maximization status can interfere with resizing
         """
-        subprocess.call(["wmctrl", "-ir", self.window_id_hex, "-b", "remove,maximized_vert,maximized_horz"])
+        system_calls.remove_system_maximize(self.window_id)
 
     def list_add_window(self, prepend=''):
         """List the current window name, pre-pending a given string
 
         This is used to list windows in rofi
         """
-        window_name = system_calls.get_window_title(self.window_id_dec)
-        return prepend + str(self.window_id_dec) + " : " + window_name
+        window_name = system_calls.get_window_title(self.window_id)
+        return prepend + str(self.window_id) + " : " + window_name
 
     def get_state(self):
-        return system_calls.get_window_state(self.window_id_dec)
+        return system_calls.get_window_state(self.window_id)
 
     def is_minimized(self):
         return self.state == WINDOW_STATE.MINIMIZED
@@ -237,11 +236,11 @@ class Window:
         return self.state == WINDOW_STATE.SHADED
 
     def shade(self):
-        system_calls.shade_window(self.window_id_hex)
+        system_calls.shade_window(self.window_id)
         self.state = WINDOW_STATE.SHADED
 
     def unshade(self):
-        system_calls.unshade_window(self.window_id_hex)
+        system_calls.unshade_window(self.window_id)
         self.state = WINDOW_STATE.NORMAL
 
     def get_screen_index(self):

@@ -5,7 +5,7 @@ from log import log_info, log_debug, log_error
 from config import *
 from enums import PLANE, DIR, OPTIONS, print_options
 from helpers import element
-import system_calls
+import time
 
 
 def debug_print():
@@ -221,6 +221,8 @@ if ARGS[1] == 'reload':
 else:
     try:
         WINDOWS_OBJ = pickle.load(open(DATA_PATH, "rb"))
+
+        # Takes only about 4ms when all windows are valid
         if WINDOWS_OBJ.check_windows():
             WINDOWS_OBJ.restore_all()
     except:

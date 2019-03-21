@@ -63,15 +63,19 @@ def set_window_geometry(window_id_hex, px, py, sx, sy):
     call(['wmctrl -ir', window_id_hex, '-e', mvarg], False)
 
 
-def shade_window(window_id_hex):
-    call(['wmctrl', '-ir', window_id_hex, '-b', 'add,shaded'])
+def shade_window(window_id=None):
+    call(['wmctrl', '-ir', verify_window_id(window_id), '-b', 'add,shaded'])
 
 
-def unshade_window(window_id_hex):
-    call(['wmctrl', '-ir', window_id_hex, '-b', 'remove,shaded'])
+def unshade_window(window_id=None):
+    call(['wmctrl', '-ir', verify_window_id(window_id), '-b', 'remove,shaded'])
 
 
 def get_hex_ids():
     hex_ids_str = call('wmctrl -l | awk -F" " \'$2 == 0 {print $1}\'')
     hex_ids = hex_ids_str.split("\n")
     return hex_ids
+
+
+def remove_system_maximize(window_id=None):
+    subprocess.call(["wmctrl", "-ir", verify_window_id(window_id), "-b", "remove,maximized_vert,maximized_horz"])
