@@ -3,9 +3,8 @@ import sys  # For getting args
 from windows import Windows
 from log import log_info, log_debug, log_error
 from config import *
-from enums import PLANE, DIR, OPTIONS, print_options
+from enums import PLANE, DIR, WINDOW_STATE, OPTIONS, print_options
 from helpers import element
-import time
 
 
 def debug_print():
@@ -110,13 +109,14 @@ def main(args):
         if not WINDOWS_OBJ.exists(target_win_id):
             exit(1)
         win_ids = WINDOWS_OBJ.windows[target_win_id].list_screen_windows()
-        if WINDOWS_OBJ.windows[target_win_id].maximized:
+        if WINDOWS_OBJ.windows[target_win_id].is_maximized():
             for win_id in win_ids:
                 WINDOWS_OBJ.windows[win_id].activate()
                 WINDOWS_OBJ.windows[win_id].set_size()
 
             WINDOWS_OBJ.windows[target_win_id].activate(True)
             WINDOWS_OBJ.windows[target_win_id].maximized = False
+            WINDOWS_OBJ.windows[target_win_id].state = WINDOW_STATE.NORMAL
         else:
             for win_id in win_ids:
                 if win_id == target_win_id:

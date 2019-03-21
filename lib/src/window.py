@@ -17,19 +17,45 @@ class Window:
 
         self.window_class = system_calls.get_window_class(self.window_id)
         self.parent = None
-        self.maximized = False
 
-    def debug_print(self, level):
-        parent_type = "unknown"
+    def debug_print(self, level=0):
+        l, d, u, r = self.get_size()
+        borders = str(l) + ", " + str(d) + ", " + str(u) + ", " + str(r)
+        print(str(DEBUG_SPACER * level) + "Window ID: " + str(self.window_id)) + " Borders: " + borders
+        return 1
+
+    def get_debug_print(self, level=0):
+        window_title = self.get_window_title()
+
+        if self.state == WINDOW_STATE.NORMAL:
+            state = 'Normal'
+        elif self.state == WINDOW_STATE.MINIMIZED:
+            state = 'Minimized'
+        elif self.state == WINDOW_STATE.MAXIMIZED:
+            state = 'Maximized'
+        elif self.state == WINDOW_STATE.SHADED:
+            state = 'Shaded'
+        else:
+            state = 'Unknown'
+
         if isinstance(self.parent, WindowGroup):
             parent_type = "WindowGroup"
         elif isinstance(self.parent, Node):
             parent_type = "Node"
         elif isinstance(self.parent, Screen):
             parent_type = "Screen"
+        else:
+            parent_type = 'Unknown'
 
-        print(" " * level + "WindowID: " + str(self.window_id) + ": " + self.get_window_title()[:20] + ". Class: " + self.get_window_class() + ". Parent Type: " + parent_type)
-        return 1
+        string = ''
+        string += str((DEBUG_SPACER * level)) + 'Window ID: ' + str(self.window_id) + '\n'
+        string += str((DEBUG_SPACER * level)) + 'Window Title: ' + window_title + '\n'
+        string += str((DEBUG_SPACER * level)) + 'State: ' + state + '\n'
+        string += str((DEBUG_SPACER * level)) + 'Class: ' + self.window_class + '\n'
+        string += str((DEBUG_SPACER * level)) + 'Parent Type: ' + parent_type + '\n'
+        string += str((DEBUG_SPACER * level)) + 'Maximized (dep): ' + str(self.maximized) + '\n'
+
+        return string
 
     def get_window_title(self):
         return system_calls.get_window_title(self.window_id)
@@ -205,7 +231,6 @@ class Window:
 
     def maximize(self):
         """Set size of window as if this were the only window on the screen"""
-        self.maximized = True
         self.state = WINDOW_STATE.MAXIMIZED
         l, d, u, r = self.parent.get_screen_borders()
         px, py, sx, sy = self.border_gap_correct(l, d, u, r)
@@ -252,8 +277,11 @@ class Window:
     def get_available_window_list(self):
         return [self]
 
+    def is_maximized(self):
+        return self.state == WINDOW_STATE.MAXIMIZED
+
     def is_any_maximized(self):
-        return self.maximized
+        return self.is_maximized()
 
     def restore_split(self):
         return None

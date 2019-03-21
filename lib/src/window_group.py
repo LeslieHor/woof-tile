@@ -193,7 +193,7 @@ class WindowGroup:
     def is_any_maximized(self):
         any_maximized = False
         for window in self.all_windows:
-            any_maximized = any_maximized or window.maximized
+            any_maximized = any_maximized or window.is_maximized()
         return any_maximized
 
     def restore_split(self):

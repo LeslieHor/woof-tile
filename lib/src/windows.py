@@ -24,11 +24,7 @@ class Windows:
         print("----")
         for _win_id, win in self.windows.iteritems():
             print("-" * 40)
-            win.debug_print(0)
-            if win.is_shaded():
-                print("Window is shaded")
-            else:
-                print("Window is not shaded")
+            print(win.get_debug_print(0))
 
         print()
         print("TREE")

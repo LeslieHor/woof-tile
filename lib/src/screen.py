@@ -70,7 +70,7 @@ class Screen:
             return
         if self.is_any_maximized():
             for window in window_list:
-                if not window.maximized:
+                if not window.is_maximized():
                     continue
                 window.activate()
         else:
