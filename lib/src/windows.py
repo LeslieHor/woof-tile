@@ -3,7 +3,7 @@ import sys
 from workspace import WorkSpace
 from window_group import WindowGroup
 from window import Window
-from system_calls import call
+import system_calls
 from config import *
 from log import log_info, log_debug, log_warning, log_error
 
@@ -118,8 +118,7 @@ class Windows:
 
         # TODO: Temp fixes really should not be here
         """
-        hex_ids_str = call('wmctrl -l | awk -F" " \'$2 == 0 {print $1}\'')
-        hex_ids = hex_ids_str.split("\n")
+        hex_ids = system_calls.get_hex_ids()
         dec_ids = [int(X, 0) for X in hex_ids if X != '']
         fix = False
         window_ids_to_kill = []
@@ -239,14 +238,14 @@ class Windows:
             Win.Maximized = False
 
         # We active the window through a call, in case it is not in the tree
-        call(['xdotool windowactivate', active_win_id])
+        system_calls.activate_window(active_win_id)
 
     def activate_window(self, win_id):
         self.windows[win_id].activate()
 
     def get_active_window(self):  # Really should be called get_active_window_id
         """Get ID of current active window"""
-        return int(call('xdotool getactivewindow').rstrip())
+        return system_calls.get_active_window()
 
     def add_to_window(self, plane_type, direction, target_id):
         new_window_id = self.get_active_window()

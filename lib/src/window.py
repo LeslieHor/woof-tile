@@ -2,7 +2,7 @@ import subprocess
 from window_group import WindowGroup
 from node import Node
 from screen import Screen
-from system_calls import call
+import system_calls
 from config import *
 from log import log_info, log_debug, log_warning, log_error
 from enums import *
@@ -32,7 +32,7 @@ class Window:
         return 1
 
     def get_window_title(self):
-        return call(['xdotool getwindowname', self.window_id_dec]).rstrip()
+        return system_calls.get_window_title()
 
     def get_size(self):
         """Get the size of the current window
@@ -84,7 +84,7 @@ class Window:
         return 0
 
     def get_window_class(self):
-        return call(['xprop -id', self.window_id_dec, '| grep WM_CLASS |  sed \'s/^.*, "//\' | sed \'s/"//\'']).rstrip()
+        return system_calls.get_window_class(self.window_id_dec)
 
     def border_gap_correct(self, l, d, u, r):
         """Calculate window size parameters taking gap and borders into account
@@ -120,10 +120,7 @@ class Window:
 
     def set_size_override(self, px, py, sx, sy):
         """Call into the WM to resize the window"""
-        # xdotool will not override the plasma panel border
-        # wmctrl is very particular about its args
-        mvarg = '0,' + str(px) + ',' + str(py) + ',' + str(sx) + ',' + str(sy)
-        call(['wmctrl -ir', self.window_id_hex, '-e', mvarg])
+        system_calls.set_window_geometry(self.window_id_hex, px, py, sx, sy)
 
     def set_size(self, _reset_default=False):
         """Set the window location / size"""
@@ -183,14 +180,14 @@ class Window:
 
     def minimize(self):
         """Call into WM to minimize the window"""
-        call(['xdotool windowminimize', self.window_id_dec])
+        system_calls.minimise_window(self.window_id_dec)
         self.state = WINDOW_STATE.MINIMIZED
 
     def activate(self, set_last_active=False):
         """Call into WM to focus the window"""
         if set_last_active:
             self.parent.set_window_active(self)
-        call(['xdotool windowactivate', self.window_id_dec])
+        system_calls.activate_window(self.window_id_dec)
 
     def list_screen_windows(self):
         """Request parent to list all their windows
@@ -224,20 +221,11 @@ class Window:
 
         This is used to list windows in rofi
         """
-        window_name = call(['xdotool getwindowname', self.window_id_dec]).rstrip()
+        window_name = system_calls.get_window_title(self.window_id_dec)
         return prepend + str(self.window_id_dec) + " : " + window_name
 
     def get_state(self):
-        """Gets the windows state using xprop
-
-        States:
-        <BLANK> : Normal
-        _NET_WM_STATE_SHADED : Shaded
-        _NET_WM_STATE_HIDDEN : Minimized
-
-        """
-        return call(['xprop', '-id', self.window_id_dec,
-                     ' | grep "NET_WM_STATE" | sed \'s/_NET_WM_STATE(ATOM) = //\'']).rstrip()
+        return system_calls.get_window_state(self.window_id_dec)
 
     def is_minimized(self):
         return self.state == WINDOW_STATE.MINIMIZED
@@ -246,11 +234,11 @@ class Window:
         return self.state == WINDOW_STATE.SHADED
 
     def shade(self):
-        call(['wmctrl', '-ir', self.window_id_hex, '-b', 'add,shaded'])
+        system_calls.shade_window(self.window_id_hex)
         self.state = WINDOW_STATE.SHADED
 
     def unshade(self):
-        call(['wmctrl', '-ir', self.window_id_hex, '-b', 'remove,shaded'])
+        system_calls.unshade_window(self.window_id_hex)
         self.state = WINDOW_STATE.NORMAL
 
     def get_screen_index(self):
