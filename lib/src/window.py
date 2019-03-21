@@ -85,6 +85,8 @@ class Window:
         return 0
 
     def get_window_class(self):
+        if self.window_class is None:
+            self.window_class = system_calls.get_window_class(self.window_id_dec)
         return self.window_class
 
     def border_gap_correct(self, l, d, u, r):
