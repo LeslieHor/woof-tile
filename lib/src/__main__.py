@@ -127,9 +127,9 @@ def main(args):
         win_id = WINDOWS_OBJ.get_active_window()
         if not WINDOWS_OBJ.exists(win_id):
             exit(1)
-        win_id_hex = WINDOWS_OBJ.windows[win_id].window_id_hex
+        win_id = WINDOWS_OBJ.windows[win_id].window_id
         next_active_window = WINDOWS_OBJ.kill_window(win_id)
-        return_string = win_id_hex + "," + str(next_active_window)
+        return_string = str(win_id) + "," + str(next_active_window)
         log_debug(['ReturnString:', return_string])
         print(return_string)
     elif cmd == OPTIONS.REMOVE:

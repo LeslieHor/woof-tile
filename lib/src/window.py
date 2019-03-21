@@ -32,7 +32,7 @@ class Window:
         return 1
 
     def get_window_title(self):
-        return system_calls.get_window_title()
+        return system_calls.get_window_title(self.window_id)
 
     def get_size(self):
         """Get the size of the current window
