@@ -5,6 +5,7 @@ from log import log_info, log_debug, log_error
 from config import *
 from enums import PLANE, DIR, OPTIONS, print_options
 from helpers import element
+import system_calls
 
 
 def debug_print():

@@ -16,6 +16,7 @@ class Window:
         self.window_id_hex = hex(int(window_id))
         self.state = WINDOW_STATE.NORMAL
 
+        self.window_class = system_calls.get_window_class(self.window_id_dec)
         self.parent = None
         self.maximized = False
 
@@ -84,7 +85,7 @@ class Window:
         return 0
 
     def get_window_class(self):
-        return system_calls.get_window_class(self.window_id_dec)
+        return self.window_class
 
     def border_gap_correct(self, l, d, u, r):
         """Calculate window size parameters taking gap and borders into account

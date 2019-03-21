@@ -1,13 +1,18 @@
 import subprocess
 from helpers import join_and_sanitize
+from log import log_debug
+import time
 
 
-def call(command):
+def call(command, response=True):
     """Call into the system and run Command (string)"""
+    s = time.time()
     cmd = join_and_sanitize(command)
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
     result, _err = proc.communicate()
-
+    e = time.time()
+    log_debug(["subprocess command:", cmd])
+    log_debug(["subprocess time:", (e - s)])
     return result
 
 
@@ -55,7 +60,7 @@ def set_window_geometry(window_id_hex, px, py, sx, sy):
     # xdotool will not override the plasma panel border
     # wmctrl is very particular about its args
     mvarg = '0,' + str(px) + ',' + str(py) + ',' + str(sx) + ',' + str(sy)
-    call(['wmctrl -ir', window_id_hex, '-e', mvarg])
+    call(['wmctrl -ir', window_id_hex, '-e', mvarg], False)
 
 
 def shade_window(window_id_hex):
