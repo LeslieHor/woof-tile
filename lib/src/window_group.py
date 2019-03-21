@@ -69,7 +69,7 @@ class WindowGroup:
         """
         for i in range(len(self.inactive_windows)):
             inactive_window = self.inactive_windows[i]
-            log_debug(['Shading window', inactive_window.window_id_dec])
+            log_debug(['Shading window', inactive_window.window_id])
             l, d, u, r = self.get_shaded_size(i)
             px, py, sx, sy = inactive_window.border_gap_correct(l, d, u, r)
             inactive_window.set_size_override(px, py, sx, sy)
@@ -141,21 +141,21 @@ class WindowGroup:
             # The remaining window will be a single, so we
             # turn it into a normal window
             self.all_windows.remove(caller_child)
-            log_debug(['Removed calling child:', caller_child.window_id_dec])
+            log_debug(['Removed calling child:', caller_child.window_id])
             log_debug(['AllWindows length:', len(self.all_windows)])
             surviving_child = self.all_windows[0]
-            log_debug(['SurvivingChild:', surviving_child.window_id_dec])
+            log_debug(['SurvivingChild:', surviving_child.window_id])
             self.parent.replace_child(self, surviving_child)
             log_debug(['Replacing parent child with surviving child'])
             surviving_child.parent = self.parent
             log_debug(['Replacing child parent with windowgroup parent'])
             surviving_child.unshade()
             surviving_child.set_size()
-            return str(surviving_child.window_id_dec)
+            return str(surviving_child.window_id)
         else:
             self.all_windows.remove(caller_child)
             self.activate_next_window(0)
-            return str(self.active_window.window_id_dec)
+            return str(self.active_window.window_id)
 
     def split(self, _caller_child, new_window, plane_type, direction):
         """Splits the window to add a new window beside it"""
@@ -171,7 +171,7 @@ class WindowGroup:
     def window_ids(self):
         window_ids = []
         for win in self.all_windows:
-            window_ids.append(win.window_id_dec)
+            window_ids.append(win.window_id)
         return window_ids
 
     def get_screen_borders(self):

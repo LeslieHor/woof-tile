@@ -54,7 +54,7 @@ class Windows:
 
     def add_window(self, window):
         """Add the window the dictionary"""
-        new_window_id = window.window_id_dec
+        new_window_id = window.window_id
         self.windows[new_window_id] = window
 
     def get_window(self, window_id):

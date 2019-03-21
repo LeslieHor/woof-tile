@@ -56,11 +56,12 @@ def minimise_window(window_id=None):
     call(['xdotool windowminimize', verify_window_id(window_id)])
 
 
-def set_window_geometry(window_id_hex, px, py, sx, sy):
+# TODO: Default window_id to None
+def set_window_geometry(window_id, px, py, sx, sy):
     # xdotool will not override the plasma panel border
     # wmctrl is very particular about its args
     mvarg = '0,' + str(px) + ',' + str(py) + ',' + str(sx) + ',' + str(sy)
-    call(['wmctrl -ir', window_id_hex, '-e', mvarg], False)
+    call(['wmctrl -ir', window_id, '-e', mvarg], False)
 
 
 def shade_window(window_id=None):
@@ -78,4 +79,4 @@ def get_hex_ids():
 
 
 def remove_system_maximize(window_id=None):
-    subprocess.call(["wmctrl", "-ir", verify_window_id(window_id), "-b", "remove,maximized_vert,maximized_horz"])
+    call(["wmctrl", "-ir", verify_window_id(window_id), "-b", "remove,maximized_vert,maximized_horz"])
