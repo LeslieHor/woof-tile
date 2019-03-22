@@ -230,7 +230,7 @@ class Windows:
         positions
         """
         active_win_id = self.get_active_window()
-        for _key, win in self.windows.iteritems():
+        for win in self.work_space.get_viewable_windows():
             win.activate()
             win.state = WINDOW_STATE.NORMAL
 
