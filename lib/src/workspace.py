@@ -21,6 +21,8 @@ class WorkSpace:
             self.new_screen()
             counter += 1
 
+        self.update_statuses()
+
 
     def debug_print(self):
         print("WorkSpace")
