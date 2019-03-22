@@ -52,7 +52,6 @@ class Window:
         string += str((DEBUG_SPACER * level)) + 'State: ' + state + '\n'
         string += str((DEBUG_SPACER * level)) + 'Class: ' + self.window_class + '\n'
         string += str((DEBUG_SPACER * level)) + 'Parent Type: ' + parent_type + '\n'
-        string += str((DEBUG_SPACER * level)) + 'Maximized (dep): ' + str(self.maximized) + '\n'
 
         return string
 
