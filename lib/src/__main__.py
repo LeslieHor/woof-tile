@@ -61,6 +61,11 @@ def main(command_string):
             print('\n'.join(WINDOWS_OBJ.list_add_windows(OPTIONS.ADD_HORIZONTAL)))
             return
 
+        if args == 'l':
+            args = str(WINDOWS_OBJ.work_space.get_last_active_window_woof_id())
+            if args is None:
+                return
+
         plane_type = PLANE.VERTICAL
         direction = DIR.RIGHT
         if args[0] == 's':
@@ -79,6 +84,11 @@ def main(command_string):
         if args == '':
             print('\n'.join(WINDOWS_OBJ.list_add_windows(OPTIONS.ADD_VERTICAL)))
             return
+
+        if args == 'l':
+            args = str(WINDOWS_OBJ.work_space.get_last_active_window_woof_id())
+            if args is None:
+                return
 
         plane_type = PLANE.HORIZONTAL
         direction = DIR.DOWN
@@ -201,6 +211,11 @@ def main(command_string):
             log_debug(['No target id. Listing windows.'])
             print('\n'.join(WINDOWS_OBJ.list_add_windows(OPTIONS.ADD_TO_GROUP)))
             return
+
+        if args == 'l':
+            args = str(WINDOWS_OBJ.work_space.get_last_active_window_woof_id())
+            if args is None:
+                return
 
         target_id = WINDOWS_OBJ.woof_id_to_window_id(string_to_integer(args))
         WINDOWS_OBJ.add_to_window_group(target_id)

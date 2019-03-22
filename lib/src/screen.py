@@ -253,6 +253,7 @@ class Screen:
 
     def set_window_active(self, calling_child):
         self.last_active_window = calling_child
+        self.parent.set_window_active(calling_child)
 
     def activate_last_active_window(self):
         if self.last_active_window is not None:

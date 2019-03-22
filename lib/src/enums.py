@@ -58,6 +58,8 @@ class OPTIONS:
 
 
 def get_option_description(option):
+    more_prepend = '--more-- '
+
     if option == OPTIONS.NONE:
         return ''
     elif option == OPTIONS.DEBUG:
@@ -67,9 +69,9 @@ def get_option_description(option):
     elif option == OPTIONS.LIST:
         return '(list) TODO'
     elif option == OPTIONS.ADD_HORIZONTAL:
-        return '--> (add horizontal) add the active window the the right of a target window'
+        return more_prepend + '(add horizontal) add the active window the the right of a target window'
     elif option == OPTIONS.ADD_VERTICAL:
-        return '--> (add vertical) add the active window below the target window'
+        return more_prepend + '(add vertical) add the active window below the target window'
     elif option == OPTIONS.EXPAND_HORIZONTAL:
         return '(expand horizontal) increase the horizontal size of the active window'
     elif option == OPTIONS.REDUCE_HORIZONTAL:
@@ -83,7 +85,7 @@ def get_option_description(option):
     elif option == OPTIONS.SWAP_PANE:
         return '(swap-pane) swap the two windows in the split'
     elif option == OPTIONS.SWAP:
-        return '--> (swap) swap the positions of two windows in the tree'
+        return more_prepend + '(swap) swap the positions of two windows in the tree'
     elif option == OPTIONS.MINIMIZE_ALL:
         return '(minimize all) minimize all windows in woof'
     elif option == OPTIONS.UNMINIMIZE_ALL:
@@ -105,13 +107,13 @@ def get_option_description(option):
     elif option == OPTIONS.NAV_DOWN:
         return '(nav down) focus window to the bottom'
     elif option == OPTIONS.ADD_TO_GROUP:
-        return '--> (add to group) add window as a group'
+        return more_prepend + '(add to group) add window as a group'
     elif option == OPTIONS.ACTIVATE_NEXT_WINDOW_IN_GROUP:
         return '(next window in group) activate next window in group'
     elif option == OPTIONS.ACTIVATE_PREV_WINDOW_IN_GROUP:
         return '(prev window in group) activate prev window in group'
     elif option == OPTIONS.SWAP_SCREENS:
-        return '--> (swap screen) swap the two screens'
+        return more_prepend + '(swap screen) swap the two screens'
     elif option == OPTIONS.NEW_SCREEN:
         return '(new screen) adds a new screen (not functional)'
     elif option == OPTIONS.LIST_SCREENS:

@@ -10,6 +10,7 @@ class WorkSpace:
         self.screen_config = screen_config
         self.viewable_screen_count = len(screen_config)
         self.screens = []
+        self.last_active_window = None
 
         counter = 0
         for config in screen_config:
@@ -22,7 +23,6 @@ class WorkSpace:
             counter += 1
 
         self.update_statuses()
-
 
     def debug_print(self):
         print("WorkSpace")
@@ -156,3 +156,14 @@ class WorkSpace:
         for screen in self.get_active_screens():
             self.write_status(screen)
 
+    def get_last_active_window(self):
+        return self.last_active_window
+
+    def set_window_active(self, calling_window):
+        self.last_active_window = calling_window
+
+    def get_last_active_window_woof_id(self):
+        if self.last_active_window is not None:
+            return self.last_active_window.woof_id
+        else:
+            return None
