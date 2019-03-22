@@ -1,4 +1,3 @@
-import subprocess
 from window_group import WindowGroup
 from node import Node
 from screen import Screen

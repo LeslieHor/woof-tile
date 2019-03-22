@@ -26,12 +26,12 @@ class Windows:
             print("-" * 40)
             print(win.get_debug_print(0))
 
-        print()
+        print
         print("TREE")
         print("----")
         windows_in_tree = self.work_space.debug_print()
 
-        print()
+        print
         print("----")
         print("Windows in list: " + str(len(self.windows)))
         print("Windows in tree: " + str(windows_in_tree))
