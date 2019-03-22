@@ -54,6 +54,8 @@ class OPTIONS:
     NEW_SCREEN = 'ns'
     LIST_SCREENS = 'ls'
     RENAME_SCREEN = 'rs'
+    SWAP_SCREEN_LEFT = 'sl'
+    SWAP_SCREEN_RIGHT = 'sr'
 
 
 def get_option_description(option):
@@ -117,6 +119,10 @@ def get_option_description(option):
         return '(list screens) list all the screens in woof'
     elif option == OPTIONS.RENAME_SCREEN:
         return '(rename screen) rename the current screen'
+    elif option == OPTIONS.SWAP_SCREEN_LEFT:
+        return '(swap screen left) swap this screen for the left one'
+    elif option == OPTIONS.SWAP_SCREEN_RIGHT:
+        return '(swap screen right) swap this screen for the right one'
 
     else:
         return ''

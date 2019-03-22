@@ -260,6 +260,38 @@ def main(command_string):
         WINDOWS_OBJ.work_space.screens[active_screen_index].set_name(name)
         WINDOWS_OBJ.work_space.update_statuses()
 
+    elif cmd == OPTIONS.SWAP_SCREEN_LEFT:
+        cur_screen_index = WINDOWS_OBJ.get_active_screen()
+        if cur_screen_index is None:
+            log_error(["Attempted to swap screens but active window is not registered"])
+            return
+
+        cur_v_screen_index = WINDOWS_OBJ.work_space.viewable_screen_index(cur_screen_index)
+        if cur_v_screen_index == 0:
+            log_error(["Cannot swap left. Already on leftest screen"])
+            return
+
+        left_v_screen_index = cur_v_screen_index - 1
+        left_screen_index = WINDOWS_OBJ.work_space.viewable_screen_index_to_index(left_v_screen_index)
+        WINDOWS_OBJ.work_space.swap_screens(cur_screen_index, left_screen_index)
+        WINDOWS_OBJ.work_space.screens[left_screen_index].activate_last_active_window()
+
+    elif cmd == OPTIONS.SWAP_SCREEN_RIGHT:
+        cur_screen_index = WINDOWS_OBJ.get_active_screen()
+        if cur_screen_index is None:
+            log_error(["Attempted to swap screens but active window is not registered"])
+            return
+
+        cur_v_screen_index = WINDOWS_OBJ.work_space.viewable_screen_index(cur_screen_index)
+        if cur_v_screen_index == WINDOWS_OBJ.work_space.viewable_screen_count:
+            log_error(["Cannot swap right. Already on rightest screen"])
+            return
+
+        right_v_screen_index = cur_v_screen_index + 1
+        right_screen_index = WINDOWS_OBJ.work_space.viewable_screen_index_to_index(right_v_screen_index)
+        WINDOWS_OBJ.work_space.swap_screens(cur_screen_index, right_screen_index)
+        WINDOWS_OBJ.work_space.screens[right_screen_index].activate_last_active_window()
+
     pickle.dump(WINDOWS_OBJ, open(DATA_PATH, "wb"))
     save_data()
 
