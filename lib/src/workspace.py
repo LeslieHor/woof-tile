@@ -159,6 +159,10 @@ class WorkSpace:
     def get_last_active_window(self):
         return self.last_active_window
 
+    def activate_last_active_window(self):
+        if self.last_active_window is not None:
+            self.last_active_window.activate()
+
     def set_window_active(self, calling_window):
         self.last_active_window = calling_window
 

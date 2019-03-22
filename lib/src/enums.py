@@ -39,7 +39,6 @@ class OPTIONS:
     SWAP_PANE = 'sp'
     SWAP = 'sw'
     MINIMIZE_ALL = 'mn'
-    UNMINIMIZE_ALL = 'um'
     MAXIMIZE = 'mx'
     KILL = 'kl'
     REMOVE = 'rm'
@@ -67,7 +66,7 @@ def get_option_description(option):
     elif option == OPTIONS.RESTORE:
         return '(restore) restore all window positions'
     elif option == OPTIONS.LIST:
-        return '(list) TODO'
+        return more_prepend + '(list) list the windows available for interaction'
     elif option == OPTIONS.ADD_HORIZONTAL:
         return more_prepend + '(add horizontal) add the active window the the right of a target window'
     elif option == OPTIONS.ADD_VERTICAL:
@@ -88,8 +87,6 @@ def get_option_description(option):
         return more_prepend + '(swap) swap the positions of two windows in the tree'
     elif option == OPTIONS.MINIMIZE_ALL:
         return '(minimize all) minimize all windows in woof'
-    elif option == OPTIONS.UNMINIMIZE_ALL:
-        return '(unminimize all) unminimize all windows in woof'
     elif option == OPTIONS.MAXIMIZE:
         return '(maximize) maximize the active window as if it was the only window on the screen'
     elif option == OPTIONS.KILL:

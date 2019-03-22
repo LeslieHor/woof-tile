@@ -107,6 +107,8 @@ class Windows:
             else:
                 window.set_size()
 
+        self.work_space.activate_last_active_window()
+
     def check_windows(self):
         """Checks that all windows in the dictionary are still alive
 
@@ -221,21 +223,6 @@ class Windows:
         if not self.exists():
             return False
         self.windows[self.get_active_window()].swap_pane_position()
-
-    def unminimize_all(self):
-        """Unminimize all windows
-
-        Because we need to unminimize by activating the window, window focus
-        will be overwritten. Windows are not restored to their intended
-        positions
-        """
-        active_win_id = self.get_active_window()
-        for win in self.work_space.get_viewable_windows():
-            win.activate()
-            win.state = WINDOW_STATE.NORMAL
-
-        # We active the window through a call, in case it is not in the tree
-        system_calls.activate_window(active_win_id)
 
     def activate_window(self, win_id):
         self.windows[win_id].activate()

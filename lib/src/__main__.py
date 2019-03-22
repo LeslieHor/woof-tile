@@ -4,7 +4,6 @@ from windows import Windows
 from log import log_info, log_debug, log_error
 from config import *
 from enums import PLANE, DIR, WINDOW_STATE, OPTIONS, print_options
-from helpers import element
 
 
 def debug_print():
@@ -54,7 +53,7 @@ def main(command_string):
         WINDOWS_OBJ.restore_all()
 
     elif cmd == OPTIONS.LIST:
-        print(WINDOWS_OBJ.list_add_windows())
+        print('\n'.join(WINDOWS_OBJ.list_add_windows()))
 
     elif cmd == OPTIONS.ADD_HORIZONTAL:
         if args == '':
@@ -137,9 +136,6 @@ def main(command_string):
 
     elif cmd == OPTIONS.MINIMIZE_ALL:
         WINDOWS_OBJ.minimize_all()
-
-    elif cmd == OPTIONS.UNMINIMIZE_ALL:
-        WINDOWS_OBJ.unminimize_all()
 
     elif cmd == OPTIONS.MAXIMIZE:
         if len(args) > 0:
