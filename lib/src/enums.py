@@ -27,7 +27,7 @@ class WINDOW_STATE:
 class OPTIONS:
     NONE = ''
     DEBUG = 'db'
-    RESTORE = 'rs'
+    RESTORE = 're'
     LIST = 'la'
     ADD_HORIZONTAL = 'ah'
     ADD_VERTICAL = 'av'
@@ -58,13 +58,13 @@ class OPTIONS:
 
 
 def print_options(windows):
-    exclude = ['__module__', '__doc__', 'NONE', 'ADD']
+    exclude = ['__module__', '__doc__', 'NONE']
     commands = []
     for option, command in vars(OPTIONS).items():
         if option in exclude:
             continue
         commands.append(command)
-    commands += create_specials(windows)
+    # commands += create_specials(windows)
     commands.sort()
 
     for command in commands:

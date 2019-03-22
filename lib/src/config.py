@@ -3,6 +3,7 @@ import os
 # Paths
 DATA_PATH = "~/.woof/windows.dat"
 LOG_PATH = "~/.woof/log/log"
+STATUSES_PATH = "~/.woof/status/"
 
 # Config
 GAP = 10
@@ -41,3 +42,4 @@ SCREEN_CONFIG = [
 # Initialising Config
 DATA_PATH = os.path.expanduser(DATA_PATH)  # Convert relative path to global path
 LOG_PATH = os.path.expanduser(LOG_PATH)  # Convert relative path to global path
+STATUSES_PATH = os.path.expanduser(STATUSES_PATH)  # Convert relative path to global path

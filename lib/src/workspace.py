@@ -1,5 +1,6 @@
 from screen import Screen
 from enums import SCREEN_STATE
+from config import STATUSES_PATH
 
 
 class WorkSpace:
@@ -65,12 +66,16 @@ class WorkSpace:
         screen_a.set_size()
         screen_b.set_size()
 
+        self.write_status(screen_a)
+        self.write_status(screen_b)
+
     def swap_active_inactive_screens(self, active_screen, inactive_screen):
         active_config = active_screen.get_config()
 
         inactive_screen.set_active(active_config)
-
         active_screen.set_inactive()
+
+        self.write_status(inactive_screen)
 
     def get_screen_index(self, calling_child):
         return self.screens.index(calling_child)
@@ -119,3 +124,33 @@ class WorkSpace:
                 windows += window_list
 
         return windows
+
+    def write_status(self, caller_child):
+        screen_index = self.get_screen_index(caller_child)
+        viewable_screen_index = self.viewable_screen_index(screen_index)
+
+        statuses = []
+        counter = 0
+        for screen in self.screens:
+            string = str(counter) + ": " + screen.name
+            if screen == caller_child:
+                string = "> " + string + " <"
+            statuses.append(string)
+            counter += 1
+
+        complete = ' | '.join(statuses)
+        with open(STATUSES_PATH + str(viewable_screen_index), 'w') as file_:
+            file_.write(complete)
+
+    def get_active_screens(self):
+        active_screens = []
+        for screen in self.screens:
+            if screen.is_active():
+                active_screens.append(screen)
+
+        return active_screens
+
+    def update_statuses(self):
+        for screen in self.get_active_screens():
+            self.write_status(screen)
+

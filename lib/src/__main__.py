@@ -237,7 +237,8 @@ def main(command_string):
                 WINDOWS_OBJ.work_space.screens[screen_index_b].activate_last_active_window()
 
     elif cmd == OPTIONS.NEW_SCREEN:
-        WINDOWS_OBJ.work_space.new_screen()
+        # WINDOWS_OBJ.work_space.new_screen()
+        WINDOWS_OBJ.work_space.update_statuses()
 
     elif cmd == OPTIONS.LIST_SCREENS:
         print('\n'.join(WINDOWS_OBJ.list_screens('', False, False)))
@@ -246,6 +247,7 @@ def main(command_string):
         name = args[1:]
         active_screen_index = WINDOWS_OBJ.get_active_screen()
         WINDOWS_OBJ.work_space.screens[active_screen_index].set_name(name)
+        WINDOWS_OBJ.work_space.update_statuses()
 
     pickle.dump(WINDOWS_OBJ, open(DATA_PATH, "wb"))
     save_data()
