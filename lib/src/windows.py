@@ -6,6 +6,7 @@ from window import Window
 import system_calls
 from config import *
 from log import log_info, log_debug, log_warning, log_error
+from enums import WINDOW_STATE
 
 
 class Windows:
@@ -15,7 +16,7 @@ class Windows:
     """
 
     def __init__(self, screen_config):
-        self.work_space = WorkSpace(screen_config)
+        self.work_space = WorkSpace(screen_config, START_SCREEN_COUNT)
         self.windows = {}
         self.last_resize_ts = 0
 
@@ -130,7 +131,7 @@ class Windows:
 
         return fix
 
-    def list_add_windows(self, prepend, exclude_active=False):
+    def list_add_windows(self, prepend='', exclude_active=False):
         """Generate a formatted list of windows
 
         For listing windows in rofi.
@@ -139,13 +140,13 @@ class Windows:
         Empty screens are also returned in the list.
         """
         window_list = []
-        active_window = None
+        active_window_id = None
         if exclude_active:
-            active_window = self.windows[self.get_active_window()]
+            active_window_id = self.get_active_window()
 
-        for Win in self.work_space.get_viewable_windows():
-            if (not Win.is_shaded()) and (not Win == active_window):
-                window_list.append(Win.list_add_window(prepend))
+        for win in self.work_space.get_viewable_windows():
+            if (not win.is_shaded()) and (not win.window_id == active_window_id):
+                window_list.append(win.list_add_window(prepend))
 
         window_list.sort()
         counter = 0
@@ -153,9 +154,9 @@ class Windows:
             screen_index = self.work_space.viewable_screen_index_to_index(viewable_screen)
             screen = self.work_space.screens[screen_index]
             if screen.child is None:
-                window_list.append(prepend + "Screen " + str(counter))
+                window_list.append(prepend + "s" + str(counter))
             counter += 1
-        return "\n".join(window_list)
+        return window_list
 
     def list_windows(self):
         """Return a sorted list of all Window ids in the dictionary"""
@@ -229,9 +230,9 @@ class Windows:
         positions
         """
         active_win_id = self.get_active_window()
-        for _Key, Win in self.windows.iteritems():
-            Win.activate()
-            Win.Maximized = False
+        for _key, win in self.windows.iteritems():
+            win.activate()
+            win.state = WINDOW_STATE.NORMAL
 
         # We active the window through a call, in case it is not in the tree
         system_calls.activate_window(active_win_id)
@@ -245,7 +246,7 @@ class Windows:
 
     def add_to_window(self, plane_type, direction, target_id):
         new_window_id = self.get_active_window()
-        new_window = Window(new_window_id)
+        new_window = Window(new_window_id, self.generate_new_window_id())
         new_window.remove_wm_maximize()
 
         target_id = int(target_id)
@@ -261,10 +262,10 @@ class Windows:
         if self.exists(new_window_id):
             return False
 
-        new_window = Window(new_window_id)
+        new_window = Window(new_window_id, self.generate_new_window_id())
         new_window.remove_wm_maximize()
 
-        if target_id == 'Screen':
+        if target_id == 's':
             screen_index = int(self.work_space.viewable_screen_index_to_index(int(screen_index)))
 
             screen = self.work_space.screens[screen_index]
@@ -455,7 +456,7 @@ class Windows:
             log_debug(['Active window exists, or target window does not exist'])
             return False
 
-        new_window = Window(win_id)
+        new_window = Window(win_id, self.generate_new_window_id())
         target_win = self.windows[target_id]
         node_parent = target_win.parent
         if isinstance(node_parent, WindowGroup):
@@ -485,17 +486,20 @@ class Windows:
 
         window.parent.activate_next_window(increment)
 
-    def list_screens(self, prepend='', exclude=[]):
+    def list_screens(self, prepend='', exclude_active=False, include_views=True):
         screens_list = range(len(self.work_space.screens))
-        print_out = ''
+        active_screen_index = self.get_active_screen()
+        print_out = []
         for index in screens_list:
-            if index in exclude:
+            if exclude_active and index == active_screen_index:
                 continue
             viewable_screen_index = self.work_space.viewable_screen_index(index)
             name = self.work_space.screens[index].name
-            print_out += prepend + " " + str(index) + " VS: " + str(viewable_screen_index) + " - " + name + "\n"
+            print_out.append(prepend + str(index) + " : v" + str(viewable_screen_index) + " - " + name)
+            if include_views and viewable_screen_index is not None:
+                print_out.append(prepend + 'v' + str(viewable_screen_index) + " - " + name)
 
-        print(print_out)
+        return print_out
 
     def get_active_screen(self):
         active_window_id = self.get_active_window()
@@ -503,3 +507,15 @@ class Windows:
             return self.windows[active_window_id].get_screen_index()
         else:
             return None
+
+    def generate_new_window_id(self):
+        return len(self.windows)
+
+    def woof_id_to_window_id(self, woof_id):
+        for window_id, window in self.windows.iteritems():
+            if window.woof_id == woof_id:
+                return window_id
+        return None
+
+    def window_id_to_woof_id(self, window_id):
+        return self.windows[window_id].woof_id

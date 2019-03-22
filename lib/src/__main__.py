@@ -29,93 +29,125 @@ def dir_str_to_plane_dir(direction):
         return False
 
 
-def main(args):
+def string_to_integer(value):
+    if value == '':
+        return None
+    else:
+        return int(value)
 
-    cmd = args[1]
-    log_info(['------- Start --------', 'Args:'] + args[1:])
+
+def cut_off_rest(arg):
+    return arg.split(' : ')[0]
+
+
+def main(command_string):
+
+    cmd = command_string[:2]
+    args = command_string[2:]
+    args = cut_off_rest(args)
+    log_info(['------- Start --------', 'Args:', cmd, args])
 
     if cmd == OPTIONS.DEBUG:
         debug_print()
+
     elif cmd == OPTIONS.RESTORE:
         WINDOWS_OBJ.restore_all()
-    elif cmd == OPTIONS.LIST:
-        print(WINDOWS_OBJ.list_add_windows(args[2]))
-    elif cmd == OPTIONS.ADD:
-        # Adding to a window : "add h 32478239 : window title"
-        # Adding to a screen : "add h Screen 1"
-        plane = element(args, 2, None)
-        target_id = element(args, 3, None)
-        screen_index = element(args, 4, None)
 
-        if target_id is None:
-            log_debug(['No target id. Listing windows.'])
-            print(WINDOWS_OBJ.list_add_windows("add " + plane + " "))
+    elif cmd == OPTIONS.LIST:
+        print(WINDOWS_OBJ.list_add_windows())
+
+    elif cmd == OPTIONS.ADD_HORIZONTAL:
+        if args == '':
+            print('\n'.join(WINDOWS_OBJ.list_add_windows(OPTIONS.ADD_HORIZONTAL)))
             return
 
-        log_debug(['Target ID found. TargetId:', target_id])
-        if target_id == 'Screen':
-            log_debug(['Detected screen add. Screen Index:', screen_index])
+        plane_type = PLANE.VERTICAL
+        direction = DIR.RIGHT
+        if args[0] == 's':
+            target_id = 's'
+            screen_index = int(args[1:])
         else:
-            log_debug(['Not a screen add'])
+            target_id = WINDOWS_OBJ.woof_id_to_window_id(int(args))
+            screen_index = None
 
-        plane_type, direction = dir_str_to_plane_dir(plane)
+            if not WINDOWS_OBJ.exists(target_id):
+                return
 
         WINDOWS_OBJ.add(plane_type, direction, target_id, screen_index)
-    elif cmd == OPTIONS.EXPAND_VERTICAL:
-        increment = element(args, 2, None)
-        if increment is not None:
-            increment = int(increment)
-        log_debug(['Attempting to expand vertical size.'])
-        WINDOWS_OBJ.resize_vertical('expand', increment)
-    elif cmd == OPTIONS.REDUCE_VERTICAL:
-        log_debug(['Attempting to reduce vertical size.'])
-        increment = element(args, 2, None)
-        if increment is not None:
-            increment = int(increment)
-        WINDOWS_OBJ.resize_vertical('reduce', increment)
-    elif cmd == OPTIONS.EXPAND_HORIZONTAL:
-        log_debug(['Attempting to expand horizontal size.'])
-        increment = element(args, 2, None)
-        if increment is not None:
-            increment = int(increment)
-        WINDOWS_OBJ.resize_horizontal('expand', increment)
-    elif cmd == OPTIONS.REDUCE_HORIZONTAL:
-        increment = element(args, 2, None)
-        if increment is not None:
-            increment = int(increment)
-        log_debug(['Attempting to reduce horizontal size.'])
-        WINDOWS_OBJ.resize_horizontal('reduce', increment)
-    elif cmd == OPTIONS.CHANGE_PLANE:
-        WINDOWS_OBJ.change_plane()
-    elif cmd == OPTIONS.SWAP_PANE:
-        WINDOWS_OBJ.swap_pane_position()
-    elif cmd == OPTIONS.SWAP:
-        if len(args) < 3:
-            log_debug(['No target found. Listing windows'])
-            print(WINDOWS_OBJ.list_add_windows("swap ", True))
+
+    elif cmd == OPTIONS.ADD_VERTICAL:
+        if args == '':
+            print('\n'.join(WINDOWS_OBJ.list_add_windows(OPTIONS.ADD_VERTICAL)))
             return
 
-        target_id = int(args[2])
+        plane_type = PLANE.HORIZONTAL
+        direction = DIR.DOWN
+        if args[0] == 's':
+            target_id = 's'
+            screen_index = int(args[1:])
+        else:
+            target_id = WINDOWS_OBJ.woof_id_to_window_id(int(args))
+            screen_index = None
+
+            if not WINDOWS_OBJ.exists(target_id):
+                return
+
+        WINDOWS_OBJ.add(plane_type, direction, target_id, screen_index)
+
+    elif cmd == OPTIONS.EXPAND_VERTICAL:
+        increment = string_to_integer(args)
+        WINDOWS_OBJ.resize_vertical('expand', increment)
+
+    elif cmd == OPTIONS.REDUCE_VERTICAL:
+        increment = string_to_integer(args)
+        WINDOWS_OBJ.resize_vertical('reduce', increment)
+
+    elif cmd == OPTIONS.EXPAND_HORIZONTAL:
+        increment = string_to_integer(args)
+        WINDOWS_OBJ.resize_horizontal('expand', increment)
+
+    elif cmd == OPTIONS.REDUCE_HORIZONTAL:
+        increment = string_to_integer(args)
+        WINDOWS_OBJ.resize_horizontal('reduce', increment)
+
+    elif cmd == OPTIONS.CHANGE_PLANE:
+        WINDOWS_OBJ.change_plane()
+
+    elif cmd == OPTIONS.SWAP_PANE:
+        WINDOWS_OBJ.swap_pane_position()
+
+    elif cmd == OPTIONS.SWAP:
+        if args == '':
+            log_debug(['No target found. Listing windows'])
+            print('\n'.join(WINDOWS_OBJ.list_add_windows(OPTIONS.SWAP, True)))
+            return
+
+        target_id = string_to_integer(args)
         WINDOWS_OBJ.swap_windows(target_id)
+
     elif cmd == OPTIONS.MINIMIZE_ALL:
         WINDOWS_OBJ.minimize_all()
+
     elif cmd == OPTIONS.UNMINIMIZE_ALL:
         WINDOWS_OBJ.unminimize_all()
+
     elif cmd == OPTIONS.MAXIMIZE:
-        if len(args) > 2:
-            target_win_id = int(args[2])
+        if len(args) > 0:
+            target_win_id = WINDOWS_OBJ.woof_id_to_window_id(string_to_integer(args))
         else:
             target_win_id = WINDOWS_OBJ.get_active_window()
+
         if not WINDOWS_OBJ.exists(target_win_id):
             exit(1)
+
         win_ids = WINDOWS_OBJ.windows[target_win_id].list_screen_windows()
+
         if WINDOWS_OBJ.windows[target_win_id].is_maximized():
             for win_id in win_ids:
                 WINDOWS_OBJ.windows[win_id].activate()
                 WINDOWS_OBJ.windows[win_id].set_size()
 
             WINDOWS_OBJ.windows[target_win_id].activate(True)
-            WINDOWS_OBJ.windows[target_win_id].maximized = False
             WINDOWS_OBJ.windows[target_win_id].state = WINDOW_STATE.NORMAL
         else:
             for win_id in win_ids:
@@ -123,62 +155,75 @@ def main(args):
                     continue
                 WINDOWS_OBJ.windows[win_id].minimize()
             WINDOWS_OBJ.windows[target_win_id].maximize()
+
     elif cmd == OPTIONS.KILL:
         win_id = WINDOWS_OBJ.get_active_window()
         if not WINDOWS_OBJ.exists(win_id):
             exit(1)
-        win_id = WINDOWS_OBJ.windows[win_id].window_id
         next_active_window = WINDOWS_OBJ.kill_window(win_id)
+
         return_string = str(win_id) + "," + str(next_active_window)
         log_debug(['ReturnString:', return_string])
         print(return_string)
+
     elif cmd == OPTIONS.REMOVE:
         win_id = WINDOWS_OBJ.get_active_window()
         if not WINDOWS_OBJ.exists(win_id):
             exit(1)
         WINDOWS_OBJ.kill_window(win_id)
+
     elif cmd == OPTIONS.MOVE_TO:
-        if len(args) < 3:
+        if args == '':
             log_debug(['No target id. Listing windows.'])
-            print(WINDOWS_OBJ.list_add_windows("move-to ", True))
+            print('\n'.join(WINDOWS_OBJ.list_add_windows(OPTIONS.MOVE_TO, True)))
             return
 
-        main(['', 'remove'])
-        main(['', 'add', 'h', args[2]])
+        main('rm')
+        main('ah' + args)
+
     elif cmd == OPTIONS.NAV_RIGHT:
         WINDOWS_OBJ.nav_right()
+
     elif cmd == OPTIONS.NAV_LEFT:
         WINDOWS_OBJ.nav_left()
+
     elif cmd == OPTIONS.NAV_UP:
         WINDOWS_OBJ.nav_up()
+
     elif cmd == OPTIONS.NAV_DOWN:
         WINDOWS_OBJ.nav_down()
+
     elif cmd == OPTIONS.ADD_TO_GROUP:
         if WINDOWS_OBJ.exists(WINDOWS_OBJ.get_active_window()):
             exit(1)
-        if len(args) < 3:
+
+        if args == '':
             log_debug(['No target id. Listing windows.'])
-            print(WINDOWS_OBJ.list_add_windows("add-to-group "))
+            print('\n'.join(WINDOWS_OBJ.list_add_windows(OPTIONS.ADD_TO_GROUP)))
             return
 
-        target_id = args[2]
+        target_id = WINDOWS_OBJ.woof_id_to_window_id(string_to_integer(args))
         WINDOWS_OBJ.add_to_window_group(target_id)
+
     elif cmd == OPTIONS.ACTIVATE_NEXT_WINDOW_IN_GROUP:
         WINDOWS_OBJ.activate_next_window(1)
+
     elif cmd == OPTIONS.ACTIVATE_PREV_WINDOW_IN_GROUP:
         WINDOWS_OBJ.activate_next_window(-1)
+
     elif cmd == OPTIONS.SWAP_SCREENS:
-        if len(args) < 3:
+        if args == '':
             if WINDOWS_OBJ.exists(WINDOWS_OBJ.get_active_window()):
-                active_screen_index = WINDOWS_OBJ.get_active_screen()
-                WINDOWS_OBJ.list_screens('swap-screen', [active_screen_index])
+                print('\n'.join(WINDOWS_OBJ.list_screens(OPTIONS.SWAP_SCREENS, True)))
             else:
                 log_error(["Attempted to list screens, but current window not registered, so could not exclude current screen"])
                 return
         else:
-            screen_index_b = parse_screen_index(args[2])
+            screen_index_b = parse_screen_index(args)
             try:
-                screen_index_a = parse_screen_index(args[3])
+                screen_index_b, screen_index_a = args.split(',')[0], args.split(',')[1]
+                screen_index_a = parse_screen_index(screen_index_a)
+                screen_index_b = parse_screen_index(screen_index_b)
                 if screen_index_a is None:
                     log_error(["Attempted to swap screens but unable to parse second arg:", args[3]])
                     return
@@ -190,48 +235,58 @@ def main(args):
                     return
                 WINDOWS_OBJ.work_space.swap_screens(screen_index_a, screen_index_b)
                 WINDOWS_OBJ.work_space.screens[screen_index_b].activate_last_active_window()
+
     elif cmd == OPTIONS.NEW_SCREEN:
         WINDOWS_OBJ.work_space.new_screen()
+
     elif cmd == OPTIONS.LIST_SCREENS:
-        WINDOWS_OBJ.list_screens()
+        print('\n'.join(WINDOWS_OBJ.list_screens('', False, False)))
+
     elif cmd == OPTIONS.RENAME_SCREEN:
-        name = ' '.join(args[2:])
+        name = args[1:]
         active_screen_index = WINDOWS_OBJ.get_active_screen()
         WINDOWS_OBJ.work_space.screens[active_screen_index].set_name(name)
 
     pickle.dump(WINDOWS_OBJ, open(DATA_PATH, "wb"))
+    save_data()
 
 
 def parse_screen_index(index):
-    if index[0] == 'v':
-        return WINDOWS_OBJ.work_space.viewable_screen_index_to_index(int(index[1:]))
-    else:
-        return int(index)
+    try:
+        if index[0] == 'v':
+            return WINDOWS_OBJ.work_space.viewable_screen_index_to_index(int(index[1:]))
+        else:
+            return int(index)
+    except:
+        return None
+
+
+def save_data():
+    pickle.dump(WINDOWS_OBJ, open(DATA_PATH, "wb"))
 
 
 ARGS = sys.argv
 
+try:
+    WINDOWS_OBJ = pickle.load(open(DATA_PATH, "rb"))
+
+    # Takes only about 4ms when all windows are valid
+    if WINDOWS_OBJ.check_windows():
+        WINDOWS_OBJ.restore_all()
+except:
+    WINDOWS_OBJ = Windows(SCREEN_CONFIG)
+
 if len(ARGS) == 1:
-    print_options()
+    print_options(WINDOWS_OBJ)
     exit(0)
 
 # Initialise a tree
-if ARGS[1] == 'reload':
+if ARGS[1] == 'rl':
     WINDOWS_OBJ = Windows(SCREEN_CONFIG)
-else:
-    try:
-        WINDOWS_OBJ = pickle.load(open(DATA_PATH, "rb"))
-
-        # Takes only about 4ms when all windows are valid
-        if WINDOWS_OBJ.check_windows():
-            WINDOWS_OBJ.restore_all()
-    except:
-        WINDOWS_OBJ = Windows(SCREEN_CONFIG)
-
-if ARGS[1] == "benchmark":
+    save_data()
     exit(0)
 
 if __name__ == '__main__':
-    main(ARGS)
+    main(' '.join(ARGS[1:]))
 
 exit(0)

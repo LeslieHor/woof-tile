@@ -10,8 +10,9 @@ from enums import *
 class Window:
     """Leaf node, representing a viewable window"""
 
-    def __init__(self, window_id):
+    def __init__(self, window_id, woof_id):
         self.window_id = window_id
+        self.woof_id = woof_id
         self.state = WINDOW_STATE.NORMAL
 
         self.window_class = system_calls.get_window_class(self.window_id)
@@ -20,7 +21,8 @@ class Window:
     def debug_print(self, level=0):
         l, d, u, r = self.get_size()
         borders = str(l) + ", " + str(d) + ", " + str(u) + ", " + str(r)
-        print(str(DEBUG_SPACER * level) + "Window ID: " + str(self.window_id)) + " Borders: " + borders
+        print(str(DEBUG_SPACER * level) + "Woof ID: " + str(self.woof_id)) + " Borders: " + borders
+
         return 1
 
     def get_debug_print(self, level=0):
@@ -47,6 +49,7 @@ class Window:
             parent_type = 'Unknown'
 
         string = ''
+        string += str((DEBUG_SPACER * level)) + 'Woof ID: ' + str(self.woof_id) + '\n'
         string += str((DEBUG_SPACER * level)) + 'Window ID: ' + str(self.window_id) + '\n'
         string += str((DEBUG_SPACER * level)) + 'Window Title: ' + window_title + '\n'
         string += str((DEBUG_SPACER * level)) + 'State: ' + state + '\n'
@@ -247,7 +250,7 @@ class Window:
         This is used to list windows in rofi
         """
         window_name = system_calls.get_window_title(self.window_id)
-        return prepend + str(self.window_id) + " : " + window_name
+        return prepend + str(self.woof_id) + " : " + window_name
 
     def get_state(self):
         return system_calls.get_window_state(self.window_id)

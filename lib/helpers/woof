@@ -5,7 +5,7 @@ WOOF=~/.woof/woof
 if [[ -z "$@" ]]; then
     ${WOOF}
 else
-    if [[ ${1} == "kill" ]]; then
+    if [[ ${1} == "kl" ]]; then
         CurrNextActiveWindow=$(${WOOF} $@)
         ActiveWindow=$(echo ${CurrNextActiveWindow} | sed 's/,.*//')
         NextWindow=$(echo ${CurrNextActiveWindow} | sed 's/.*,//')

@@ -5,7 +5,7 @@ from enums import SCREEN_STATE
 class WorkSpace:
     """Root of all tree structures"""
 
-    def __init__(self, screen_config):
+    def __init__(self, screen_config, start_screen_count=0):
         self.screen_config = screen_config
         self.viewable_screen_count = len(screen_config)
         self.screens = []
@@ -15,6 +15,11 @@ class WorkSpace:
             new_screen = Screen(self, str(counter), config, SCREEN_STATE.ACTIVE)
             self.screens.append(new_screen)
             counter += 1
+
+        while counter < start_screen_count:
+            self.new_screen()
+            counter += 1
+
 
     def debug_print(self):
         print("WorkSpace")
@@ -37,6 +42,8 @@ class WorkSpace:
             self.swap_two_active_screens(screen_a, screen_b)
         elif screen_a.is_active() and not screen_b.is_active():
             self.swap_active_inactive_screens(screen_a, screen_b)
+        elif not screen_a.is_active() and screen_b.is_active():
+            self.swap_active_inactive_screens(screen_b, screen_a)
         elif not screen_a.is_active and screen_b.is_active():
             self.swap_active_inactive_screens(screen_b, screen_a)
         else:
