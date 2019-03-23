@@ -6,7 +6,6 @@ from window import Window
 import system_calls
 from config import *
 from log import log_info, log_debug, log_warning, log_error
-from enums import WINDOW_STATE
 
 
 class Windows:
@@ -505,7 +504,18 @@ class Windows:
             return None
 
     def generate_new_window_id(self):
-        return len(self.windows)
+        """
+        Get the first unused id
+        :return:
+        """
+        existing_ids = []
+        for win in self.windows:
+            existing_ids.append(win.woof_id)
+
+        counter = 0
+        while True:
+            if counter not in existing_ids:
+                return counter
 
     def woof_id_to_window_id(self, woof_id):
         for window_id, window in self.windows.iteritems():

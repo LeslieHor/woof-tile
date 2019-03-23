@@ -15,6 +15,8 @@ class Node:
         self.child_a = None
         self.child_b = None
 
+        self.split_coordinate = 0.5
+
     def debug_print(self, level):
         if self.plane_type == PLANE.HORIZONTAL:
             plane_type_str = "H"
