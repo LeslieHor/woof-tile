@@ -217,11 +217,9 @@ class Node:
     def swap_pane_position(self):
         """Swap the positions of the children"""
         self.child_a, self.child_b = self.child_b, self.child_a
-        self.set_size()
 
     def replace_child(self, caller_child, new_child):
         """Replace the calling child with a new child
-        # TODO: Should we handle resizing here?
         """
         if caller_child == self.child_a:
             self.child_a = new_child

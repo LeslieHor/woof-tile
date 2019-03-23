@@ -132,6 +132,9 @@ def main(command_string):
             return
 
         target_id = string_to_integer(args)
+        if target_id is None:
+            log_error(["No target"])
+        target_id = WINDOWS_OBJ.woof_id_to_window_id(target_id)
         WINDOWS_OBJ.swap_windows(target_id)
 
     elif cmd == OPTIONS.MINIMIZE_ALL:

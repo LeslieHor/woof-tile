@@ -198,6 +198,7 @@ class Window:
     def swap_pane_position(self):
         """Request parent to swap self and sibling positions"""
         self.parent.swap_pane_position()
+        self.parent.set_size()
 
     def replace_child(self, new_child):
         """Request parent to replace self with a new child"""

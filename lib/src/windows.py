@@ -79,8 +79,11 @@ class Windows:
         window_a = self.windows[window_id_a]
         window_b = self.windows[window_id_b]
 
-        window_a.replace_child(window_b)
-        window_b.replace_child(window_a)
+        if window_a.parent == window_b.parent:
+            window_a.parent.swap_pane_position()
+        else:
+            window_a.replace_child(window_b)
+            window_b.replace_child(window_a)
 
         window_a.parent, window_b.parent = window_b.parent, window_a.parent
 
@@ -290,25 +293,27 @@ class Windows:
                 continue
 
             top_border_diff = (t - wt) ** 2  # Magnitude of diff
-            if lowest_top_diff < top_border_diff:
-                continue
 
-            # When two windows are equally apart. Take the to one with greater overlap
-            # +------+ +-----+
-            # |      | |     |
-            # |  1   | +-----+
-            # |      | +-----+
-            # |      | |  0  |
-            # +------+ +-----+
-            # +------+
-            # |      |
-            # |      |
-            # |      |
-            # |      |
-            # +------+
-            # 0 Should switch to 1
-            if lowest_top_diff == top_border_diff and t < wt:
-                continue
+            if wr == closest_right_border:  # Only compare when the borders are same distance apart
+                if lowest_top_diff < top_border_diff:
+                    continue
+
+                # When two windows are equally apart. Take the to one with greater overlap
+                # +------+ +-----+
+                # |      | |     |
+                # |  1   | +-----+
+                # |      | +-----+
+                # |      | |  0  |
+                # +------+ +-----+
+                # +------+
+                # |      |
+                # |      |
+                # |      |
+                # |      |
+                # +------+
+                # 0 Should switch to 1
+                if lowest_top_diff == top_border_diff and t < wt:
+                    continue
 
             closest_right_border = wr
             lowest_top_diff = top_border_diff
@@ -342,12 +347,13 @@ class Windows:
                 continue
 
             top_border_diff = (t - wt) ** 2  # Magnitude of diff
-            if lowest_top_diff < top_border_diff:
-                continue
+            if wl == closest_left_border:
+                if lowest_top_diff < top_border_diff:
+                    continue
 
-            # See comment in nav-left
-            if lowest_top_diff == top_border_diff and t < wt:
-                continue
+                # See comment in nav-left
+                if lowest_top_diff == top_border_diff and t < wt:
+                    continue
 
             closest_left_border = wl
             lowest_top_diff = top_border_diff
@@ -381,12 +387,13 @@ class Windows:
                 continue
 
             left_border_diff = (l - wl) ** 2  # Magnitude of diff
-            if lowest_left_diff < left_border_diff:
-                continue
+            if wb == closest_bottom_border:
+                if lowest_left_diff < left_border_diff:
+                    continue
 
-            # See comment in nav-left
-            if lowest_left_diff == left_border_diff and wl > l:
-                continue
+                # See comment in nav-left
+                if lowest_left_diff == left_border_diff and wl > l:
+                    continue
 
             closest_bottom_border = wb
             lowest_left_diff = left_border_diff
@@ -419,12 +426,13 @@ class Windows:
                 continue
 
             left_border_diff = (l - wl) ** 2  # Magnitude of diff
-            if lowest_left_diff < left_border_diff:
-                continue
+            if wt == closest_top_border:
+                if lowest_left_diff < left_border_diff:
+                    continue
 
-            # See comment in nav-left
-            if lowest_left_diff == left_border_diff and wl > l:
-                continue
+                # See comment in nav-left
+                if lowest_left_diff == left_border_diff and wl > l:
+                    continue
 
             closest_top_border = wt
             lowest_left_diff = left_border_diff
