@@ -28,8 +28,9 @@ It will copy the `woof` bash script into `~/bin/` and copy the `woof` python pac
 Assign hotkeys using xbindkeys to actually use it
 
 Commands:
+
 | Command | Description |
-|-|-|
+|---|---|
 | `ag<id>` | (add to group) add window as a group |
 | `ah<id>` | (add horizontal) add the active window the the right of a target window |
 | `av<id>` | (add vertical) add the active window below the target window |
