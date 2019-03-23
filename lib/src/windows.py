@@ -509,13 +509,14 @@ class Windows:
         :return:
         """
         existing_ids = []
-        for win in self.windows:
+        for _win_id, win in self.windows.iteritems():
             existing_ids.append(win.woof_id)
 
         counter = 0
         while True:
             if counter not in existing_ids:
                 return counter
+            counter += 1
 
     def woof_id_to_window_id(self, woof_id):
         for window_id, window in self.windows.iteritems():
