@@ -191,16 +191,20 @@ def main(command_string):
         main('ah' + args)
 
     elif cmd == OPTIONS.NAV_RIGHT:
-        WINDOWS_OBJ.nav_right()
+        window = WINDOWS_OBJ.right_win()
+        window.activate(True)
 
     elif cmd == OPTIONS.NAV_LEFT:
-        WINDOWS_OBJ.nav_left()
+        window = WINDOWS_OBJ.left_win()
+        window.activate(True)
 
     elif cmd == OPTIONS.NAV_UP:
-        WINDOWS_OBJ.nav_up()
+        window = WINDOWS_OBJ.top_win()
+        window.activate(True)
 
     elif cmd == OPTIONS.NAV_DOWN:
-        WINDOWS_OBJ.nav_down()
+        window = WINDOWS_OBJ.bottom_win()
+        window.activate(True)
 
     elif cmd == OPTIONS.ADD_TO_GROUP:
         if WINDOWS_OBJ.exists(WINDOWS_OBJ.get_active_window()):
@@ -294,6 +298,22 @@ def main(command_string):
         right_screen_index = WINDOWS_OBJ.work_space.viewable_screen_index_to_index(right_v_screen_index)
         WINDOWS_OBJ.work_space.swap_screens(cur_screen_index, right_screen_index)
         WINDOWS_OBJ.work_space.screens[right_screen_index].activate_last_active_window()
+
+    elif cmd == OPTIONS.SWAP_PANE_LEFT:
+        target_win = WINDOWS_OBJ.left_win()
+        WINDOWS_OBJ.swap_windows(target_win.window_id)
+
+    elif cmd == OPTIONS.SWAP_PANE_RIGHT:
+        target_win = WINDOWS_OBJ.right_win()
+        WINDOWS_OBJ.swap_windows(target_win.window_id)
+
+    elif cmd == OPTIONS.SWAP_PANE_UP:
+        target_win = WINDOWS_OBJ.top_win()
+        WINDOWS_OBJ.swap_windows(target_win.window_id)
+
+    elif cmd == OPTIONS.SWAP_PANE_DOWN:
+        target_win = WINDOWS_OBJ.bottom_win()
+        WINDOWS_OBJ.swap_windows(target_win.window_id)
 
     pickle.dump(WINDOWS_OBJ, open(DATA_PATH, "wb"))
     save_data()

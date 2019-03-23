@@ -56,6 +56,10 @@ class OPTIONS:
     RENAME_SCREEN = 'rs'
     SWAP_SCREEN_LEFT = 'sl'
     SWAP_SCREEN_RIGHT = 'sr'
+    SWAP_PANE_LEFT = 'pl'
+    SWAP_PANE_RIGHT = 'pr'
+    SWAP_PANE_DOWN = 'pd'
+    SWAP_PANE_UP = 'pu'
 
 
 def get_option_description(option):
@@ -123,6 +127,14 @@ def get_option_description(option):
         return '(swap screen left) swap this screen for the left one'
     elif option == OPTIONS.SWAP_SCREEN_RIGHT:
         return '(swap screen right) swap this screen for the right one'
+    elif option == OPTIONS.SWAP_PANE_LEFT:
+        return '(swap pane left) swaps this pane for the one to the left'
+    elif option == OPTIONS.SWAP_PANE_RIGHT:
+        return '(swap pane right) swaps this pane for the one to the right'
+    elif option == OPTIONS.SWAP_PANE_DOWN:
+        return '(swap pane down) swaps this pane for the one to the down'
+    elif option == OPTIONS.SWAP_PANE_UP:
+        return '(swap pane up) swaps this pane for the one to the up'
 
     else:
         return ''
