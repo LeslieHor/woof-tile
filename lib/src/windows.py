@@ -412,6 +412,7 @@ class Windows:
         l, b, _, _ = self.windows[win_id].get_size()
         closest_top_border = sys.maxint
         lowest_left_diff = sys.maxint
+        closest_window = None
 
         for win in self.work_space.get_viewable_windows():
             if win.is_shaded() or win.is_minimized():

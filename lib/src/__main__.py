@@ -132,9 +132,10 @@ def main(command_string):
             return
 
         target_id = string_to_integer(args)
+        target_id = WINDOWS_OBJ.woof_id_to_window_id(target_id)
         if target_id is None:
             log_error(["No target"])
-        target_id = WINDOWS_OBJ.woof_id_to_window_id(target_id)
+            return
         WINDOWS_OBJ.swap_windows(target_id)
 
     elif cmd == OPTIONS.MINIMIZE_ALL:
@@ -301,18 +302,26 @@ def main(command_string):
 
     elif cmd == OPTIONS.SWAP_PANE_LEFT:
         target_win = WINDOWS_OBJ.left_win()
+        if target_win is None:
+            return
         WINDOWS_OBJ.swap_windows(target_win.window_id)
 
     elif cmd == OPTIONS.SWAP_PANE_RIGHT:
         target_win = WINDOWS_OBJ.right_win()
+        if target_win is None:
+            return
         WINDOWS_OBJ.swap_windows(target_win.window_id)
 
     elif cmd == OPTIONS.SWAP_PANE_UP:
         target_win = WINDOWS_OBJ.top_win()
+        if target_win is None:
+            return
         WINDOWS_OBJ.swap_windows(target_win.window_id)
 
     elif cmd == OPTIONS.SWAP_PANE_DOWN:
         target_win = WINDOWS_OBJ.bottom_win()
+        if target_win is None:
+            return
         WINDOWS_OBJ.swap_windows(target_win.window_id)
 
     pickle.dump(WINDOWS_OBJ, open(DATA_PATH, "wb"))
