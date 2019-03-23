@@ -28,42 +28,42 @@ It will copy the `woof` bash script into `~/bin/` and copy the `woof` python pac
 Assign hotkeys using xbindkeys to actually use it
 
 Commands:
-```
-ag : (add to group) add window as a group
-ah : (add horizontal) add the active window the the right of a target window
-av : (add vertical) add the active window below the target window
-cp : (change plane) change a vertical split to a horizontal split and vice versa
-db : (debug) print out debug information
-eh : (expand horizontal) increase the horizontal size of the active window
-ev : (expand vertical) increase the vertical size of the active window
-gd : (nav down) focus window to the bottom
-gl : (nav left) focus window to the left
-gr : (nav right) focus window the the right
-gu : (nav up) focus window to the top
-kl : (kill) attempt to close the window and remove it from woof
-la : (list) list the windows available for interaction
-ls : (list screens) list all the screens in woof
-mn : (minimize all) minimize all windows in woof
-mv : (move to) move the active window to another window as a split
-mx : (maximize) maximize the active window as if it was the only window on the screen
-ns : (new screen) adds a new screen (not functional)
-nw : (next window in group) activate next window in group
-pd : (swap pane down) swaps this pane for the one to the down
-pl : (swap pane left) swaps this pane for the one to the left
-pr : (swap pane right) swaps this pane for the one to the right
-pu : (swap pane up) swaps this pane for the one to the up
-pw : (prev window in group) activate prev window in group
-re : (restore) restore all window positions
-rh : (reduce horizontal) decrease the horizontal size of the active window
-rm : (remove) remove the window from woof
-rs : (rename screen) rename the current screen
-rv : (reduce vertical) decrease the vertical size of the active window
-sl : (swap screen left) swap this screen for the left one
-sp : (swap-pane) swap the two windows in the split
-sr : (swap screen right) swap this screen for the right one
-ss : (swap screen) swap the two screens
-sw : (swap) swap the positions of two windows in the tree
-```
+| Command | Description |
+|-|-|
+| `ag<id>` | (add to group) add window as a group |
+| `ah<id>` | (add horizontal) add the active window the the right of a target window |
+| `av<id>` | (add vertical) add the active window below the target window |
+| `cp` | (change plane) change a vertical split to a horizontal split and vice versa |
+| `db` | (debug) print out debug information |
+| `eh(value)` | (expand horizontal) increase the horizontal size of the active window |
+| `ev(value)` | (expand vertical) increase the vertical size of the active window |
+| `gd` | (nav down) focus window to the bottom |
+| `gl` | (nav left) focus window to the left |
+| `gr` | (nav right) focus window the the right |
+| `gu` | (nav up) focus window to the top |
+| `kl` | (kill) attempt to close the window and remove it from woof |
+| `la` | (list) list the windows available for interaction |
+| `ls` | (list screens) list all the screens in woof |
+| `mn` | (minimize all) minimize all windows in woof |
+| `mv<id>` | (move to) move the active window to another window as a split |
+| `mx` | (maximize) maximize the active window as if it was the only window on the screen |
+| `ns` | (new screen) adds a new screen (not functional) |
+| `nw` | (next window in group) activate next window in group |
+| `pd` | (swap pane down) swaps this pane for the one to the down |
+| `pl` | (swap pane left) swaps this pane for the one to the left |
+| `pr` | (swap pane right) swaps this pane for the one to the right |
+| `pu` | (swap pane up) swaps this pane for the one to the up |
+| `pw` | (prev window in group) activate prev window in group |
+| `re` | (restore) restore all window positions |
+| `rh(value)` | (reduce horizontal) decrease the horizontal size of the active window |
+| `rm` | (remove) remove the window from woof |
+| `rs <name>` | (rename screen) rename the current screen |
+| `rv(value)` | (reduce vertical) decrease the vertical size of the active window |
+| `sl` | (swap screen left) swap this screen for the left one |
+| `sp` | (swap-pane) swap the two windows in the split |
+| `sr` | (swap screen right) swap this screen for the right one |
+| `ss<id>(,<id>)` | (swap screen) swap the two screens |
+| `sw<id>(,<id>)` | (swap) swap the positions of two windows in the tree |
 
 Use:
 ```
