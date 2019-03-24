@@ -47,8 +47,6 @@ class WorkSpace:
             self.swap_active_inactive_screens(screen_a, screen_b)
         elif not screen_a.is_active() and screen_b.is_active():
             self.swap_active_inactive_screens(screen_b, screen_a)
-        elif not screen_a.is_active and screen_b.is_active():
-            self.swap_active_inactive_screens(screen_b, screen_a)
         else:
             return False
 

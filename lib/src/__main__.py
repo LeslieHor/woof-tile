@@ -6,10 +6,6 @@ from config import *
 from enums import PLANE, DIR, WINDOW_STATE, OPTIONS, print_options
 
 
-def debug_print():
-    WINDOWS_OBJ.debug_print()
-
-
 def dir_str_to_plane_dir(direction):
     if direction == 'h':
         return dir_str_to_plane_dir('r')
@@ -36,6 +32,9 @@ def string_to_integer(value):
 
 
 def cut_off_rest(arg):
+    """
+    Cuts of the comment of the args
+    """
     return arg.split(' : ')[0]
 
 
@@ -47,7 +46,7 @@ def main(command_string):
     log_info(['------- Start --------', 'Args:', cmd, args])
 
     if cmd == OPTIONS.DEBUG:
-        debug_print()
+        WINDOWS_OBJ.debug_print()
 
     elif cmd == OPTIONS.RESTORE:
         WINDOWS_OBJ.restore_all()
