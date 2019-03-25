@@ -350,7 +350,7 @@ try:
     if WINDOWS_OBJ.check_windows():
         WINDOWS_OBJ.restore_all()
 except:
-    WINDOWS_OBJ = Windows(SCREEN_CONFIG)
+    WINDOWS_OBJ = Windows()
 
 if len(ARGS) == 1:
     print_options(WINDOWS_OBJ)
@@ -358,7 +358,7 @@ if len(ARGS) == 1:
 
 # Initialise a tree
 if ARGS[1] == 'rl':
-    WINDOWS_OBJ = Windows(SCREEN_CONFIG)
+    WINDOWS_OBJ = Windows()
     save_data()
     exit(0)
 

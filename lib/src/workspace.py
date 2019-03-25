@@ -1,19 +1,18 @@
 from screen import Screen
 from enums import SCREEN_STATE
-from config import STATUSES_PATH
+from config import STATUSES_PATH, SCREEN_CONFIG
 
 
 class WorkSpace:
     """Root of all tree structures"""
 
-    def __init__(self, screen_config, start_screen_count=0):
-        self.screen_config = screen_config
-        self.viewable_screen_count = len(screen_config)
+    def __init__(self, start_screen_count=0):
+        self.viewable_screen_count = len(SCREEN_CONFIG)
         self.screens = []
         self.last_active_window = None
 
         counter = 0
-        for config in screen_config:
+        for config in SCREEN_CONFIG:
             new_screen = Screen(self, str(counter), config, SCREEN_STATE.ACTIVE)
             self.screens.append(new_screen)
             counter += 1
@@ -86,7 +85,7 @@ class WorkSpace:
         """
         target_screen_config = self.screens[index].config
         counter = 0
-        for config in self.screen_config:
+        for config in SCREEN_CONFIG:
             if target_screen_config == config:
                 return counter
             counter += 1
@@ -96,7 +95,7 @@ class WorkSpace:
         """
         Given an index for a monitor, get the index of where it is in self.screens
         """
-        viewable_screen_config = self.screen_config[viewable_screen_index]
+        viewable_screen_config = SCREEN_CONFIG[viewable_screen_index]
         for i in range(len(self.screens)):
             config = self.screens[i].config
             if viewable_screen_config == config:

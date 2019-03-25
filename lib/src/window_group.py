@@ -60,28 +60,14 @@ class WindowGroup:
         offset = new_window_index - self.active_window_index
         self.activate_next_window(offset)
 
-    def set_size(self, _resize_default=False):
+    def set_size(self):
         """Sets the size of the tabs and active window
-        Implemented separately from the normal set_size due to
-        having to calculate shaded sizes.
-
-        # TODO: Decide if you want the gap appearing between tabs or not. Currently gaps appear.
         """
-        for i in range(len(self.inactive_windows)):
-            inactive_window = self.inactive_windows[i]
-            log_debug(['Shading window', inactive_window.window_id])
-            l, d, u, r = self.get_shaded_size(i)
-            px, py, sx, sy = inactive_window.border_gap_correct(l, d, u, r)
-            inactive_window.set_size_override(px, py, sx, sy)
-            inactive_window.shade()
-
-        active_window = self.active_window
-        l, d, u, r = self.parent.get_borders(self)
-        px, py, sx, sy = active_window.border_gap_correct(l, d, u, r)
-        py += SHADED_SIZE
-        sy -= SHADED_SIZE
-        active_window.set_size_override(px, py, sx, sy)
-        active_window.unshade()
+        for window in self.inactive_windows:
+            window.set_size()
+            window.shade()
+        self.active_window.set_size()
+        self.active_window.unshade()
 
     def activate_active_window(self):
         """Activates whatever window is currently defined as active"""
@@ -125,9 +111,17 @@ class WindowGroup:
         """
         return self.parent.all_are_bees(self)
 
-    def get_borders(self, _calling_child):
+    def get_borders(self, calling_child):
         """Returns borders of the current pane"""
-        return self.parent.get_borders(self)
+        if calling_child == self.active_window:
+            return self.get_active_size()
+        else:
+            child_index = self.inactive_windows.index(calling_child)
+            return self.get_shaded_size(child_index)
+
+    def get_active_size(self):
+        l, d, u, r = self.parent.get_borders(self)
+        return l, d, u + TOP_BORDER, r
 
     def kill_window(self, caller_child):
         """Removes the calling window from the windowgroup

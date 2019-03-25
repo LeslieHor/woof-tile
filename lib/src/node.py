@@ -1,4 +1,5 @@
 from enums import *
+from config import *
 
 
 class Node:
@@ -115,14 +116,14 @@ class Node:
 
         if caller_child == self.child_a:
             if self.plane_type == PLANE.HORIZONTAL:
-                down = self.split_coordinate
+                down = self.split_coordinate - (GAP / 2)
             else:
-                right = self.split_coordinate
+                right = self.split_coordinate - (GAP / 2)
         else:
             if self.plane_type == PLANE.HORIZONTAL:
-                up = self.split_coordinate
+                up = self.split_coordinate + (GAP / 2)
             else:
-                left = self.split_coordinate
+                left = self.split_coordinate + (GAP / 2)
 
         return left, down, up, right
 
@@ -140,16 +141,13 @@ class Node:
     def gap_correct_right(self, r):
         return self.parent.gap_correct_right(r)
 
-    def set_size(self, reset_default=False):
+    def set_size(self):
         """Force both children to resize
 
         ResetDefault. If true, resets the split to 50%
         """
-        if reset_default:
-            self.set_split_default()
-
-        self.child_a.set_size(reset_default)
-        self.child_b.set_size(reset_default)
+        self.child_a.set_size()
+        self.child_b.set_size()
 
     def resize_vertical(self, caller_child, increment):
         """Resize calling child window / node
@@ -214,7 +212,8 @@ class Node:
             plane_type = PLANE.VERTICAL
 
         self.plane_type = plane_type
-        self.set_size(True)
+        self.set_split_default()
+        self.set_size()
 
     def swap_pane_position(self):
         """Swap the positions of the children"""

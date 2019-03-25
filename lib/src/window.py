@@ -69,97 +69,43 @@ class Window:
         """
         return self.parent.get_borders(self)
 
-    def border_multiplier(self):
-        """Correct border calculations based on a whitelist
-
-        Some programs will include window decoration as part of their coordinates
-        Others will simply make the window size smaller based on the border.
-        # TODO: I think this explanation is either badly written or just wrong
-
-        Which application class does what must be defined by a whitelist.
-        Whitelist defines programs that ignore borders in their calculations
-
-        E.g.
-        Intended window position
-        +-Screen----------------------+
-        |                             |
-        |  +--------+                 |
-        |  |        |                 |
-        |  |        |                 |
-        |  +--------+                 |
-        |                             |
-        |                             |
-        |                             |
-        +-----------------------------+
-
-        Actual window position is above and to the left
-        +-Screen----------------------+
-        | +--------+                  |
-        | |        |                  |
-        | |        |                  |
-        | +--------+                  |
-        |                             |
-        |                             |
-        |                             |
-        |                             |
-        +-----------------------------+
-        """
-        window_class = self.get_window_class()
-        for name in BORDER_WHITELIST:
-            if name in window_class:
-                return 1
-        return 0
-
     def get_window_class(self):
         if self.window_class is None:
             self.window_class = system_calls.get_window_class(self.window_id)
         return self.window_class
 
-    def border_gap_correct(self, l, d, u, r):
-        """Calculate window size parameters taking gap and borders into account
+    def edges_to_margs(self, l, d, u, r):
+        lc, dc, uc, rc = self.border_class_corrections()
 
-        Given coordinates for left, bottom, top and right borders, calculates
-        the following (taking into account gaps and borders):
+        # Corrected coordinates:
+        l = l + lc
+        d = d + dc
+        u = u + uc
+        r = r + rc
 
-        - Coordinate of left border
-        - Coordinate of top border
-        - Width of window
-        - Height of window
-        """
-        bm = self.border_multiplier()
-        lb = bm * LEFT_BORDER
-        tb = bm * TOP_BORDER
-        if bm == 1:
-            rb = bm * RIGHT_BORDER
-            bb = bm * BOTTOM_BORDER
-        else:
-            rb = LEFT_BORDER + RIGHT_BORDER
-            bb = TOP_BORDER + BOTTOM_BORDER
+        px = l
+        py = u
+        sx = r - l
+        sy = d - u
 
-        scx, scy = 0, 0
-        window_class = self.get_window_class()
-        if window_class in SPECIAL_SHITS:
-            scx, scy = SPECIAL_SHITS[window_class][0], SPECIAL_SHITS[window_class][1]
-
-        px = l + lb + scx + self.parent.gap_correct_left(l)
-        py = u + tb + scy + self.parent.gap_correct_up(u)
-        sx = r - px + scx - rb - self.parent.gap_correct_right(r)
-        sy = d - py + scy - bb - self.parent.gap_correct_down(d)
         return px, py, sx, sy
+
+    def border_class_corrections(self):
+        if self.window_class in BORDER_CLASS_CORRECTIONS:
+            return BORDER_CLASS_CORRECTIONS[self.window_class]
+        else:
+            return DEFAULT_BORDER_CORRECTIONS
 
     def set_size_override(self, px, py, sx, sy):
         """Call into the WM to resize the window"""
         system_calls.set_window_geometry(self.window_id, px, py, sx, sy)
 
-    def set_size(self, _reset_default=False):
+    def set_size(self):
         """Set the window location / size"""
-        if isinstance(self.parent, WindowGroup):
-            self.parent.set_size()
-        else:
-            l, d, u, r = self.get_size()
-            px, py, sx, sy = self.border_gap_correct(l, d, u, r)
-            self.set_size_override(px, py, sx, sy)
-            self.state = WINDOW_STATE.NORMAL
+        l, d, u, r = self.get_size()
+        px, py, sx, sy = self.edges_to_margs(l, d, u, r)
+        self.set_size_override(px, py, sx, sy)
+        self.state = WINDOW_STATE.NORMAL
 
     def split(self, new_window, plane_type, direction):
         """Request the parent to split to add a new window"""
@@ -235,7 +181,7 @@ class Window:
         """Set size of window as if this were the only window on the screen"""
         self.state = WINDOW_STATE.MAXIMIZED
         l, d, u, r = self.parent.get_screen_borders()
-        px, py, sx, sy = self.border_gap_correct(l, d, u, r)
+        px, py, sx, sy = self.edges_to_margs(l, d, u, r)
         self.set_size_override(px, py, sx, sy)
 
     def remove_wm_maximize(self):
@@ -263,10 +209,14 @@ class Window:
         return self.state == WINDOW_STATE.SHADED
 
     def shade(self):
+        if self.state == WINDOW_STATE.SHADED:
+            return
         system_calls.shade_window(self.window_id)
         self.state = WINDOW_STATE.SHADED
 
     def unshade(self):
+        if self.state == WINDOW_STATE.NORMAL:
+            return
         system_calls.unshade_window(self.window_id)
         self.state = WINDOW_STATE.NORMAL
 

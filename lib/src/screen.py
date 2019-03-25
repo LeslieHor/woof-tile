@@ -23,11 +23,11 @@ class Screen:
         if config is None:
             return None, None, None, None
         ((left_coord, top_coord), (width, height)) = config
-        up = top_coord
-        left = left_coord
+        up = top_coord + GAP
+        left = left_coord + GAP
 
-        down = top_coord + height
-        right = left_coord + width
+        down = top_coord + height - GAP
+        right = left_coord + width - GAP
 
         return left, down, up, right
 
@@ -45,13 +45,17 @@ class Screen:
         self.unminimize_preserve_maximized()
         self.restore_split()
         self.set_size()
-        self.activate_last_active_window()
+        self.determine_and_set_all_window_states()
 
     def set_inactive(self):
         self.state = SCREEN_STATE.INACTIVE
         self.backup_split()
         self.config = None
         self.minimize()
+
+    def determine_and_set_all_window_states(self):
+        if self.child is not None:
+            self.child.determine_set_all_window_states()
 
     def restore_split(self):
         if self.child is not None:
@@ -212,10 +216,8 @@ class Screen:
             return False
         self.child = new_child
 
-    def set_size(self, _reset_default=False):
+    def set_size(self):
         """Request that the child resize itself
-
-        ResetDefault is unused.
         """
         if self.child is not None:
             self.child.set_size()

@@ -14,8 +14,8 @@ class Windows:
     Contains pointer to workspace and a dictionary of windows ID --> Window Object
     """
 
-    def __init__(self, screen_config):
-        self.work_space = WorkSpace(screen_config, START_SCREEN_COUNT)
+    def __init__(self):
+        self.work_space = WorkSpace(START_SCREEN_COUNT)
         self.windows = {}
         self.last_resize_ts = 0
 
@@ -278,18 +278,26 @@ class Windows:
         closest_right_border = 0
         lowest_top_diff = sys.maxint
         closest_window = None
+        print(self.windows[win_id].get_window_title())
+        print(l)
+        print(t)
 
         for win in self.work_space.get_viewable_windows():
+            print(win.get_window_title())
             if win.is_shaded() or win.is_minimized():
                 continue
 
             _, _, wt, wr = win.get_size()
+            print(wt)
+            print(wr)
 
             if l < wr:  # Current window is to the right of Win
                 continue
 
             if wr < closest_right_border:
                 continue
+
+            print("past")
 
             top_border_diff = (t - wt) ** 2  # Magnitude of diff
 
@@ -322,6 +330,7 @@ class Windows:
             log_debug(['No valid window found'])
             return
         log_debug(['Closest left window:', closest_window.list_add_window()])
+        print(closest_window.get_window_title())
         return closest_window
 
     def right_win(self):
