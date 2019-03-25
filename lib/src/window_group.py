@@ -66,13 +66,14 @@ class WindowGroup:
         for window in self.inactive_windows:
             window.set_size()
             window.shade()
-        self.active_window.set_size()
         self.active_window.unshade()
+        self.active_window.set_size()
 
     def activate_active_window(self):
         """Activates whatever window is currently defined as active"""
         log_debug(['Activating active window'])
         self.set_size()
+
         self.active_window.activate(True)
 
     def activate_next_window(self, increment):

@@ -45,17 +45,12 @@ class Screen:
         self.unminimize_preserve_maximized()
         self.restore_split()
         self.set_size()
-        self.determine_and_set_all_window_states()
 
     def set_inactive(self):
         self.state = SCREEN_STATE.INACTIVE
         self.backup_split()
         self.config = None
         self.minimize()
-
-    def determine_and_set_all_window_states(self):
-        if self.child is not None:
-            self.child.determine_set_all_window_states()
 
     def restore_split(self):
         if self.child is not None:
