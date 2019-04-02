@@ -166,6 +166,13 @@ class Container(Node):
         system_calls.unshade_window(self.window_id)
         self.state = WINDOW_STATE.NORMAL
 
+    def move_mouse(self):
+        ((px, py), (sx, sy)) = self.get_viewport()
+        x = px + (sx / 2)
+        y = py + (sy / 2)
+
+        system_calls.move_mouse(x, y)
+
     def resize_vertical(self, increment):
         """Request parent to resize window."""
         if not self.parent.resize_vertical(self, increment):

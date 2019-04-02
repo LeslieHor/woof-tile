@@ -61,6 +61,7 @@ class OPTIONS:
     SWAP_PANE_RIGHT = 'pr'
     SWAP_PANE_DOWN = 'pd'
     SWAP_PANE_UP = 'pu'
+    MOVE_MOUSE = 'mm'
 
 
 def get_option_description(option):
@@ -138,6 +139,8 @@ def get_option_description(option):
         return '(swap pane down) swaps this pane for the one to the down'
     elif option == OPTIONS.SWAP_PANE_UP:
         return '(swap pane up) swaps this pane for the one to the up'
+    elif option == OPTIONS.MOVE_MOUSE:
+        return '(move mouse) move the mouse to the center of the window'
 
     else:
         return ''

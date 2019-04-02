@@ -413,6 +413,11 @@ def swap_screen_right():
     do_swap_screens(active_workspace, left_workspace)
 
 
+def move_mouse():
+    window = get_active_window()
+    window.move_mouse()
+
+
 # TODO: These should all be changed. I left it alone because I can't be bothered to change it yet
 def left_window():
     window = get_active_window()
@@ -696,6 +701,9 @@ def main(command_string):
 
     elif cmd == OPTIONS.SWAP_PANE_DOWN:
         swap_down()
+
+    elif cmd == OPTIONS.MOVE_MOUSE:
+        move_mouse()
 
     else:
         print("Invalid command")

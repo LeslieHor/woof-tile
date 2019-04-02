@@ -86,3 +86,7 @@ def remove_system_maximize(window_id=None):
 def get_window_pid(window_id=None):
     window_id = verify_window_id(window_id)
     return int(call(["xprop -id", window_id, "| grep 'PID' | sed 's/_NET_WM_PID(CARDINAL) = //'"]).rstrip())
+
+
+def move_mouse(x, y):
+    call(["xdotool mousemove", x, y])
