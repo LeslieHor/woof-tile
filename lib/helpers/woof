@@ -1,24 +1,6 @@
 #!/bin/bash
 
 WOOF=~/.woof/woof
+LOG_FILE=~/.woof/log/log
 
-if [[ -z "$@" ]]; then
-    ${WOOF}
-else
-    if [[ ${1} == "kl" ]]; then
-        CurrNextActiveWindow=$(${WOOF} $@)
-        ActiveWindow=$(echo ${CurrNextActiveWindow} | sed 's/,.*//')
-        NextWindow=$(echo ${CurrNextActiveWindow} | sed 's/.*,//')
-        if [ $? == 0 ]; then
-            if [ ! -z ${ActiveWindow} ]; then
-                wmctrl -ic ${ActiveWindow}
-            fi
-
-            if [ ! -z ${NextWindow} ]; then
-                xdotool windowactivate ${NextWindow}
-            fi
-        fi
-    else
-        ${WOOF} $@
-    fi
-fi
+${WOOF} $@ 2>> ${LOG_FILE}

@@ -1,7 +1,7 @@
 import os
 
 # Paths
-DATA_PATH = "~/.woof/windows.dat"
+DATA_PATH = "~/.woof/tree.dat"
 LOG_PATH = "~/.woof/log/log"
 STATUSES_PATH = "~/.woof/status/"
 
@@ -13,15 +13,15 @@ RIGHT_BORDER = 0
 BOTTOM_BORDER = 0
 SHADED_SIZE = 25
 
-BORDER_WHITELIST = [
-    'konsole',
-    'Spotify',
-    'libreoffice',
-    'dolphin'
-]
+DEFAULT_BORDER_CORRECTIONS = ((0, 0), (-LEFT_BORDER-RIGHT_BORDER, -TOP_BORDER-BOTTOM_BORDER))
 
-SPECIAL_SHITS = {
-    'mpv': [2, 12]
+CLASS_A = ((LEFT_BORDER, TOP_BORDER), (-LEFT_BORDER-RIGHT_BORDER, -TOP_BORDER-BOTTOM_BORDER))
+BORDER_CLASS_CORRECTIONS = {
+    'konsole': CLASS_A,
+    'Spotify': CLASS_A,
+    'libreoffice': CLASS_A,
+    'dolphin': CLASS_A,
+    'mpv': ((LEFT_BORDER + 2, TOP_BORDER + 12), (-LEFT_BORDER-RIGHT_BORDER, -TOP_BORDER-BOTTOM_BORDER))
 }
 
 RESIZE_INCREMENT = 50
@@ -30,13 +30,14 @@ RESIZE_RAPID_TIME = 200  # milliseconds
 
 DEBUG = False
 DEBUG_SPACER = ' '
+BENCHMARK = True
+COMMENT_SEP = ' : '
 
-START_SCREEN_COUNT = 10
-
-SCREEN_CONFIG = [
-    ((0, 18), (1920, 1080 - 18)),
-    ((1920, 18), (1920, 1080 - 18)),
-    ((3840, 18), (1920, 1080 - 18))
+WORKSPACE_CONFIG = [
+    ('aux', ((0, 18), (1920, 1080 - 18))),
+    ('internet', ((1920, 18), (1920, 1080 - 18))),
+    ('video', ((3840, 18), (1920, 1080 - 18))),
+    ('ide', None)
 ]
 
 # Initialising Config

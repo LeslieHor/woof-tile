@@ -23,5 +23,5 @@ def log(log_list):
     string = join_and_sanitize(log_list) + '\n'
     timestamp = time.strftime('%Y-%m-%dT%H:%M:%S ', time.gmtime())
     string = timestamp + string
-    with open(LOG_PATH, 'a') as LogFile:
-        LogFile.write(string)
+    with open(LOG_PATH, 'a') as log_file:
+        log_file.write(string)
