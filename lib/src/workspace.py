@@ -1,170 +1,172 @@
-from screen import Screen
-from enums import SCREEN_STATE
-from config import STATUSES_PATH, SCREEN_CONFIG
+import config
+import helpers
+from node import Node
+from enums import *
 
 
-class WorkSpace:
-    """Root of all tree structures"""
+class Workspace(Node):
+    def __init__(self, tree_manager, name, geometry=None, state=SCREEN_STATE.INACTIVE):
+        Node.__init__(self, 1)
+        Node.set_parent(self, tree_manager)
 
-    def __init__(self, start_screen_count=0):
-        self.viewable_screen_count = len(SCREEN_CONFIG)
-        self.screens = []
-        self.last_active_window = None
+        self.name = name
+        self.geometry = geometry
+        self.state = state
+        self.last_active_window_id = None
 
-        counter = 0
-        for config in SCREEN_CONFIG:
-            new_screen = Screen(self, str(counter), config, SCREEN_STATE.ACTIVE)
-            self.screens.append(new_screen)
-            counter += 1
+    # ------------------------------------------------------------------------------------------------------------------
+    # Getters
+    # ------------------------------------------------------------------------------------------------------------------
 
-        while counter < start_screen_count:
-            self.new_screen()
-            counter += 1
+    def get_name(self):
+        return self.name
 
-        self.update_statuses()
+    def get_geometry(self):
+        return self.geometry
 
-    def debug_print(self):
-        print("WorkSpace")
-        window_counter = 0
-        for screen in self.screens:
-            window_counter += screen.debug_print(1)
-        return window_counter
+    def get_state(self):
+        return self.state
 
-    def new_screen(self):
-        self.screens.append(Screen(self, str(len(self.screens))))
+    def get_last_active_window_id(self):
+        return self.last_active_window_id
 
-    def swap_screens(self, screen_index_a, screen_index_b):
-        if screen_index_a == screen_index_b:
-            return False
+    def is_active(self):
+        return self.state == SCREEN_STATE.ACTIVE
 
-        screen_a = self.screens[screen_index_a]
-        screen_b = self.screens[screen_index_b]
-
-        if screen_a.is_active() and screen_b.is_active():
-            self.swap_two_active_screens(screen_a, screen_b)
-        elif screen_a.is_active() and not screen_b.is_active():
-            self.swap_active_inactive_screens(screen_a, screen_b)
-        elif not screen_a.is_active() and screen_b.is_active():
-            self.swap_active_inactive_screens(screen_b, screen_a)
-        else:
-            return False
-
-    def swap_two_active_screens(self, screen_a, screen_b):
-        screen_a_config = screen_a.get_config()
-        screen_b_config = screen_b.get_config()
-
-        screen_a.backup_split()
-        screen_b.backup_split()
-
-        screen_a.set_config(screen_b_config)
-        screen_b.set_config(screen_a_config)
-
-        screen_a.restore_split()
-        screen_b.restore_split()
-
-        screen_a.set_size()
-        screen_b.set_size()
-
-        self.write_status(screen_a)
-        self.write_status(screen_b)
-
-    def swap_active_inactive_screens(self, active_screen, inactive_screen):
-        active_config = active_screen.get_config()
-
-        inactive_screen.set_active(active_config)
-        active_screen.set_inactive()
-
-        self.write_status(inactive_screen)
-
-    def get_screen_index(self, calling_child):
-        return self.screens.index(calling_child)
-
-    def viewable_screen_index(self, index):
-        """
-        Given an index inside of self.screens, get the index of which monitor it is
-        """
-        target_screen_config = self.screens[index].config
-        counter = 0
-        for config in SCREEN_CONFIG:
-            if target_screen_config == config:
-                return counter
-            counter += 1
-        return None
-
-    def viewable_screen_index_to_index(self, viewable_screen_index):
-        """
-        Given an index for a monitor, get the index of where it is in self.screens
-        """
-        viewable_screen_config = SCREEN_CONFIG[viewable_screen_index]
-        for i in range(len(self.screens)):
-            config = self.screens[i].config
-            if viewable_screen_config == config:
-                return i
-        return None
-
-    def get_available_windows(self):
-        windows = []
-        for screen in self.screens:
-            if not screen.is_active():
-                continue
-            window_list = screen.get_available_window_list()
-            if window_list is not None:
-                windows += window_list
-
-        return windows
+    def get_interactable_endpoints(self):
+        if self.get_child_count() == 0:
+            return [self]
+        return Node.get_interactable_endpoints(self)
 
     def get_viewable_windows(self):
-        windows = []
-        for screen in self.screens:
-            if not screen.is_active():
-                continue
-            window_list = screen.get_window_list()
-            if window_list is not None:
-                windows += window_list
+        return Node.get_interactable_endpoints(self)
 
-        return windows
+    def get_ui_string(self):
+        index = self.parent.get_workspace_index(self)
+        return 's' + str(index) + config.COMMENT_SEP + self.get_name()
 
-    def write_status(self, caller_child):
-        screen_index = self.get_screen_index(caller_child)
-        viewable_screen_index = self.viewable_screen_index(screen_index)
+    # ------------------------------------------------------------------------------------------------------------------
+    # Setters
+    # ------------------------------------------------------------------------------------------------------------------
 
-        statuses = []
-        counter = 0
-        for screen in self.screens:
-            string = str(counter) + ": " + screen.name
-            if screen == caller_child:
-                string = "> " + string + " <"
-            statuses.append(string)
-            counter += 1
+    def set_name(self, new_name):
+        self.name = new_name
 
-        complete = ' | '.join(statuses)
-        with open(STATUSES_PATH + str(viewable_screen_index), 'w') as file_:
-            file_.write(complete)
+    def set_geometry(self, new_geometry):
+        self.geometry = new_geometry
 
-    def get_active_screens(self):
-        active_screens = []
-        for screen in self.screens:
-            if screen.is_active():
-                active_screens.append(screen)
+    def set_state(self, new_state):
+        self.state = new_state
 
-        return active_screens
+    def set_last_active_window_id(self, new_last_active_window_id):
+        self.last_active_window_id = new_last_active_window_id
 
-    def update_statuses(self):
-        for screen in self.get_active_screens():
-            self.write_status(screen)
+    # ------------------------------------------------------------------------------------------------------------------
+    # Trickle downs
+    # ------------------------------------------------------------------------------------------------------------------
 
-    def get_last_active_window(self):
-        return self.last_active_window
-
-    def activate_last_active_window(self):
-        if self.last_active_window is not None:
-            self.last_active_window.activate()
-
-    def set_window_active(self, calling_window):
-        self.last_active_window = calling_window
-
-    def get_last_active_window_woof_id(self):
-        if self.last_active_window is not None:
-            return self.last_active_window.woof_id
+    def to_json(self):
+        if self.get_geometry() is None:
+            geometry = None
         else:
-            return None
+            ((px, py), (sx, sy)) = self.get_geometry()
+            geometry = [[px, py], [sx, sy]]
+
+        json = '{'
+        json += '"type":' + helpers.json_com('workspace') + ','
+        json += '"name":' + helpers.json_com(self.get_name()) + ','
+        json += '"geometry":' + helpers.json_com(geometry) + ','
+        json += '"state":' + helpers.json_com(self.get_state()) + ','
+        json += '"last_active_window_id":' + helpers.json_com(self.get_last_active_window_id()) + ','
+        json += Node.to_json(self)
+        json += '}'
+
+        return json
+
+    def restore_splits(self):
+        [c.restore_splits() for c in self.get_children()]
+
+    def backup_splits(self):
+        [c.backup_splits() for c in self.get_children()]
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # Bubble ups
+    # ------------------------------------------------------------------------------------------------------------------
+
+    @staticmethod
+    def resize_vertical(_caller_child, _increment):
+        return False
+
+    @staticmethod
+    def resize_horizontal(_caller_child, _increment):
+        return False
+
+    def get_screen_index(self):
+        return self.parent.get_screen_index(self)
+
+    def set_window_active(self, window):
+        self.last_active_window_id = window.window_id
+        self.parent.set_window_active(window)
+
+    def replace_and_trim(self, calling_child):
+        self.remove_child(calling_child)
+        self.set_last_active_window_id(None)
+
+    def get_workspace_viewport(self):
+        return self.get_viewport()
+
+    def get_smallest_immutable_subtree(self, calling_child):
+        return calling_child
+    # ------------------------------------------------------------------------------------------------------------------
+    # Child Requests
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def get_viewports(self):
+        """
+        Return geometry with gap correction
+        """
+        (x_pos, y_pos), (x_size, y_size) = self.get_geometry()
+
+        # Correct for gaps
+        x_pos += config.GAP
+        y_pos += config.GAP
+        x_size -= 2 * config.GAP
+        y_size -= 2 * config.GAP
+
+        return [((x_pos, y_pos), (x_size, y_size))]
+
+    def get_viewport(self, _calling_child=None):
+        return self.get_viewports()[0]
+
+    # ------------------------------------------------------------------------------------------------------------------
+    # Other
+    # ------------------------------------------------------------------------------------------------------------------
+
+    def set_active(self, geometry):
+        self.set_state(SCREEN_STATE.ACTIVE)
+        self.set_geometry(geometry)
+        self.restore_splits()
+        self.unminimize()
+        self.redraw()
+
+    def set_inactive(self):
+        self.set_state(SCREEN_STATE.INACTIVE)
+        self.set_geometry(None)
+        self.minimize()
+
+    def update_status(self):
+        self.parent.update_status_for_active(self)
+
+    # TODO: Refactor function name
+    @staticmethod
+    def all_are_bees(_caller_child):
+        """If call has gotten to this point, all children to this point must have been 'ChildB'
+        So just return true
+        """
+        return True
+
+    # TODO: Refactor function name
+    @staticmethod
+    def find_earliest_a_but_not_me(_caller_child):
+        """If call has gotten to this point, we could not find a 'ChildA' that was not part of the calling stack"""
+        return None

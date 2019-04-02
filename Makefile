@@ -31,6 +31,7 @@ install: build
 	mkdir -p ${BIN_DIR}
 	mkdir -p ${INSTALL_DIR}${WOOF_DIR}
 	mkdir -p ${INSTALL_DIR}${WOOF_DIR}/log
+	mkdir -p ${INSTALL_DIR}${WOOF_DIR}/status
 
 	cp -v ${ROOT_DIR}/lib/helpers/woof ${BIN_DIR}
 	cp -v ${BUILD_DIR}/woof ${INSTALL_DIR}${WOOF_DIR}

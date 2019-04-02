@@ -1,31 +1,32 @@
 class DIR:
     """Enum for directions"""
-    LEFT = 0
-    DOWN = 1
-    UP = 2
-    RIGHT = 3
+    LEFT = 'l'
+    DOWN = 'd'
+    UP = 'u'
+    RIGHT = 'r'
 
 
 class PLANE:
     """Enum for plane directions"""
-    HORIZONTAL = 0
-    VERTICAL = 1
+    HORIZONTAL = 'h'
+    VERTICAL = 'v'
 
 
 class SCREEN_STATE:
-    ACTIVE = 0
-    INACTIVE = 1
+    ACTIVE = 'active'
+    INACTIVE = 'inactive'
 
 
 class WINDOW_STATE:
-    NORMAL = 0
-    SHADED = 1
-    MINIMIZED = 2
-    MAXIMIZED = 3
+    NORMAL = 'normal'
+    SHADED = 'shaded'
+    MINIMIZED = 'minimized'
+    MAXIMIZED = 'maximized'
 
 
 class OPTIONS:
     NONE = ''
+    RELOAD = 'rl'
     DEBUG = 'db'
     RESTORE = 're'
     LIST = 'la'
@@ -67,6 +68,8 @@ def get_option_description(option):
 
     if option == OPTIONS.NONE:
         return ''
+    elif option == OPTIONS.RELOAD:
+        return '(reload) put all windows back where they should be'
     elif option == OPTIONS.DEBUG:
         return '(debug) print out debug information'
     elif option == OPTIONS.RESTORE:
