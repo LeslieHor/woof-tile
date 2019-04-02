@@ -61,7 +61,7 @@ def set_window_geometry(window_id, px, py, sx, sy):
     # xdotool will not override the plasma panel border
     # wmctrl is very particular about its args
     mvarg = '0,' + str(px) + ',' + str(py) + ',' + str(sx) + ',' + str(sy)
-    call(['wmctrl -ir', window_id, '-e', mvarg], False)
+    call(['wmctrl -ir', window_id, '-e', mvarg])
 
 
 def shade_window(window_id=None):
