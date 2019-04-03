@@ -11,7 +11,6 @@ TOP_BORDER = 25
 LEFT_BORDER = 0
 RIGHT_BORDER = 0
 BOTTOM_BORDER = 0
-SHADED_SIZE = 25
 
 DEFAULT_BORDER_CORRECTIONS = ((0, 0), (-LEFT_BORDER-RIGHT_BORDER, -TOP_BORDER-BOTTOM_BORDER))
 
@@ -25,11 +24,7 @@ BORDER_CLASS_CORRECTIONS = {
 }
 
 RESIZE_INCREMENT = 50
-RAPID_INCREMENT = 50
-RESIZE_RAPID_TIME = 200  # milliseconds
 
-DEBUG = False
-DEBUG_SPACER = ' '
 BENCHMARK = True
 COMMENT_SEP = ' : '
 
@@ -39,6 +34,10 @@ WORKSPACE_CONFIG = [
     ('video', ((3840, 18), (1920, 1080 - 18))),
     ('ide', None)
 ]
+
+SAVED_LAYOUTS_POC = {
+    'aux': ('v', 0.75, ('w', 'Spotify'), ('w', 'konsole'))
+}
 
 # Initialising Config
 DATA_PATH = os.path.expanduser(DATA_PATH)  # Convert relative path to global path

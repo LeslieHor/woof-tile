@@ -160,11 +160,11 @@ class Container(Node):
 
     def shade(self):
         system_calls.shade_window(self.window_id)
-        self.state = WINDOW_STATE.SHADED
+        self.set_state(WINDOW_STATE.SHADED)
 
     def unshade(self):
         system_calls.unshade_window(self.window_id)
-        self.state = WINDOW_STATE.NORMAL
+        self.set_state(WINDOW_STATE.NORMAL)
 
     def move_mouse(self):
         ((px, py), (sx, sy)) = self.get_viewport()

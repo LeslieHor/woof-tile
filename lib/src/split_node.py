@@ -89,13 +89,6 @@ class SplitNode(Node):
 
         return json
 
-    def debug_print(self, level):
-        s = config.DEBUG_SPACER * level
-        s += ' '.join([self.get_plane_type(), self.get_split_coordinate(), self.get_split_ratio()])
-        print(s)
-
-        [c.debug_print(level + 1) for c in self.get_children()]
-
     def restore_splits(self):
         self.set_split_ratio(self.get_split_ratio())
         [c.restore_splits() for c in self.get_children()]

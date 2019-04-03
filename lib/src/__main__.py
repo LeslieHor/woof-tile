@@ -549,6 +549,7 @@ def right_window():
     return closest_window
 
 
+# TODO: These need error correction for when you don't find a window
 def navigate_left():
     check_windows()
     left_window().activate(True)
