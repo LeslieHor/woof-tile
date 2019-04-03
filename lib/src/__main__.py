@@ -1,6 +1,7 @@
 import pickle  # For saving the window structure to disk
 import sys  # For getting args
 
+from empty_container import EmptyContainer
 from group_node import GroupNode
 from tree_manager import TreeManager
 from split_node import SplitNode
@@ -418,6 +419,63 @@ def move_mouse():
     window.move_mouse()
 
 
+def load_layout_data(name):
+    return LAYOUTS_POC[name]
+
+
+def create_layout_tree(name):
+    layout_data = load_layout_data(name)
+    return generate_layout_tree(layout_data)
+
+
+def generate_layout_tree(layout_data):
+    if layout_data['type'] == 'container':
+        return EmptyContainer(layout_data['window_class'])
+    elif layout_data['type'] == 'split_node':
+        split_node = SplitNode(layout_data['plane_type'])
+        children = [generate_layout_tree(c) for c in layout_data['children']]
+        split_node.set_children(children)
+        return split_node
+
+
+def load_layout_to_screen(name):
+    # workspace = get_active_workspace()
+    workspace = get_screen_target('s0')
+    if workspace.get_child_count() > 0:
+        print("Can only apply layouts to empty screens")
+    layout_tree = create_layout_tree(name)
+    workspace.add_child(layout_tree)
+
+
+def load_layout(args):
+    args = args.lstrip()
+    if args == '':
+        print('ll aux')
+        return
+    load_layout_to_screen(args)
+
+
+def attempt_swallow():
+    window_ids_in_woof = [win.get_window_id() for win in tree_manager.get_all_windows()]
+    non_reg_window_ids = [win for win in system_calls.get_all_system_window_ids()
+                          if win not in window_ids_in_woof]
+    wid_class_list = [(wid, system_calls.get_window_class(wid)) for wid in non_reg_window_ids]
+
+    empty_containers = tree_manager.get_empty_containers()
+
+    for ec in empty_containers:
+        window_class = ec.get_window_class()
+        matches = [(w, c) for (w, c) in wid_class_list if c == window_class]
+        if len(matches) > 0:
+            (window_id, _) = matches[0]
+            new_woof_id = tree_manager.get_new_woof_id()
+            window_id = window_id
+            new_window = Container(window_id, new_woof_id)
+            ec.swallow(new_window)
+            wid_class_list.remove(matches[0])
+            new_window.redraw()
+
+
 # TODO: These should all be changed. I left it alone because I can't be bothered to change it yet
 def left_window():
     window = get_active_window()
@@ -705,6 +763,12 @@ def main(command_string):
 
     elif cmd == OPTIONS.MOVE_MOUSE:
         move_mouse()
+
+    elif cmd == OPTIONS.LOAD_LAYOUT:
+        load_layout(args)
+
+    elif cmd == OPTIONS.ATTEMPT_SWALLOW:
+        attempt_swallow()
 
     else:
         print("Invalid command")

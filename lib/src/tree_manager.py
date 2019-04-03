@@ -111,6 +111,9 @@ class TreeManager:
     def get_new_index(self):
         return str(len(self.get_workspaces()))
 
+    def get_empty_containers(self):
+        return reduce(lambda a, c: helpers.combine_lists(c.get_empty_containers(), a), self.get_workspaces(), [])
+
     # ------------------------------------------------------------------------------------------------------------------
     # Setters
     # ------------------------------------------------------------------------------------------------------------------

@@ -35,9 +35,15 @@ WORKSPACE_CONFIG = [
     ('ide', None)
 ]
 
-SAVED_LAYOUTS_POC = {
-    'aux': ('v', 0.75, ('w', 'Spotify'), ('w', 'konsole'))
-}
+LAYOUTS_POC = {
+    'aux': {'type': 'split_node',
+            'split_ratio': 0.70,
+            'plane_type': 'v',
+            'children': [
+                {'type': 'container',
+                 'window_class': 'Spotify'},
+                {'type': 'container',
+                 'window_class': 'konsole'}]}}
 
 # Initialising Config
 DATA_PATH = os.path.expanduser(DATA_PATH)  # Convert relative path to global path

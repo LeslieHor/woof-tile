@@ -98,6 +98,9 @@ class Node:
     def restore_splits(self):
         [c.restore_splits() for c in self.get_children()]
 
+    def get_empty_containers(self):
+        return reduce(lambda a, c: helpers.combine_lists(c.get_empty_containers(), a), self.get_children(), [])
+
     # ------------------------------------------------------------------------------------------------------------------
     # Bubble ups
     # ------------------------------------------------------------------------------------------------------------------

@@ -4,12 +4,19 @@ from enums import *
 
 class EmptyContainer(Container):
 
-    def __init__(self, window_id, woof_id):
-        Container.__init__(self, window_id, woof_id)
+    def __init__(self, window_class):
+        Container.__init__(self, None, None)
+        Container.window_class = window_class
 
     # ------------------------------------------------------------------------------------------------------------------
     # Blockers
     # ------------------------------------------------------------------------------------------------------------------
+
+    def get_all_windows(self):
+        return []
+
+    def get_interactable_endpoints(self):
+        return []
 
     def redraw(self):
         pass
@@ -38,3 +45,5 @@ class EmptyContainer(Container):
     def swallow(self, window):
         self.parent.replace_child(self, window)
 
+    def get_empty_containers(self):
+        return [self]

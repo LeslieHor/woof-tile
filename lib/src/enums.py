@@ -62,6 +62,8 @@ class OPTIONS:
     SWAP_PANE_DOWN = 'pd'
     SWAP_PANE_UP = 'pu'
     MOVE_MOUSE = 'mm'
+    LOAD_LAYOUT = 'll'
+    ATTEMPT_SWALLOW = 'as'
 
 
 def get_option_description(option):
@@ -141,6 +143,10 @@ def get_option_description(option):
         return '(swap pane up) swaps this pane for the one to the up'
     elif option == OPTIONS.MOVE_MOUSE:
         return '(move mouse) move the mouse to the center of the window'
+    elif option == OPTIONS.LOAD_LAYOUT:
+        return '(load layout) layout a layout'
+    elif option == OPTIONS.ATTEMPT_SWALLOW:
+        return '(attempt swallow) attempt to swallow windows'
 
     else:
         return ''
