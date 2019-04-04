@@ -6,8 +6,7 @@ class EmptyContainer(Container):
 
     def __init__(self, window_class):
         Container.__init__(self, None, None)
-        Container.window_class = window_class
-
+        self.window_class = window_class
     # ------------------------------------------------------------------------------------------------------------------
     # Blockers
     # ------------------------------------------------------------------------------------------------------------------

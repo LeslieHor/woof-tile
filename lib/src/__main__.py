@@ -434,25 +434,38 @@ def generate_layout_tree(layout_data):
     elif layout_data['type'] == 'split_node':
         split_node = SplitNode(layout_data['plane_type'])
         children = [generate_layout_tree(c) for c in layout_data['children']]
+        split_node.split_ratio = layout_data['split_ratio']
         split_node.set_children(children)
         return split_node
 
 
-def load_layout_to_screen(name):
-    # workspace = get_active_workspace()
-    workspace = get_screen_target('s0')
+def load_layout_to_screen(screen_target, layout_name):
+    workspace = get_screen_target(screen_target)
     if workspace.get_child_count() > 0:
         print("Can only apply layouts to empty screens")
-    layout_tree = create_layout_tree(name)
+    layout_tree = create_layout_tree(layout_name)
     workspace.add_child(layout_tree)
+    layout_tree.restore_splits()
 
 
 def load_layout(args):
-    args = args.lstrip()
     if args == '':
-        print('ll aux')
+        print_layouts('ll')
         return
-    load_layout_to_screen(args)
+    args = args.split(',')
+    screen_target = args[0]
+    layout_name = args[1]
+    load_layout_to_screen(screen_target, layout_name)
+
+
+def print_layouts(prepend=''):
+    screens_layout_names = []
+    number_of_screens = tree_manager.get_viewable_screen_count()
+    for name in LAYOUTS_POC:
+        s = [prepend + 's' + str(x) + ',' + name for x in range(number_of_screens)]
+        screens_layout_names += s
+
+    print('\n'.join(screens_layout_names))
 
 
 def attempt_swallow():

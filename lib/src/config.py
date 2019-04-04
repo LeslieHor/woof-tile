@@ -36,14 +36,44 @@ WORKSPACE_CONFIG = [
 ]
 
 LAYOUTS_POC = {
-    'aux': {'type': 'split_node',
-            'split_ratio': 0.70,
+    'aux': {
+        'type': 'split_node',
+        'split_ratio': 0.70,
+        'plane_type': 'v',
+        'children': [{'type': 'container',
+                      'window_class': 'Spotify'},
+                     {'type': 'container',
+                      'window_class': 'konsole'}]},
+
+    'internet': {'type': 'container',
+                 'window_class': 'Firefox'},
+
+    'video': {'type': 'split_node',
+              'split_ratio': 0.42,
+              'plane_type': 'v',
+              'children': [{'type': 'container',
+                            'window_class': 'Firefox'},
+                           {'type': 'split_node',
+                            'split_ratio': 0.60,
+                            'plane_type': 'h',
+                            'children': [{'type': 'container',
+                                          'window_class': 'Google-chrome'},
+                                         {'type': 'container',
+                                          'window_class': 'konsole'}]}]},
+
+    'ide': {'type': 'split_node',
+            'split_ratio': 0.75,
             'plane_type': 'v',
-            'children': [
-                {'type': 'container',
-                 'window_class': 'Spotify'},
-                {'type': 'container',
-                 'window_class': 'konsole'}]}}
+            'children': [{'type': 'container',
+                          'window_class': 'jetbrains-idea-ce'},
+                         {'type': 'split_node',
+                          'split_ratio': 0.50,
+                          'plane_type': 'h',
+                          'children': [{'type': 'container',
+                                        'window_class': 'konsole'},
+                                       {'type': 'container',
+                                        'window_class': 'konsole'}]}]}
+}
 
 # Initialising Config
 DATA_PATH = os.path.expanduser(DATA_PATH)  # Convert relative path to global path
