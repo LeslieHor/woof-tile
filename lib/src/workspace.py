@@ -157,6 +157,11 @@ class Workspace(Node):
     def update_status(self):
         self.parent.update_status_for_active(self)
 
+    def activate_last_active_window(self):
+        windows = [win for win in self.get_all_windows() if win.window_id == self.get_last_active_window_id()]
+        if windows:
+            windows[0].activate(True)
+
     # TODO: Refactor function name
     @staticmethod
     def all_are_bees(_caller_child):

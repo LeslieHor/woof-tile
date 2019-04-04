@@ -336,7 +336,7 @@ def swap_screens(target):
     target_2 = None if len(targets) == 1 else targets[1]
     workspace_1 = get_screen_target(target_1)
     workspace_2 = get_screen_target(target_2)
-    do_swap_screens(workspace_1, workspace_2)
+    do_swap_screens(workspace_2, workspace_1)  # Flipped to move focus to non-active workspace
 
 
 def get_screen_target(target=None):
@@ -357,12 +357,15 @@ def do_swap_screens(screen_1, screen_2):
     if (screen_1_active, screen_2_active) == (True, True):
         screen_1.set_active(screen_2_geometry)
         screen_2.set_active(screen_1_geometry)
+        screen_2.activate_last_active_window()
     elif (screen_1_active, screen_2_active) == (True, False):
         screen_1.set_inactive()
         screen_2.set_active(screen_1_geometry)
+        screen_2.activate_last_active_window()
     elif (screen_1_active, screen_2_active) == (False, True):
         screen_1.set_active(screen_2_geometry)
         screen_2.set_inactive()
+        screen_1.activate_last_active_window()
 
     tree_manager.update_active_workspaces_statuses()
 
@@ -406,12 +409,12 @@ def swap_screen_left():
 def swap_screen_right():
     check_windows()
     active_screen_index = tree_manager.get_active_workspace_index(get_active_workspace())
-    left_index = (active_screen_index + 1) % tree_manager.get_active_workspaces_count()
+    right_index = (active_screen_index + 1) % tree_manager.get_active_workspaces_count()
 
     active_workspace = tree_manager.get_active_workspace(active_screen_index)
-    left_workspace = tree_manager.get_active_workspace(left_index)
+    right_workspace = tree_manager.get_active_workspace(right_index)
 
-    do_swap_screens(active_workspace, left_workspace)
+    do_swap_screens(active_workspace, right_workspace)
 
 
 def move_mouse():
