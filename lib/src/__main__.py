@@ -283,16 +283,24 @@ def add_to_group(target_woof_id):
     if target_woof_id == '':
         print_interactable_windows(OPTIONS.ADD_TO_GROUP)
         return
+    elif target_woof_id == 'l':
+        target = tree_manager.get_last_active_window()
+    else:
+        target = tree_manager.get_window_from_woof_id(int(target_woof_id))
 
     window = create_new_window_from_active()
-    target = tree_manager.get_window_from_woof_id(int(target_woof_id))
-    if target.is_in_group_node():
-        group_node = target.get_parent()
-        group_node.add_child(window)
+    add_to_group_target(target, window)
+
+
+def add_to_group_target(target_window, new_window):
+    if target_window.is_in_group_node():
+        group_node = target_window.get_parent()
+        group_node.add_child(new_window)
     else:
-        group_node = create_new_group_node(target, window)
+        group_node = create_new_group_node(target_window, new_window)
 
     group_node.redraw()
+
 
 
 def activate_next_window_in_group():
