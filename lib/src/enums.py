@@ -72,7 +72,7 @@ def get_option_description(option):
     if option == OPTIONS.NONE:
         return ''
     elif option == OPTIONS.RELOAD:
-        return '(reload) put all windows back where they should be'
+        return '(reload) reload to default starting tree'
     elif option == OPTIONS.DEBUG:
         return '(debug) print out debug information'
     elif option == OPTIONS.RESTORE:
@@ -126,7 +126,7 @@ def get_option_description(option):
     elif option == OPTIONS.NEW_SCREEN:
         return '(new screen) adds a new screen (not functional)'
     elif option == OPTIONS.LIST_SCREENS:
-        return '(list screens) list all the screens in woof'
+        return more_prepend + '(list screens) list all the screens in woof'
     elif option == OPTIONS.RENAME_SCREEN:
         return '(rename screen) rename the current screen'
     elif option == OPTIONS.SWAP_SCREEN_LEFT:
@@ -144,7 +144,7 @@ def get_option_description(option):
     elif option == OPTIONS.MOVE_MOUSE:
         return '(move mouse) move the mouse to the center of the window'
     elif option == OPTIONS.LOAD_LAYOUT:
-        return '(load layout) layout a layout'
+        return more_prepend + '(load layout) layout a layout'
     elif option == OPTIONS.ATTEMPT_SWALLOW:
         return '(attempt swallow) attempt to swallow windows'
 

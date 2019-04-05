@@ -89,7 +89,7 @@ def print_workspaces(prepend=''):
     workspace_strings = [prepend + 's' + str(tree_manager.get_active_workspace_index(ws)) + " : " +
                          ws.get_name() for ws in tree_manager.get_active_workspaces()
                          if ws != active_workspace]
-    workspace_strings += [prepend + str(tree_manager.get_active_workspace_index(ws)) + " : " +
+    workspace_strings += [prepend + str(tree_manager.get_workspace_index(ws)) + " : " +
                           ws.get_name() for ws in tree_manager.get_workspaces()
                           if ws != active_workspace]
     print('\n'.join(workspace_strings))
@@ -436,8 +436,8 @@ def generate_layout_tree(layout_data):
         return EmptyContainer(layout_data['window_class'])
     elif layout_data['type'] == 'split_node':
         split_node = SplitNode(layout_data['plane_type'])
-        children = [generate_layout_tree(c) for c in layout_data['children']]
         split_node.split_ratio = layout_data['split_ratio']
+        children = [generate_layout_tree(c) for c in layout_data['children']]
         split_node.set_children(children)
         return split_node
 
