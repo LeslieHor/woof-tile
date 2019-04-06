@@ -133,6 +133,11 @@ class Node:
     # Other
     # ------------------------------------------------------------------------------------------------------------------
 
+    def rotate_children(self, increment):
+        children = self.get_children()
+        new_children = children[increment:] + children[:increment]
+        self.set_children(new_children)
+
     def replace_self(self, replacement):
         self.parent.replace_child(self, replacement)
 

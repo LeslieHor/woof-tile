@@ -72,7 +72,20 @@ LAYOUTS_POC = {
                           'children': [{'type': 'container',
                                         'window_class': 'konsole'},
                                        {'type': 'container',
-                                        'window_class': 'konsole'}]}]}
+                                        'window_class': 'konsole'}]}]},
+
+    'test': {'type': 'split_node',
+             'split_ratio': 0.40,
+             'plane_type': 'v',
+             'children': [{'type': 'container',
+                           'window_class': 'konsole'},
+                          {'type': 'group_node',
+                           'children': [{'type': 'container',
+                                         'window_class': 'konsole'},
+                                        {'type': 'container',
+                                         'window_class': 'konsole'},
+                                        {'type': 'container',
+                                         'window_class': 'konsole'}]}]}
 }
 
 # Initialising Config

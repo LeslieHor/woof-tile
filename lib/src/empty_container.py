@@ -1,5 +1,6 @@
 from container import Container
 from enums import *
+from group_node import GroupNode
 
 
 class EmptyContainer(Container):
@@ -43,6 +44,8 @@ class EmptyContainer(Container):
 
     def swallow(self, window):
         self.parent.replace_child(self, window)
+        if isinstance(self.get_parent(), GroupNode):
+            self.parent.set_active_window_id(window.get_window_id())
 
     def get_empty_containers(self):
         return [self]

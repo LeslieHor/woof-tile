@@ -31,19 +31,6 @@ def activate_window(window_id):
     call(['xdotool windowactivate', window_id])
 
 
-def get_window_state(window_id=None):
-    """Gets the windows state using xprop
-
-     States:
-     <BLANK> : Normal
-     _NET_WM_STATE_SHADED : Shaded
-     _NET_WM_STATE_HIDDEN : Minimized
-
-     """
-    return call(['xprop', '-id', verify_window_id(window_id),
-                 ' | grep "NET_WM_STATE" | sed \'s/_NET_WM_STATE(ATOM) = //\'']).rstrip()
-
-
 def get_window_class(window_id=None):
     return call(['xprop -id', verify_window_id(window_id), '| grep WM_CLASS | sed \'s/^.*, "//\' | sed \'s/"//\'']).rstrip()
 

@@ -58,8 +58,7 @@ class Container(Node):
         return isinstance(self.get_parent(), GroupNode)
 
     def get_interactable_endpoints(self):
-        if self.get_state == WINDOW_STATE.SHADED or \
-                self.get_state == WINDOW_STATE.MINIMIZED:
+        if self.is_shaded() or self.is_minimized():
             return []
         return [self]
 

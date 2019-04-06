@@ -36,9 +36,9 @@ def create_new_split_node(plane_type, child_1, child_2):
 
 def create_new_group_node(target, window):
     parent = target.get_parent()
-    group_node = GroupNode(window)
+    group_node = GroupNode()
+    group_node.set_children([window, target])
     parent.replace_child(target, group_node)
-    group_node.add_child(target)
 
     return group_node
 
@@ -302,7 +302,6 @@ def add_to_group_target(target_window, new_window):
     group_node.redraw()
 
 
-
 def activate_next_window_in_group():
     check_windows()
     window = get_active_window()
@@ -448,6 +447,11 @@ def generate_layout_tree(layout_data):
         children = [generate_layout_tree(c) for c in layout_data['children']]
         split_node.set_children(children)
         return split_node
+    elif layout_data['type'] == 'group_node':
+        group_node = GroupNode()
+        children = [generate_layout_tree(c) for c in layout_data['children']]
+        group_node.set_children(children)
+        return group_node
 
 
 def load_layout_to_screen(screen_target, layout_name):
@@ -497,6 +501,7 @@ def attempt_swallow():
             new_window = Container(window_id, new_woof_id)
             ec.swallow(new_window)
             wid_class_list.remove(matches[0])
+            print(tree_manager.workspaces[2].to_json())
             new_window.redraw()
 
 
