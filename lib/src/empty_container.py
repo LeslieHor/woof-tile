@@ -5,9 +5,9 @@ from group_node import GroupNode
 
 class EmptyContainer(Container):
 
-    def __init__(self, window_class):
-        Container.__init__(self, None, None)
-        self.window_class = window_class
+    def __init__(self, **kwargs):
+        Container.__init__(self)
+        self.window_class = kwargs['window_class']
     # ------------------------------------------------------------------------------------------------------------------
     # Blockers
     # ------------------------------------------------------------------------------------------------------------------
@@ -37,6 +37,15 @@ class EmptyContainer(Container):
 
     def unshade(self):
         self.set_state(WINDOW_STATE.NORMAL)
+
+    def to_json(self):
+        json = {
+            'type': 'empty_container',
+            'state': self.get_state(),
+            'window_class': self.get_window_class()
+        }
+
+        return json
 
     # ------------------------------------------------------------------------------------------------------------------
     # Other

@@ -1,18 +1,16 @@
 import config
-import helpers
 from node import Node
 from enums import *
 
 
 class Workspace(Node):
-    def __init__(self, tree_manager, name, geometry=None, state=SCREEN_STATE.INACTIVE):
+    def __init__(self, **kwargs):
         Node.__init__(self, 1)
-        Node.set_parent(self, tree_manager)
 
-        self.name = name
-        self.geometry = geometry
-        self.state = state
-        self.last_active_window_id = None
+        self.name = kwargs.get('name', 'unnamed')
+        self.geometry = kwargs.get('geometry', None)
+        self.state = kwargs.get('state', SCREEN_STATE.INACTIVE)
+        self.last_active_window_id = kwargs.get('last_active_window_id', None)
 
     # ------------------------------------------------------------------------------------------------------------------
     # Getters
@@ -66,20 +64,12 @@ class Workspace(Node):
     # ------------------------------------------------------------------------------------------------------------------
 
     def to_json(self):
-        if self.get_geometry() is None:
-            geometry = None
-        else:
-            ((px, py), (sx, sy)) = self.get_geometry()
-            geometry = [[px, py], [sx, sy]]
-
-        json = '{'
-        json += '"type":' + helpers.json_com('workspace') + ','
-        json += '"name":' + helpers.json_com(self.get_name()) + ','
-        json += '"geometry":' + helpers.json_com(geometry) + ','
-        json += '"state":' + helpers.json_com(self.get_state()) + ','
-        json += '"last_active_window_id":' + helpers.json_com(self.get_last_active_window_id()) + ','
-        json += Node.to_json(self)
-        json += '}'
+        json = Node.to_json(self)
+        json['type'] = 'workspace'
+        json['name'] = self.get_name()
+        json['geometry'] = self.get_geometry()
+        json['state'] = self.get_state()
+        json['last_active_window_id'] = self.get_last_active_window_id()
 
         return json
 

@@ -1,5 +1,4 @@
 from node import Node
-import helpers
 import config
 
 
@@ -14,7 +13,7 @@ class GroupNode(Node):
     windows to build the tabs with.
     """
 
-    def __init__(self):
+    def __init__(self, **kwargs):
         Node.__init__(self, None)
 
     # ------------------------------------------------------------------------------------------------------------------
@@ -42,10 +41,8 @@ class GroupNode(Node):
     # ------------------------------------------------------------------------------------------------------------------
 
     def to_json(self):
-        json = '{'
-        json += '"type":' + helpers.json_com('group_node') + ','
-        json += Node.to_json(self)
-        json += '}'
+        json = Node.to_json(self)
+        json['type'] = 'group_node'
 
         return json
 

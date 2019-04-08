@@ -1,7 +1,6 @@
 from group_node import GroupNode
 from node import Node
 import system_calls
-import helpers
 import config
 from log import log_debug
 from enums import *
@@ -10,13 +9,13 @@ from enums import *
 class Container(Node):
     """Leaf node, representing a viewable window"""
 
-    def __init__(self, window_id, woof_id):
+    def __init__(self, **kwargs):
         Node.__init__(self, 0)  # This is barely a node at all
 
-        self.window_id = window_id
-        self.woof_id = woof_id
-        self.state = WINDOW_STATE.NORMAL
-        self.window_class = system_calls.get_window_class(self.window_id)
+        self.window_id = kwargs.get('window_id', None)
+        self.woof_id = kwargs.get('woof_id', None)
+        self.state = kwargs.get('state', WINDOW_STATE.NORMAL)
+        self.window_class = kwargs.get('window_class', system_calls.get_window_class(self.window_id))
 
     # ------------------------------------------------------------------------------------------------------------------
     # Getters
@@ -89,13 +88,13 @@ class Container(Node):
     # ------------------------------------------------------------------------------------------------------------------
 
     def to_json(self):
-        json = '{'
-        json += '"type":' + helpers.json_com('container') + ','
-        json += '"window_id":' + helpers.json_com(self.get_window_id()) + ','
-        json += '"woof_id":' + helpers.json_com(self.get_woof_id()) + ','
-        json += '"state":' + helpers.json_com(self.get_state()) + ','
-        json += '"window_class":' + helpers.json_com(self.get_window_class())
-        json += '}'
+        json = {
+            'type': 'container',
+            'window_id': self.get_window_id(),
+            'woof_id': self.get_woof_id(),
+            'state': self.get_state(),
+            'window_class': self.get_window_class()
+        }
 
         return json
 

@@ -29,9 +29,9 @@ BENCHMARK = True
 COMMENT_SEP = ' : '
 
 WORKSPACE_CONFIG = [
-    ('aux', ((0, 18), (1920, 1080 - 18))),
-    ('internet', ((1920, 18), (1920, 1080 - 18))),
-    ('video', ((3840, 18), (1920, 1080 - 18))),
+    ('aux', [[0, 18], [1920, 1080 - 18]]),
+    ('internet', [[1920, 18], [1920, 1080 - 18]]),
+    ('video', [[3840, 18], [1920, 1080 - 18]]),
     ('ide', None)
 ]
 
@@ -40,51 +40,51 @@ LAYOUTS_POC = {
         'type': 'split_node',
         'split_ratio': 0.70,
         'plane_type': 'v',
-        'children': [{'type': 'container',
+        'children': [{'type': 'empty_container',
                       'window_class': 'Spotify'},
-                     {'type': 'container',
+                     {'type': 'empty_container',
                       'window_class': 'konsole'}]},
 
-    'internet': {'type': 'container',
+    'internet': {'type': 'empty_container',
                  'window_class': 'Firefox'},
 
     'video': {'type': 'split_node',
               'split_ratio': 0.42,
               'plane_type': 'v',
-              'children': [{'type': 'container',
+              'children': [{'type': 'empty_container',
                             'window_class': 'Firefox'},
                            {'type': 'split_node',
                             'split_ratio': 0.60,
                             'plane_type': 'h',
-                            'children': [{'type': 'container',
+                            'children': [{'type': 'empty_container',
                                           'window_class': 'Google-chrome'},
-                                         {'type': 'container',
+                                         {'type': 'empty_container',
                                           'window_class': 'konsole'}]}]},
 
     'ide': {'type': 'split_node',
             'split_ratio': 0.75,
             'plane_type': 'v',
-            'children': [{'type': 'container',
+            'children': [{'type': 'empty_container',
                           'window_class': 'jetbrains-idea-ce'},
                          {'type': 'split_node',
                           'split_ratio': 0.50,
                           'plane_type': 'h',
-                          'children': [{'type': 'container',
+                          'children': [{'type': 'empty_container',
                                         'window_class': 'konsole'},
-                                       {'type': 'container',
+                                       {'type': 'empty_container',
                                         'window_class': 'konsole'}]}]},
 
     'test': {'type': 'split_node',
              'split_ratio': 0.40,
              'plane_type': 'v',
-             'children': [{'type': 'container',
+             'children': [{'type': 'empty_container',
                            'window_class': 'konsole'},
                           {'type': 'group_node',
-                           'children': [{'type': 'container',
+                           'children': [{'type': 'empty_container',
                                          'window_class': 'konsole'},
-                                        {'type': 'container',
+                                        {'type': 'empty_container',
                                          'window_class': 'konsole'},
-                                        {'type': 'container',
+                                        {'type': 'empty_container',
                                          'window_class': 'konsole'}]}]}
 }
 

@@ -1,5 +1,5 @@
-import pickle  # For saving the window structure to disk
 import sys  # For getting args
+import json
 
 from empty_container import EmptyContainer
 from group_node import GroupNode
@@ -11,6 +11,7 @@ from config import *
 from enums import PLANE, DIR, WINDOW_STATE, OPTIONS, print_options
 import helpers
 import system_calls
+from workspace import Workspace
 
 
 def check_window():
@@ -28,7 +29,7 @@ def create_new_window_from_active():
 
 
 def create_new_split_node(plane_type, child_1, child_2):
-    split_node = SplitNode(plane_type)
+    split_node = SplitNode(plane_type=plane_type)
     split_node.set_children([child_1, child_2])
 
     return split_node
@@ -55,11 +56,12 @@ def get_active_workspace_index():
 
 def get_active_workspace():
     index = get_active_workspace_index()
-    return tree_manager.get_workspace(index)
+    return tree_manager.get_child(index)
 
 
 def debug_print():
-    tree_manager.debug_print()
+    json_data = tree_manager.to_json()
+    print(json.dumps(json_data))
 
 
 def restore_all():
@@ -90,7 +92,7 @@ def print_workspaces(prepend=''):
                          ws.get_name() for ws in tree_manager.get_active_workspaces()
                          if ws != active_workspace]
     workspace_strings += [prepend + str(tree_manager.get_workspace_index(ws)) + " : " +
-                          ws.get_name() for ws in tree_manager.get_workspaces()
+                          ws.get_name() for ws in tree_manager.get_children()
                           if ws != active_workspace]
     print('\n'.join(workspace_strings))
 
@@ -354,7 +356,7 @@ def get_screen_target(target=None):
         return tree_manager.get_active_workspace(index)
     else:
         index = int(target)
-        return tree_manager.get_workspace(index)
+        return tree_manager.get_child(index)
 
 
 def do_swap_screens(screen_1, screen_2):
@@ -439,19 +441,69 @@ def create_layout_tree(name):
 
 
 def generate_layout_tree(layout_data):
-    if layout_data['type'] == 'container':
-        return EmptyContainer(layout_data['window_class'])
+    if layout_data['type'] == 'empty_container':
+        window_class = layout_data['window_class']
+
+        return EmptyContainer(window_class=window_class)
+
+    elif layout_data['type'] == 'container':
+        window_id = layout_data.get('window_id')
+        woof_id = layout_data.get('woof_id')
+        state = layout_data.get('state')
+        window_class = layout_data.get('window_class')
+
+        return Container(window_id=window_id,
+                         woof_id=woof_id,
+                         state=state,
+                         window_class=window_class)
+
     elif layout_data['type'] == 'split_node':
-        split_node = SplitNode(layout_data['plane_type'])
-        split_node.split_ratio = layout_data['split_ratio']
+        split_ratio = layout_data.get('split_ratio')
+        split_coordinate = layout_data.get('split_coordinate', None)
+        plane_type = layout_data.get('plane_type')
+
+        split_node = SplitNode(split_ratio=split_ratio,
+                               split_coordinate=split_coordinate,
+                               plane_type=plane_type)
         children = [generate_layout_tree(c) for c in layout_data['children']]
         split_node.set_children(children)
+
         return split_node
+
     elif layout_data['type'] == 'group_node':
         group_node = GroupNode()
+
         children = [generate_layout_tree(c) for c in layout_data['children']]
         group_node.set_children(children)
+
         return group_node
+
+    elif layout_data['type'] == 'tree_manager':
+        viewable_screen_count = layout_data.get('viewable_screen_count')
+        last_active_window_id = layout_data.get('last_active_window_id')
+        tm = TreeManager(viewable_screen_count=viewable_screen_count,
+                         last_active_window_id=last_active_window_id)
+
+        children = [generate_layout_tree(c) for c in layout_data['children']]
+        tm.set_children(children)
+
+        return tm
+
+    elif layout_data['type'] == 'workspace':
+        name = layout_data.get('name')
+        geometry = layout_data.get('geometry')
+        state = layout_data.get('state')
+        last_active_window_id = layout_data.get('last_active_window_id')
+
+        workspace = Workspace(name=name,
+                              geometry=geometry,
+                              state=state,
+                              last_active_window_id=last_active_window_id)
+
+        children = [generate_layout_tree(c) for c in layout_data['children']]
+        workspace.set_children(children)
+
+        return workspace
 
 
 def load_layout_to_screen(screen_target, layout_name):
@@ -497,11 +549,9 @@ def attempt_swallow():
         if len(matches) > 0:
             (window_id, _) = matches[0]
             new_woof_id = tree_manager.get_new_woof_id()
-            window_id = window_id
-            new_window = Container(window_id, new_woof_id)
+            new_window = Container(window_id=window_id, woof_id=new_woof_id)
             ec.swallow(new_window)
             wid_class_list.remove(matches[0])
-            print(tree_manager.workspaces[2].to_json())
             new_window.redraw()
 
 
@@ -685,10 +735,7 @@ def main(command_string):
     args = helpers.cut_off_rest(args)
     log_info(['------- Start --------', 'Args:', cmd, args])
 
-    if cmd == OPTIONS.RELOAD:
-        tree_manager = TreeManager()
-
-    elif cmd == OPTIONS.DEBUG:
+    if cmd == OPTIONS.DEBUG:
         debug_print()
 
     elif cmd == OPTIONS.RESTORE:
@@ -815,25 +862,33 @@ def check_windows():
 def load_data():
     global tree_manager
     if os.path.isfile(DATA_PATH):
-        tree_manager = pickle.load(open(DATA_PATH, "rb"))
+        with open(DATA_PATH) as json_file:
+            json_data = json.load(json_file)
+            tree_manager = generate_layout_tree(json_data)
         if check_windows():
             restore_all()
     else:
         tree_manager = TreeManager()
+        tree_manager.initialise_workspaces()
 
 
 def save_data():
-    pickle.dump(tree_manager, open(DATA_PATH, "wb"))
+    json_data = tree_manager.to_json()
+    with open(DATA_PATH, 'w') as f:
+        json.dump(json_data, f)
 
 
 ARGS = sys.argv
 
-if ARGS == 'rl':
+if ARGS[1] == 'rl':  # Just in case things go wrong
     tree_manager = TreeManager()
+    tree_manager.initialise_workspaces()
+    save_data()
+    exit(0)
 else:
     load_data()
 
-if len(ARGS) == 1:
+if ARGS[1] == 'help':
     print_options(tree_manager)
     exit(0)
 

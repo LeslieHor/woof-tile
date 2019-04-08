@@ -1,4 +1,3 @@
-import helpers
 from node import Node
 from enums import *
 import config
@@ -11,12 +10,12 @@ class SplitNode(Node):
     PlaneType defines whether the node is split horizontally or vertically
     """
 
-    def __init__(self, plane_type):
+    def __init__(self, **kwargs):
         Node.__init__(self, 2)
 
-        self.plane_type = plane_type
-        self.split_coordinate = None
-        self.split_ratio = 0.5
+        self.plane_type = kwargs.get('plane_type', PLANE.HORIZONTAL)
+        self.split_coordinate = kwargs.get('split_coordinate', None)
+        self.split_ratio = kwargs.get('split_ratio', 0.5)
 
     # ------------------------------------------------------------------------------------------------------------------
     # Getters
@@ -79,13 +78,11 @@ class SplitNode(Node):
     # ------------------------------------------------------------------------------------------------------------------
 
     def to_json(self):
-        json = '{'
-        json += '"type":' + helpers.json_com('split_node') + ','
-        json += '"plane_type":' + helpers.json_com(self.get_plane_type()) + ','
-        json += '"split_coordinate":' + helpers.json_com(self.get_split_coordinate()) + ','
-        json += '"split_ratio":' + helpers.json_com(self.get_split_ratio()) + ','
-        json += Node.to_json(self)
-        json += '}'
+        json = Node.to_json(self)
+        json['type'] = 'split_node'
+        json['plane_type'] = self.get_plane_type()
+        json['split_coordinate'] = self.get_split_coordinate()
+        json['split_ratio'] = self.get_split_ratio()
 
         return json
 

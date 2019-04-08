@@ -69,14 +69,10 @@ class Node:
     # ------------------------------------------------------------------------------------------------------------------
 
     def to_json(self):
-        if self.get_child_count() == 0:
-            children = "[]"
-        else:
-            children = '[' + ','.join([c.to_json() for c in self.get_children()]) + ']'
-
-        json = ''
-        json += '"child_limit":' + helpers.json_com(self.get_child_limit()) + ','
-        json += '"children":' + children
+        json = {
+            'child_limit': self.get_child_limit(),
+            'children': [c.to_json() for c in self.get_children()]
+        }
 
         return json
 

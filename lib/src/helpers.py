@@ -1,6 +1,3 @@
-import enums
-
-
 def join_and_sanitize(list_):
     """Join a list of items into a single string"""
     if isinstance(list_, str):
@@ -39,21 +36,6 @@ def string_to_integer(value):
         return None
     else:
         return int(value)
-
-
-def json_com(value):
-    if type(value) is int:
-        return str(value)
-    elif type(value) is float:
-        return str(value)
-    elif type(value) is list:
-        return str(value)
-    elif type(value) is str:
-        return '"' + value + '"'
-    elif value is None:
-        return 'null'
-    else:
-        return str(value)
 
 
 def combine_lists(list_1, list_2):
