@@ -64,8 +64,8 @@ class GroupNode(Node):
 
     def get_active_viewport(self):
         (x_pos, y_pos), (x_size, y_size) = self.parent.get_viewport(self)
-        y_pos += config.TOP_BORDER
-        y_size -= config.TOP_BORDER
+        y_pos += config.get_config('top_border')
+        y_size -= config.get_config('top_border')
 
         return (x_pos, y_pos), (x_size, y_size)
 

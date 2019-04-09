@@ -36,7 +36,7 @@ def get_window_class(window_id=None):
 
 
 def get_window_title(window_id=None):
-    return call(['xdotool getwindowname', verify_window_id(window_id)]).rstrip()
+    return call(['xdotool getwindowname', verify_window_id(window_id)]).rstrip().decode('ascii', 'ignore')
 
 
 def minimise_window(window_id=None):

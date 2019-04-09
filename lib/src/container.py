@@ -15,7 +15,10 @@ class Container(Node):
         self.window_id = kwargs.get('window_id', None)
         self.woof_id = kwargs.get('woof_id', None)
         self.state = kwargs.get('state', WINDOW_STATE.NORMAL)
-        self.window_class = kwargs.get('window_class', system_calls.get_window_class(self.window_id))
+        if 'window_class' in kwargs:
+            self.window_class = kwargs.get('window_class')
+        else:
+            self.window_class = system_calls.get_window_class(self.window_id)
 
     # ------------------------------------------------------------------------------------------------------------------
     # Getters
@@ -45,10 +48,10 @@ class Container(Node):
         return corrected_viewport
 
     def get_border_class_correction(self):
-        if self.get_window_class() in config.BORDER_CLASS_CORRECTIONS:
-            return config.BORDER_CLASS_CORRECTIONS[self.get_window_class()]
+        if self.get_window_class() in config.get_config('border_class_corrections'):
+            return config.get_config('border_class_corrections')[self.get_window_class()]
         else:
-            return config.DEFAULT_BORDER_CORRECTIONS
+            return config.get_config('default_border_corrections')
 
     def get_all_windows(self):
         return [self]
@@ -62,7 +65,7 @@ class Container(Node):
         return [self]
 
     def get_ui_string(self):
-        return str(self.get_woof_id()) + config.COMMENT_SEP + self.get_window_title()
+        return str(self.get_woof_id()) + config.get_config('comment_sep') + self.get_window_title()
 
     def is_shaded(self):
         return self.get_state() == WINDOW_STATE.SHADED

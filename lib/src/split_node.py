@@ -151,10 +151,10 @@ class SplitNode(Node):
             y_size_2 = y_size - split
 
             # Gap correction
-            y_size_1 -= config.GAP / 2
+            y_size_1 -= config.get_config('gap') / 2
 
-            y_pos_2 += config.GAP / 2
-            y_size_2 -= config.GAP / 2
+            y_pos_2 += config.get_config('gap') / 2
+            y_size_2 -= config.get_config('gap') / 2
 
         elif self.get_plane_type() == PLANE.VERTICAL:
             x_pos_1 = x_pos
@@ -168,10 +168,10 @@ class SplitNode(Node):
             y_size_2 = y_size
 
             # Gap correction
-            x_size_1 -= config.GAP / 2
+            x_size_1 -= config.get_config('gap') / 2
 
-            x_pos_2 += config.GAP / 2
-            x_size_2 -= config.GAP / 2
+            x_pos_2 += config.get_config('gap') / 2
+            x_size_2 -= config.get_config('gap') / 2
         else:
             raise Exception("Invalid plane")
 

@@ -1,0 +1,28 @@
+{
+  "type": "split_node",
+  "split_ratio": 0.75,
+  "plane_type": "v",
+  "children": [
+    {
+      "type": "empty_container",
+      "window_class": "jetbrains-idea-ce"
+    },
+    {
+      "type": "split_node",
+      "split_ratio": 0.50,
+      "plane_type": "h",
+      "children": [
+        {
+          "type": "empty_container",
+          "window_class": "konsole",
+          "window_title": "ide1"
+        },
+        {
+          "type": "empty_container",
+          "window_class": "konsole",
+          "window_title": "ide2"
+        }
+      ]
+    }
+  ]
+}

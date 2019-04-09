@@ -1,14 +1,16 @@
 import sys  # For getting args
 import json
+import os
 
+import layouts
 from empty_container import EmptyContainer
 from group_node import GroupNode
 from tree_manager import TreeManager
 from split_node import SplitNode
 from container import Container
-from log import log_info, log_debug, log_error
-from config import *
-from enums import PLANE, DIR, WINDOW_STATE, OPTIONS, print_options
+from log import log_info, log_error
+import config
+from enums import PLANE, WINDOW_STATE, OPTIONS, print_options
 import helpers
 import system_calls
 from workspace import Workspace
@@ -25,7 +27,7 @@ def create_new_window_from_active():
     new_window_id = system_calls.get_active_window_id()
     new_woof_id = tree_manager.get_new_woof_id()
 
-    return Container(new_window_id, new_woof_id)
+    return Container(window_id=new_window_id, wood_id=new_woof_id)
 
 
 def create_new_split_node(plane_type, child_1, child_2):
@@ -158,28 +160,28 @@ def add_vertical(target_window):
 
 def expand_vertical(increment):
     check_window()
-    increment = RESIZE_INCREMENT if increment == '' else int(increment)
+    increment = config.get_config('resize_increment') if increment == '' else int(increment)
     window = get_active_window()
     window.resize_vertical(increment)
 
 
 def reduce_vertical(increment):
     check_windows()
-    increment = -1 * RESIZE_INCREMENT if increment == '' else -1 * int(increment)
+    increment = -1 * config.get_config('resize_increment') if increment == '' else -1 * int(increment)
     window = get_active_window()
     window.resize_vertical(increment)
 
 
 def expand_horizontal(increment):
     check_windows()
-    increment = RESIZE_INCREMENT if increment == '' else int(increment)
+    increment = config.get_config('resize_increment') if increment == '' else int(increment)
     window = get_active_window()
     window.resize_horizontal(increment)
 
 
 def reduce_horizontal(increment):
     check_windows()
-    increment = -1 * RESIZE_INCREMENT if increment == '' else -1 * int(increment)
+    increment = -1 * config.get_config('resize_increment') if increment == '' else -1 * int(increment)
     window = get_active_window()
     window.resize_horizontal(increment)
 
@@ -431,7 +433,7 @@ def move_mouse():
 
 
 def load_layout_data(name):
-    return LAYOUTS_POC[name]
+    return layouts.get_layout(name)
 
 
 def create_layout_tree(name):
@@ -529,7 +531,7 @@ def load_layout(args):
 def print_layouts(prepend=''):
     screens_layout_names = []
     number_of_screens = tree_manager.get_viewable_screen_count()
-    for name in LAYOUTS_POC:
+    for name in layouts.get_layout_names():
         s = [prepend + 's' + str(x) + ',' + name for x in range(number_of_screens)]
         screens_layout_names += s
 
@@ -542,7 +544,7 @@ def attempt_swallow():
                           if win not in window_ids_in_woof]
     windows = [{'window_id': wid,
                 'window_class': system_calls.get_window_class(wid),
-                'window_title': system_calls.get_window_title(wid).decode('utf-8', 'ignore')}
+                'window_title': system_calls.get_window_title(wid)}
                for wid in non_reg_window_ids]
 
     empty_containers = tree_manager.get_empty_containers()
@@ -764,7 +766,6 @@ def main(command_string):
     cmd = command_string[:2]
     args = command_string[2:]
     args = helpers.cut_off_rest(args)
-    log_info(['------- Start --------', 'Args:', cmd, args])
 
     if cmd == OPTIONS.DEBUG:
         debug_print()
@@ -892,8 +893,8 @@ def check_windows():
 
 def load_data():
     global tree_manager
-    if os.path.isfile(DATA_PATH):
-        with open(DATA_PATH) as json_file:
+    if os.path.isfile(config.get_config('data_path')):
+        with open(config.get_config('data_path')) as json_file:
             json_data = json.load(json_file)
             tree_manager = generate_layout_tree(json_data)
         if check_windows():
@@ -905,7 +906,7 @@ def load_data():
 
 def save_data():
     json_data = tree_manager.to_json()
-    with open(DATA_PATH, 'w') as f:
+    with open(config.get_config('data_path'), 'w') as f:
         json.dump(json_data, f)
 
 
@@ -926,8 +927,10 @@ if ARGS[1] == 'help':
     print_options(tree_manager)
     exit(0)
 
+log_info(['------- Start --------', 'Args:'] + ARGS)
+
 start_time = 0.0  # Just to get rid of IDE warnings
-if BENCHMARK:
+if config.get_config('benchmark'):
     import time
 
     start_time = time.time()
@@ -935,7 +938,7 @@ if BENCHMARK:
 if __name__ == '__main__':
     main(' '.join(ARGS[1:]))
 
-if BENCHMARK:
+if config.get_config('benchmark'):
     end_time = time.time()
     log_info(['Benchmark:', (end_time - start_time), 'seconds'])
 

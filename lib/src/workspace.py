@@ -41,7 +41,7 @@ class Workspace(Node):
 
     def get_ui_string(self):
         index = self.parent.get_workspace_index(self)
-        return 's' + str(index) + config.COMMENT_SEP + self.get_name()
+        return 's' + str(index) + config.get_config('comment_sep') + self.get_name()
 
     # ------------------------------------------------------------------------------------------------------------------
     # Setters
@@ -118,10 +118,10 @@ class Workspace(Node):
         (x_pos, y_pos), (x_size, y_size) = self.get_geometry()
 
         # Correct for gaps
-        x_pos += config.GAP
-        y_pos += config.GAP
-        x_size -= 2 * config.GAP
-        y_size -= 2 * config.GAP
+        x_pos += config.get_config('gap')
+        y_pos += config.get_config('gap')
+        x_size -= 2 * config.get_config('gap')
+        y_size -= 2 * config.get_config('gap')
 
         return [((x_pos, y_pos), (x_size, y_size))]
 

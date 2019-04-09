@@ -16,7 +16,7 @@ class TreeManager(Node):
         self.last_active_window_id = kwargs.get('last_active_window_id', None)
 
     def initialise_workspaces(self):
-        for workspace_config in config.WORKSPACE_CONFIG:
+        for workspace_config in config.get_config('workspace_config'):
             (name, geometry) = workspace_config
             if geometry is not None:
                 new_workspace = Workspace(name=name, geometry=geometry, state=SCREEN_STATE.ACTIVE)
@@ -70,7 +70,7 @@ class TreeManager(Node):
         return counter
 
     def get_viewable_workspace(self, index):
-        (_, geometry) = config.WORKSPACE_CONFIG[index]
+        (_, geometry) = config.get_config('workspace_config')[index]
         [workspace] = [ws for ws in self.get_active_workspaces() if ws.get_geometry() == geometry]
         return workspace
 
@@ -82,12 +82,12 @@ class TreeManager(Node):
         return workspace
 
     def get_active_workspace(self, index):
-        (_name, geometry) = config.WORKSPACE_CONFIG[index]
+        (_name, geometry) = config.get_config('workspace_config')[index]
         return self.get_workspace_from_config(geometry)
 
     def get_active_workspace_index(self, workspace):
         counter = 0
-        for (_name, geometry) in config.WORKSPACE_CONFIG:
+        for (_name, geometry) in config.get_config('workspace_config'):
             if geometry is None:
                 continue
             if workspace.get_geometry() == geometry:
@@ -163,5 +163,5 @@ class TreeManager(Node):
             status.append(name)
         status_line = ' | '.join(status)
 
-        with open(config.STATUSES_PATH + str(target_file_index), 'w') as file_:
+        with open(config.get_config('statuses_dir') + str(target_file_index), 'w') as file_:
             file_.write(status_line)

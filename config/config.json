@@ -1,5 +1,8 @@
 {
-  "data_path": "",
+  "data_path": "~/.woof/tree.dat",
+  "log_path": "~/.woof/log/log",
+  "statuses_dir": "~/.woof/status/",
+  "layouts_dir": "~/.woof/layouts/",
 
   "gap": 10,
   "resize_increment": 50,
@@ -23,10 +26,10 @@
   ],
 
   "border_class_corrections": {
-    "konsole": [[0, 0], [0, -25]],
-    "Spotify": [[0, 0], [0, -25]],
-    "libreoffice": [[0, 0], [0, -25]],
-    "dolphin": [[0, 0], [0, -25]],
-    "mpv": [[2, 12], [0, -25]]
+    "konsole": [[0, 25], [0, -25]],
+    "Spotify": [[0, 25], [0, -25]],
+    "libreoffice": [[0, 25], [0, -25]],
+    "dolphin": [[0, 25], [0, -25]],
+    "mpv": [[0, 12], [0, -25]]
   }
 }
