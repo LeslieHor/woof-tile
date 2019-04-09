@@ -1,0 +1,15 @@
+{
+  "gap": 10,
+  "resize_increment": 50,
+  "top_border": 25,
+  "left_border": 0,
+  "right_border": 0,
+  "bottom_border": 0,
+
+  "workspace_config" : [
+    ["aux", [[0, 18], [1920, 1062]]],
+    ["internet", [[1920, 18], [1920, 1062]]],
+    ["video", [[3840, 18], [1920, 1062]]],
+    ["ide", null]
+  ]
+}

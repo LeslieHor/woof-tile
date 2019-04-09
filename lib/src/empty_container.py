@@ -8,6 +8,11 @@ class EmptyContainer(Container):
     def __init__(self, **kwargs):
         Container.__init__(self)
         self.window_class = kwargs['window_class']
+        self.window_title = kwargs.get('window_title', None)
+
+    def get_window_title(self):
+        return self.window_title
+
     # ------------------------------------------------------------------------------------------------------------------
     # Blockers
     # ------------------------------------------------------------------------------------------------------------------
@@ -42,7 +47,8 @@ class EmptyContainer(Container):
         json = {
             'type': 'empty_container',
             'state': self.get_state(),
-            'window_class': self.get_window_class()
+            'window_class': self.get_window_class(),
+            'window_title': self.get_window_title()
         }
 
         return json

@@ -442,9 +442,11 @@ def create_layout_tree(name):
 
 def generate_layout_tree(layout_data):
     if layout_data['type'] == 'empty_container':
-        window_class = layout_data['window_class']
+        window_class = layout_data.get('window_class')
+        window_title = layout_data.get('window_title', None)
 
-        return EmptyContainer(window_class=window_class)
+        return EmptyContainer(window_class=window_class,
+                              window_title=window_title)
 
     elif layout_data['type'] == 'container':
         window_id = layout_data.get('window_id')
@@ -539,20 +541,50 @@ def attempt_swallow():
     window_ids_in_woof = [win.get_window_id() for win in tree_manager.get_all_windows()]
     non_reg_window_ids = [win for win in system_calls.get_all_system_window_ids()
                           if win not in window_ids_in_woof]
-    wid_class_list = [(wid, system_calls.get_window_class(wid)) for wid in non_reg_window_ids]
+    windows = [{'window_id': wid,
+                'window_class': system_calls.get_window_class(wid),
+                'window_title': system_calls.get_window_title(wid).decode('utf-8', 'ignore')}
+               for wid in non_reg_window_ids]
 
     empty_containers = tree_manager.get_empty_containers()
 
+    # Attempt to match on title first
     for ec in empty_containers:
-        window_class = ec.get_window_class()
-        matches = [(w, c) for (w, c) in wid_class_list if c == window_class]
-        if len(matches) > 0:
-            (window_id, _) = matches[0]
+        if ec.get_window_title() is None:
+            continue
+
+        title_matches = [win for win in windows
+                         if ec.get_window_title() in win.get('window_title')]
+
+        if len(title_matches) > 0:
+            chosen_window = title_matches[0]
+
             new_woof_id = tree_manager.get_new_woof_id()
-            new_window = Container(window_id=window_id, woof_id=new_woof_id)
+            new_window = Container(window_id=chosen_window.get('window_id'),
+                                   woof_id=new_woof_id)
             ec.swallow(new_window)
-            wid_class_list.remove(matches[0])
             new_window.redraw()
+
+            windows.remove(chosen_window)
+
+    empty_containers = tree_manager.get_empty_containers()
+
+    # Attempt to match on class
+    for ec in empty_containers:
+        class_matches = [win for win in windows
+                         if ec.get_window_class() == win.get('window_class')]
+
+        if len(class_matches) > 0:
+            chosen_window = class_matches[0]
+
+            new_woof_id = tree_manager.get_new_woof_id()
+            new_window = Container(window_id=chosen_window.get('window_id'),
+                                   woof_id=new_woof_id)
+
+            ec.swallow(new_window)
+            new_window.redraw()
+
+            windows.remove(chosen_window)
 
 
 # TODO: These should all be changed. I left it alone because I can't be bothered to change it yet

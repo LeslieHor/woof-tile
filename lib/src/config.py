@@ -43,7 +43,8 @@ LAYOUTS_POC = {
         'children': [{'type': 'empty_container',
                       'window_class': 'Spotify'},
                      {'type': 'empty_container',
-                      'window_class': 'konsole'}]},
+                      'window_class': 'konsole',
+                      'window_title': 'aux1'}]},
 
     'internet': {'type': 'empty_container',
                  'window_class': 'Firefox'},
@@ -59,7 +60,8 @@ LAYOUTS_POC = {
                             'children': [{'type': 'empty_container',
                                           'window_class': 'Google-chrome'},
                                          {'type': 'empty_container',
-                                          'window_class': 'konsole'}]}]},
+                                          'window_class': 'konsole',
+                                          'window_title': 'video1'}]}]},
 
     'ide': {'type': 'split_node',
             'split_ratio': 0.75,
@@ -70,9 +72,11 @@ LAYOUTS_POC = {
                           'split_ratio': 0.50,
                           'plane_type': 'h',
                           'children': [{'type': 'empty_container',
-                                        'window_class': 'konsole'},
+                                        'window_class': 'konsole',
+                                        'window_title': 'ide1'},
                                        {'type': 'empty_container',
-                                        'window_class': 'konsole'}]}]},
+                                        'window_class': 'konsole',
+                                        'window_title': 'ide2'}]}]},
 
     'test': {'type': 'split_node',
              'split_ratio': 0.40,
