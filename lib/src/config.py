@@ -50,7 +50,7 @@ LAYOUTS_POC = {
                  'window_class': 'Firefox'},
 
     'video': {'type': 'split_node',
-              'split_ratio': 0.42,
+              'split_ratio': 0.45,
               'plane_type': 'v',
               'children': [{'type': 'empty_container',
                             'window_class': 'Firefox'},
@@ -96,3 +96,4 @@ LAYOUTS_POC = {
 DATA_PATH = os.path.expanduser(DATA_PATH)  # Convert relative path to global path
 LOG_PATH = os.path.expanduser(LOG_PATH)  # Convert relative path to global path
 STATUSES_PATH = os.path.expanduser(STATUSES_PATH)  # Convert relative path to global path
+

@@ -142,7 +142,6 @@ class Container(Node):
         if set_last_active:
             self.parent.set_window_active(self)
         system_calls.activate_window(self.window_id)
-        self.set_state(WINDOW_STATE.NORMAL)
 
     def change_plane(self):
         """Request parent to change plane orientation"""

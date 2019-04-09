@@ -250,8 +250,7 @@ def do_unmaximize():
     window = get_active_window()
     workspace = get_active_workspace()
     windows = workspace.get_all_windows()
-    [w.activate() for w in windows if w != window]
-    [w.redraw() for w in windows if w != window]
+    [w.unminimize() for w in windows if w != window]
     window.unmaximize()
     window.activate()
 
@@ -911,6 +910,9 @@ def save_data():
 
 
 ARGS = sys.argv
+
+if len(ARGS) <= 1:
+    exit(0)
 
 if ARGS[1] == 'rl':  # Just in case things go wrong
     tree_manager = TreeManager()
