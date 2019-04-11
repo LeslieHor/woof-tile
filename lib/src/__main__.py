@@ -529,7 +529,8 @@ def print_layouts(prepend=''):
     screens_layout_names = []
     number_of_screens = tree_manager.get_viewable_screen_count()
     for name in layouts.get_layout_names():
-        s = [prepend + 's' + str(x) + ',' + name for x in range(number_of_screens)]
+        s = [prepend + 's' + str(x) + ',' + name for x in range(number_of_screens)
+             if tree_manager.get_active_workspace(x).get_child_count() == 0]
         screens_layout_names += s
 
     print('\n'.join(screens_layout_names))
