@@ -49,6 +49,12 @@ class GroupNode(Node):
 
         return json
 
+    def get_layout_json(self):
+        json = Node.get_layout_json(self)
+        json['type'] = 'group_node'
+
+        return json
+
     def redraw(self):
         if self.get_child_count() == 0:
             return

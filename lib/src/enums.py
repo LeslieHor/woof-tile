@@ -56,6 +56,7 @@ class OPTIONS:
     MOVE_MOUSE = 'mm'
     LOAD_LAYOUT = 'll'
     ATTEMPT_SWALLOW = 'as'
+    SAVE_LAYOUT = 'wl'
 
 
 def get_option_description(option):
@@ -139,6 +140,8 @@ def get_option_description(option):
         return more_prepend + '(load layout) layout a layout'
     elif option == OPTIONS.ATTEMPT_SWALLOW:
         return '(attempt swallow) attempt to swallow windows'
+    elif option == OPTIONS.SAVE_LAYOUT:
+        return '(save layout) save layout'
 
     else:
         return ''

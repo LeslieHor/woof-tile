@@ -517,6 +517,7 @@ def load_layout_to_screen(screen_target, layout_name):
 
 
 def load_layout(args):
+    check_windows()
     if args == '':
         print_layouts('ll')
         return
@@ -534,6 +535,18 @@ def print_layouts(prepend=''):
         screens_layout_names += s
 
     print('\n'.join(screens_layout_names))
+
+
+def save_layout(args):
+    check_windows()
+    name = args.lstrip()
+
+    active_workspace = get_active_workspace()
+
+    json_data = active_workspace.get_layout_json()
+
+    with open(config.get_config('layouts_dir') + "/" + name, 'w') as f:
+        json.dump(json_data, f)
 
 
 def attempt_swallow():
@@ -875,6 +888,9 @@ def main(command_string):
 
     elif cmd == OPTIONS.ATTEMPT_SWALLOW:
         attempt_swallow()
+
+    elif cmd == OPTIONS.SAVE_LAYOUT:
+        save_layout(args)
 
     else:
         print("Invalid command")

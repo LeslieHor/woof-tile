@@ -77,6 +77,14 @@ class SplitNode(Node):
 
         return json
 
+    def get_layout_json(self):
+        json = Node.get_layout_json(self)
+        json['type'] = 'split_node'
+        json['plane_type'] = self.get_plane_type()
+        json['split_ratio'] = self.get_split_ratio()
+
+        return json
+
     def restore_splits(self):
         self.set_split_ratio(self.get_split_ratio())
         [c.restore_splits() for c in self.get_children()]

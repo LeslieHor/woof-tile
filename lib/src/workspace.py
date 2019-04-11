@@ -74,6 +74,12 @@ class Workspace(Node):
 
         return json
 
+    def get_layout_json(self):
+        if self.get_child_count() == 0:
+            return {}
+        else:
+            return self.get_child(0).get_layout_json()
+
     def restore_splits(self):
         [c.restore_splits() for c in self.get_children()]
 

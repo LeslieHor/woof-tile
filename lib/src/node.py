@@ -79,6 +79,13 @@ class Node:
 
         return json
 
+    def get_layout_json(self):
+        json = {
+            'children': [c.get_layout_json() for c in self.get_children()]
+        }
+
+        return json
+
     def redraw(self):
         [c.redraw() for c in self.get_children()]
 
