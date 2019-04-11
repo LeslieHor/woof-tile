@@ -176,25 +176,10 @@ class Container(Node):
         system_calls.move_mouse(x, y)
 
     def resize_vertical(self, increment):
-        if not self.parent.resize_vertical(self, increment):
-            log_debug(['Unable to resize. Using alternative'])
-            next_child = self.parent.find_earliest_a_but_not_me(self)
-            if next_child is not None:
-                if not self.parent.all_are_bees(self):
-                    log_debug(['All are not bees'])
-                    increment *= -1
-                elif self.parent.get_plane_type() == PLANE.HORIZONTAL:
-                    increment *= -1
-                next_child.resize_vertical(increment)
+        """Resize the height"""
+        self.parent.resize(self, PLANE.HORIZONTAL, increment)
 
     def resize_horizontal(self, increment):
-        if not self.parent.resize_horizontal(self, increment):
-            log_debug(['Unable to resize. Using alternative'])
-            next_child = self.parent.find_earliest_a_but_not_me(self)
-            if next_child is not None:
-                if not self.parent.all_are_bees(self):
-                    log_debug(['All are not bees'])
-                    increment *= -1
-                elif self.parent.get_plane_type() == PLANE.VERTICAL:
-                    increment *= -1
-                next_child.resize_horizontal(increment)
+        """Resize the width"""
+        self.parent.resize(self, PLANE.VERTICAL, increment)
+

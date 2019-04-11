@@ -116,7 +116,6 @@ def add_split_last_active_window(plane_type):
     new_split_node = create_new_split_node(plane_type, subtree, new_window)
 
     parent.replace_child(subtree, new_split_node)
-    new_split_node.set_split_coordinate_from_split_ratio()
     new_split_node.redraw()
     new_window.activate(True)
 
@@ -131,7 +130,6 @@ def add_split_woof_id(plane_type, target_woof_id):
     new_split_node = create_new_split_node(plane_type, target_window, new_window)
 
     parent.replace_child(subtree, new_split_node)
-    new_split_node.set_split_coordinate_from_split_ratio()
     new_split_node.redraw()
     new_window.activate(True)
 

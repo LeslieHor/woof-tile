@@ -196,32 +196,15 @@ class SplitNode(Node):
     # Other
     # ------------------------------------------------------------------------------------------------------------------
 
-    def resize_vertical(self, caller_child, increment):
-        """Resize calling child window / node
+    def resize(self, child, plane_type, increment):
+        if self.get_plane_type() != plane_type:
+            self.parent.resize(self, plane_type, increment)
+            return
 
-        If the calling child is child A, simply move the split to give more
-        space to child A.
-        Otherwise, ripple the request to the parent, to see if they can resize
-
-        """
-        if self.get_plane_type() != PLANE.HORIZONTAL:
-            return self.parent.resize_vertical(self, increment)
-        if self.get_child_index(caller_child) == 1:
-            return self.parent.resize_vertical(self, increment)
-
+        if self.get_child_index(child) == 1:
+            increment *= -1
         self.alter_split_coordinate(increment)
         self.redraw()
-        return True
-
-    def resize_horizontal(self, caller_child, increment):
-        if self.plane_type != PLANE.VERTICAL:
-            return self.parent.resize_horizontal(self, increment)
-        if self.get_child_index(caller_child) == 1:
-            return self.parent.resize_horizontal(self, increment)
-
-        self.alter_split_coordinate(increment)
-        self.redraw()
-        return True
 
     # TODO: Refactor name
     def all_are_bees(self, caller_child):

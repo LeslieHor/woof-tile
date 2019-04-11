@@ -132,6 +132,9 @@ class Node:
     def get_smallest_immutable_subtree(self, _):
         return self.parent.get_smallest_immutable_subtree(self)
 
+    def resize(self, child, plane_type, increment):
+        self.parent.resize(self, plane_type, increment)
+
     # ------------------------------------------------------------------------------------------------------------------
     # Other
     # ------------------------------------------------------------------------------------------------------------------
