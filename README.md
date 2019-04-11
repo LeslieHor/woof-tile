@@ -1,4 +1,4 @@
-**Development on hold for code clean up**
+**README is out of date. To be updated**
 
 # woof-tile
 
@@ -12,8 +12,8 @@ Dependencies:
 * xdotool
 * xprop
 
-## Warning
-This only works for a triple monitor set up with three 1920x1080 monitors arranged landscape in a single row. I hardcoded some stuff for my own set up. Don't worry. Eventually I will make it generalised for other configurations.
+## Set up
+**Coming Soon**
 
 ## Development
 Development is done by implementing a new feature, using it for a while to ensure it works, then merging and tagging when it seems fine. Not great, I know.
