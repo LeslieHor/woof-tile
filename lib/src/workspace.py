@@ -1,4 +1,5 @@
 import config
+import log
 from node import Node
 from enums import *
 
@@ -99,6 +100,7 @@ class Workspace(Node):
         self.parent.set_window_active(window)
 
     def replace_and_trim(self, calling_child):
+        log.log_info(['Workspace activated replace_and_trim()'])
         self.remove_child(calling_child)
         self.set_last_active_window_id(None)
 

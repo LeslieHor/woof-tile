@@ -66,10 +66,6 @@ def get_all_system_window_ids():
     return dec_ids
 
 
-def remove_system_maximize(window_id=None):
-    call(["wmctrl", "-ir", verify_window_id(window_id), "-b", "remove,maximized_vert,maximized_horz"])
-
-
 def get_window_pid(window_id=None):
     window_id = verify_window_id(window_id)
     return int(call(["xprop -id", window_id, "| grep 'PID' | sed 's/_NET_WM_PID(CARDINAL) = //'"]).rstrip())

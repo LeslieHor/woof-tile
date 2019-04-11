@@ -34,6 +34,9 @@ class Node:
         return reduce(lambda acc, l: helpers.combine_lists(l.get_all_windows(), acc),
                       self.get_children(), [])
 
+    def is_group_node(self):
+        return False
+
     # ------------------------------------------------------------------------------------------------------------------
     # Setters
     # ------------------------------------------------------------------------------------------------------------------
@@ -113,9 +116,6 @@ class Node:
     def update_status(self):
         self.parent.update_status()
 
-    def set_active_window(self, window):
-        self.parent.set_window_active(window)
-
     def get_split_node(self):
         return self.parent.get_split_node()
 
@@ -145,5 +145,6 @@ class Node:
     def remove_and_trim(self, calling_child):
         self.remove_child(calling_child)
         if self.get_child_count() == 1:
-            [c.unshade() for c in self.get_children()]
+            if self.get_child(0).is_group_node():
+                self.get_child(0).unshade()
             self.remove_self()

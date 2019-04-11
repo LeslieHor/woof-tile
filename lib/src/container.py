@@ -77,12 +77,6 @@ class Container(Node):
     # Setters
     # ------------------------------------------------------------------------------------------------------------------
 
-    def set_window_id(self, new_window_id):
-        self.window_id = new_window_id
-
-    def set_woof_id(self, new_woof_id):
-        self.woof_id = new_woof_id
-
     def set_state(self, new_state):
         self.state = new_state
 
@@ -174,7 +168,6 @@ class Container(Node):
         system_calls.move_mouse(x, y)
 
     def resize_vertical(self, increment):
-        """Request parent to resize window."""
         if not self.parent.resize_vertical(self, increment):
             log_debug(['Unable to resize. Using alternative'])
             next_child = self.parent.find_earliest_a_but_not_me(self)

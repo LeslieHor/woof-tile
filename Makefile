@@ -59,19 +59,3 @@ restore:
 
 clean:
 	rm ${BUILD_DIR} -rf
-
-clean-tests:
-	./tests/cleanup
-
-pre-test: backup uninstall install
-
-run-tests:
-	./tests/test
-
-post-test: clean-tests uninstall restore
-	woof unmin
-	woof restore
-
-test-no-clean: pre-test run-tests
-
-test: pre-test run-tests post-test

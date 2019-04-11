@@ -1,11 +1,3 @@
-class DIR:
-    """Enum for directions"""
-    LEFT = 'l'
-    DOWN = 'd'
-    UP = 'u'
-    RIGHT = 'r'
-
-
 class PLANE:
     """Enum for plane directions"""
     HORIZONTAL = 'h'

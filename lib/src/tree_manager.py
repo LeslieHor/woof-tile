@@ -109,9 +109,6 @@ class TreeManager(Node):
     # Setters
     # ------------------------------------------------------------------------------------------------------------------
 
-    def set_viewable_screen_count(self, new_viewable_screen_count):
-        self.viewable_screen_count = new_viewable_screen_count
-
     def set_last_active_window_id(self, new_last_active_window_id):
         self.last_active_window_id = new_last_active_window_id
 

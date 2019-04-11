@@ -462,11 +462,9 @@ def generate_layout_tree(layout_data):
 
     elif layout_data['type'] == 'split_node':
         split_ratio = layout_data.get('split_ratio')
-        split_coordinate = layout_data.get('split_coordinate', None)
         plane_type = layout_data.get('plane_type')
 
         split_node = SplitNode(split_ratio=split_ratio,
-                               split_coordinate=split_coordinate,
                                plane_type=plane_type)
         children = [generate_layout_tree(c) for c in layout_data['children']]
         split_node.set_children(children)

@@ -17,25 +17,11 @@ def join_and_sanitize(list_):
     return ' '.join(new_list)
 
 
-def element(list_, index, default):
-    try:
-        return list_[index]
-    except:
-        return default
-
-
 def cut_off_rest(arg):
     """
     Cuts of the comment of the args
     """
     return arg.split(' : ')[0]
-
-
-def string_to_integer(value):
-    if value == '':
-        return None
-    else:
-        return int(value)
 
 
 def combine_lists(list_1, list_2):
