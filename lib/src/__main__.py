@@ -266,8 +266,7 @@ def remove():
 def kill():
     check_windows()
     window = remove()
-    window_pid = system_calls.get_window_pid(window.get_window_id())
-    os.kill(window_pid, 15)
+    log_info(system_calls.kill_window(window.get_window_id()))
 
 
 def move_to(target_window):

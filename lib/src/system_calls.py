@@ -73,3 +73,7 @@ def get_window_pid(window_id=None):
 
 def move_mouse(x, y):
     call(["xdotool mousemove", x, y])
+
+
+def kill_window(window_id):
+    return call(["wmctrl -ic", window_id])
