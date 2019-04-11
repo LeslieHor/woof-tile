@@ -546,7 +546,7 @@ def save_layout(args):
     json_data = active_workspace.get_layout_json()
 
     with open(config.get_config('layouts_dir') + "/" + name, 'w') as f:
-        json.dump(json_data, f)
+        json.dump(json_data, f, indent=4, sort_keys=True)
 
 
 def attempt_swallow():
