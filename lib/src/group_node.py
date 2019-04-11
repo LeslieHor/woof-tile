@@ -1,5 +1,4 @@
 from node import Node
-import helpers
 import config
 
 
@@ -14,57 +13,51 @@ class GroupNode(Node):
     windows to build the tabs with.
     """
 
-    def __init__(self, active_window):
+    def __init__(self, **kwargs):
         Node.__init__(self, None)
-        self.set_children([active_window])
-
-        self.active_window_id = active_window.get_window_id()
 
     # ------------------------------------------------------------------------------------------------------------------
     # Getters
     # ------------------------------------------------------------------------------------------------------------------
 
-    def get_active_window_id(self):
-        return self.active_window_id
-
     def get_inactive_windows_count(self):
         return self.get_child_count() - 1
 
     def get_active_window(self):
-        [window] = [win for win in self.get_all_windows() if win.window_id == self.get_active_window_id()]
-        return window
-
-    def get_active_window_index(self):
-        active_window = self.get_active_window()
-        return self.get_child_index(active_window)
+        return self.get_child(0)
 
     def get_inactive_windows(self):
-        index = self.get_child_index(self.get_active_window())
-        children = self.get_children()
-        inactive_children = children[:index] + children[index + 1:]
-        return inactive_children
+        return self.get_children()[1:]
+
+    def is_active(self, calling_child):
+        return self.get_child_index(calling_child) == 0
+
+    def is_group_node(self):
+        return True
 
     # ------------------------------------------------------------------------------------------------------------------
     # Setters
     # ------------------------------------------------------------------------------------------------------------------
-
-    def set_active_window_id(self, new_active_window_id):
-        self.active_window_id = new_active_window_id
 
     # ------------------------------------------------------------------------------------------------------------------
     # Trickle downs
     # ------------------------------------------------------------------------------------------------------------------
 
     def to_json(self):
-        json = '{'
-        json += '"type":' + helpers.json_com('group_node') + ','
-        json += '"active_window_id":' + helpers.json_com(self.get_active_window_id()) + ','
-        json += Node.to_json(self)
-        json += '}'
+        json = Node.to_json(self)
+        json['type'] = 'group_node'
+
+        return json
+
+    def get_layout_json(self):
+        json = Node.get_layout_json(self)
+        json['type'] = 'group_node'
 
         return json
 
     def redraw(self):
+        if self.get_child_count() == 0:
+            return
         self.get_active_window().redraw()
         self.get_active_window().unshade()
         [win.redraw() for win in self.get_inactive_windows()]
@@ -80,8 +73,8 @@ class GroupNode(Node):
 
     def get_active_viewport(self):
         (x_pos, y_pos), (x_size, y_size) = self.parent.get_viewport(self)
-        y_pos += config.TOP_BORDER
-        y_size -= config.TOP_BORDER
+        y_pos += config.get_config('top_border')
+        y_size -= config.get_config('top_border')
 
         return (x_pos, y_pos), (x_size, y_size)
 
@@ -103,15 +96,12 @@ class GroupNode(Node):
         return self.get_inactive_viewports()[index]
 
     def get_viewport(self, calling_child):
-        if calling_child.get_window_id() == self.get_active_window_id():
+        if self.is_active(calling_child):
             return self.get_active_viewport()
         else:
             return self.get_inactive_viewport(calling_child)
 
     def rotate_active_window(self, increment):
-        active_index = self.get_active_window_index()
-        active_index = (active_index + increment) % self.get_child_count()
-        new_active_window = self.get_child(active_index)
-        self.set_active_window_id(new_active_window.window_id)
+        self.rotate_children(increment)
         self.redraw()
         self.get_active_window().activate(True)

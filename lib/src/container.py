@@ -1,7 +1,6 @@
 from group_node import GroupNode
 from node import Node
 import system_calls
-import helpers
 import config
 from log import log_debug
 from enums import *
@@ -10,13 +9,16 @@ from enums import *
 class Container(Node):
     """Leaf node, representing a viewable window"""
 
-    def __init__(self, window_id, woof_id):
+    def __init__(self, **kwargs):
         Node.__init__(self, 0)  # This is barely a node at all
 
-        self.window_id = window_id
-        self.woof_id = woof_id
-        self.state = WINDOW_STATE.NORMAL
-        self.window_class = system_calls.get_window_class(self.window_id)
+        self.window_id = kwargs.get('window_id', None)
+        self.woof_id = kwargs.get('woof_id', None)
+        self.state = kwargs.get('state', WINDOW_STATE.NORMAL)
+        if 'window_class' in kwargs:
+            self.window_class = kwargs.get('window_class')
+        else:
+            self.window_class = system_calls.get_window_class(self.window_id)
 
     # ------------------------------------------------------------------------------------------------------------------
     # Getters
@@ -46,10 +48,10 @@ class Container(Node):
         return corrected_viewport
 
     def get_border_class_correction(self):
-        if self.get_window_class() in config.BORDER_CLASS_CORRECTIONS:
-            return config.BORDER_CLASS_CORRECTIONS[self.get_window_class()]
+        if self.get_window_class() in config.get_config('border_class_corrections'):
+            return config.get_config('border_class_corrections')[self.get_window_class()]
         else:
-            return config.DEFAULT_BORDER_CORRECTIONS
+            return config.get_config('default_border_corrections')
 
     def get_all_windows(self):
         return [self]
@@ -58,13 +60,12 @@ class Container(Node):
         return isinstance(self.get_parent(), GroupNode)
 
     def get_interactable_endpoints(self):
-        if self.get_state == WINDOW_STATE.SHADED or \
-                self.get_state == WINDOW_STATE.MINIMIZED:
+        if self.is_shaded() or self.is_minimized():
             return []
         return [self]
 
     def get_ui_string(self):
-        return str(self.get_woof_id()) + config.COMMENT_SEP + self.get_window_title()
+        return str(self.get_woof_id()) + config.get_config('comment_sep') + self.get_window_title()
 
     def is_shaded(self):
         return self.get_state() == WINDOW_STATE.SHADED
@@ -76,12 +77,6 @@ class Container(Node):
     # Setters
     # ------------------------------------------------------------------------------------------------------------------
 
-    def set_window_id(self, new_window_id):
-        self.window_id = new_window_id
-
-    def set_woof_id(self, new_woof_id):
-        self.woof_id = new_woof_id
-
     def set_state(self, new_state):
         self.state = new_state
 
@@ -90,13 +85,21 @@ class Container(Node):
     # ------------------------------------------------------------------------------------------------------------------
 
     def to_json(self):
-        json = '{'
-        json += '"type":' + helpers.json_com('container') + ','
-        json += '"window_id":' + helpers.json_com(self.get_window_id()) + ','
-        json += '"woof_id":' + helpers.json_com(self.get_woof_id()) + ','
-        json += '"state":' + helpers.json_com(self.get_state()) + ','
-        json += '"window_class":' + helpers.json_com(self.get_window_class())
-        json += '}'
+        json = {
+            'type': 'container',
+            'window_id': self.get_window_id(),
+            'woof_id': self.get_woof_id(),
+            'state': self.get_state(),
+            'window_class': self.get_window_class()
+        }
+
+        return json
+
+    def get_layout_json(self):
+        json = {
+            'type': 'empty_container',
+            'window_class': self.get_window_class()
+        }
 
         return json
 
@@ -144,7 +147,6 @@ class Container(Node):
         if set_last_active:
             self.parent.set_window_active(self)
         system_calls.activate_window(self.window_id)
-        self.set_state(WINDOW_STATE.NORMAL)
 
     def change_plane(self):
         """Request parent to change plane orientation"""
@@ -160,11 +162,11 @@ class Container(Node):
 
     def shade(self):
         system_calls.shade_window(self.window_id)
-        self.state = WINDOW_STATE.SHADED
+        self.set_state(WINDOW_STATE.SHADED)
 
     def unshade(self):
         system_calls.unshade_window(self.window_id)
-        self.state = WINDOW_STATE.NORMAL
+        self.set_state(WINDOW_STATE.NORMAL)
 
     def move_mouse(self):
         ((px, py), (sx, sy)) = self.get_viewport()
@@ -174,7 +176,6 @@ class Container(Node):
         system_calls.move_mouse(x, y)
 
     def resize_vertical(self, increment):
-        """Request parent to resize window."""
         if not self.parent.resize_vertical(self, increment):
             log_debug(['Unable to resize. Using alternative'])
             next_child = self.parent.find_earliest_a_but_not_me(self)

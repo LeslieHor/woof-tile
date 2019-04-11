@@ -1,11 +1,3 @@
-class DIR:
-    """Enum for directions"""
-    LEFT = 'l'
-    DOWN = 'd'
-    UP = 'u'
-    RIGHT = 'r'
-
-
 class PLANE:
     """Enum for plane directions"""
     HORIZONTAL = 'h'
@@ -62,6 +54,9 @@ class OPTIONS:
     SWAP_PANE_DOWN = 'pd'
     SWAP_PANE_UP = 'pu'
     MOVE_MOUSE = 'mm'
+    LOAD_LAYOUT = 'll'
+    ATTEMPT_SWALLOW = 'as'
+    SAVE_LAYOUT = 'wl'
 
 
 def get_option_description(option):
@@ -70,7 +65,7 @@ def get_option_description(option):
     if option == OPTIONS.NONE:
         return ''
     elif option == OPTIONS.RELOAD:
-        return '(reload) put all windows back where they should be'
+        return '(reload) reload to default starting tree'
     elif option == OPTIONS.DEBUG:
         return '(debug) print out debug information'
     elif option == OPTIONS.RESTORE:
@@ -124,7 +119,7 @@ def get_option_description(option):
     elif option == OPTIONS.NEW_SCREEN:
         return '(new screen) adds a new screen (not functional)'
     elif option == OPTIONS.LIST_SCREENS:
-        return '(list screens) list all the screens in woof'
+        return more_prepend + '(list screens) list all the screens in woof'
     elif option == OPTIONS.RENAME_SCREEN:
         return '(rename screen) rename the current screen'
     elif option == OPTIONS.SWAP_SCREEN_LEFT:
@@ -141,6 +136,12 @@ def get_option_description(option):
         return '(swap pane up) swaps this pane for the one to the up'
     elif option == OPTIONS.MOVE_MOUSE:
         return '(move mouse) move the mouse to the center of the window'
+    elif option == OPTIONS.LOAD_LAYOUT:
+        return more_prepend + '(load layout) layout a layout'
+    elif option == OPTIONS.ATTEMPT_SWALLOW:
+        return '(attempt swallow) attempt to swallow windows'
+    elif option == OPTIONS.SAVE_LAYOUT:
+        return '(save layout) save layout'
 
     else:
         return ''

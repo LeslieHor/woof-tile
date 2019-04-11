@@ -1,0 +1,27 @@
+{
+  "type": "split_node",
+  "split_ratio": 0.45,
+  "plane_type": "v",
+  "children": [
+    {
+      "type": "empty_container",
+      "window_class": "Firefox"
+    },
+    {
+      "type": "split_node",
+      "split_ratio": 0.60,
+      "plane_type": "h",
+      "children": [
+        {
+          "type": "empty_container",
+          "window_class": "Google-chrome"
+        },
+        {
+          "type": "empty_container",
+          "window_class": "konsole",
+          "window_title": "video1"
+        }
+      ]
+    }
+  ]
+}

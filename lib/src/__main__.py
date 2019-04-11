@@ -1,15 +1,19 @@
-import pickle  # For saving the window structure to disk
 import sys  # For getting args
+import json
+import os
 
+import layouts
+from empty_container import EmptyContainer
 from group_node import GroupNode
 from tree_manager import TreeManager
 from split_node import SplitNode
 from container import Container
-from log import log_info, log_debug, log_error
-from config import *
-from enums import PLANE, DIR, WINDOW_STATE, OPTIONS, print_options
+from log import log_info, log_error
+import config
+from enums import PLANE, WINDOW_STATE, OPTIONS, print_options
 import helpers
 import system_calls
+from workspace import Workspace
 
 
 def check_window():
@@ -23,11 +27,11 @@ def create_new_window_from_active():
     new_window_id = system_calls.get_active_window_id()
     new_woof_id = tree_manager.get_new_woof_id()
 
-    return Container(new_window_id, new_woof_id)
+    return Container(window_id=new_window_id, wood_id=new_woof_id)
 
 
 def create_new_split_node(plane_type, child_1, child_2):
-    split_node = SplitNode(plane_type)
+    split_node = SplitNode(plane_type=plane_type)
     split_node.set_children([child_1, child_2])
 
     return split_node
@@ -35,9 +39,9 @@ def create_new_split_node(plane_type, child_1, child_2):
 
 def create_new_group_node(target, window):
     parent = target.get_parent()
-    group_node = GroupNode(window)
+    group_node = GroupNode()
+    group_node.set_children([window, target])
     parent.replace_child(target, group_node)
-    group_node.add_child(target)
 
     return group_node
 
@@ -54,11 +58,12 @@ def get_active_workspace_index():
 
 def get_active_workspace():
     index = get_active_workspace_index()
-    return tree_manager.get_workspace(index)
+    return tree_manager.get_child(index)
 
 
 def debug_print():
-    tree_manager.debug_print()
+    json_data = tree_manager.to_json()
+    print(json.dumps(json_data))
 
 
 def restore_all():
@@ -88,8 +93,8 @@ def print_workspaces(prepend=''):
     workspace_strings = [prepend + 's' + str(tree_manager.get_active_workspace_index(ws)) + " : " +
                          ws.get_name() for ws in tree_manager.get_active_workspaces()
                          if ws != active_workspace]
-    workspace_strings += [prepend + str(tree_manager.get_active_workspace_index(ws)) + " : " +
-                          ws.get_name() for ws in tree_manager.get_workspaces()
+    workspace_strings += [prepend + str(tree_manager.get_workspace_index(ws)) + " : " +
+                          ws.get_name() for ws in tree_manager.get_children()
                           if ws != active_workspace]
     print('\n'.join(workspace_strings))
 
@@ -155,28 +160,28 @@ def add_vertical(target_window):
 
 def expand_vertical(increment):
     check_window()
-    increment = RESIZE_INCREMENT if increment == '' else int(increment)
+    increment = config.get_config('resize_increment') if increment == '' else int(increment)
     window = get_active_window()
     window.resize_vertical(increment)
 
 
 def reduce_vertical(increment):
     check_windows()
-    increment = -1 * RESIZE_INCREMENT if increment == '' else -1 * int(increment)
+    increment = -1 * config.get_config('resize_increment') if increment == '' else -1 * int(increment)
     window = get_active_window()
     window.resize_vertical(increment)
 
 
 def expand_horizontal(increment):
     check_windows()
-    increment = RESIZE_INCREMENT if increment == '' else int(increment)
+    increment = config.get_config('resize_increment') if increment == '' else int(increment)
     window = get_active_window()
     window.resize_horizontal(increment)
 
 
 def reduce_horizontal(increment):
     check_windows()
-    increment = -1 * RESIZE_INCREMENT if increment == '' else -1 * int(increment)
+    increment = -1 * config.get_config('resize_increment') if increment == '' else -1 * int(increment)
     window = get_active_window()
     window.resize_horizontal(increment)
 
@@ -247,8 +252,7 @@ def do_unmaximize():
     window = get_active_window()
     workspace = get_active_workspace()
     windows = workspace.get_all_windows()
-    [w.activate() for w in windows if w != window]
-    [w.redraw() for w in windows if w != window]
+    [w.unminimize() for w in windows if w != window]
     window.unmaximize()
     window.activate()
 
@@ -282,14 +286,21 @@ def add_to_group(target_woof_id):
     if target_woof_id == '':
         print_interactable_windows(OPTIONS.ADD_TO_GROUP)
         return
+    elif target_woof_id == 'l':
+        target = tree_manager.get_last_active_window()
+    else:
+        target = tree_manager.get_window_from_woof_id(int(target_woof_id))
 
     window = create_new_window_from_active()
-    target = tree_manager.get_window_from_woof_id(int(target_woof_id))
-    if target.is_in_group_node():
-        group_node = target.get_parent()
-        group_node.add_child(window)
+    add_to_group_target(target, window)
+
+
+def add_to_group_target(target_window, new_window):
+    if target_window.is_in_group_node():
+        group_node = target_window.get_parent()
+        group_node.add_child(new_window)
     else:
-        group_node = create_new_group_node(target, window)
+        group_node = create_new_group_node(target_window, new_window)
 
     group_node.redraw()
 
@@ -346,7 +357,7 @@ def get_screen_target(target=None):
         return tree_manager.get_active_workspace(index)
     else:
         index = int(target)
-        return tree_manager.get_workspace(index)
+        return tree_manager.get_child(index)
 
 
 def do_swap_screens(screen_1, screen_2):
@@ -419,6 +430,173 @@ def swap_screen_right():
 def move_mouse():
     window = get_active_window()
     window.move_mouse()
+
+
+def load_layout_data(name):
+    return layouts.get_layout(name)
+
+
+def create_layout_tree(name):
+    layout_data = load_layout_data(name)
+    return generate_layout_tree(layout_data)
+
+
+def generate_layout_tree(layout_data):
+    if layout_data['type'] == 'empty_container':
+        window_class = layout_data.get('window_class')
+        window_title = layout_data.get('window_title', None)
+
+        return EmptyContainer(window_class=window_class,
+                              window_title=window_title)
+
+    elif layout_data['type'] == 'container':
+        window_id = layout_data.get('window_id')
+        woof_id = layout_data.get('woof_id')
+        state = layout_data.get('state')
+        window_class = layout_data.get('window_class')
+
+        return Container(window_id=window_id,
+                         woof_id=woof_id,
+                         state=state,
+                         window_class=window_class)
+
+    elif layout_data['type'] == 'split_node':
+        split_ratio = layout_data.get('split_ratio')
+        plane_type = layout_data.get('plane_type')
+
+        split_node = SplitNode(split_ratio=split_ratio,
+                               plane_type=plane_type)
+        children = [generate_layout_tree(c) for c in layout_data['children']]
+        split_node.set_children(children)
+
+        return split_node
+
+    elif layout_data['type'] == 'group_node':
+        group_node = GroupNode()
+
+        children = [generate_layout_tree(c) for c in layout_data['children']]
+        group_node.set_children(children)
+
+        return group_node
+
+    elif layout_data['type'] == 'tree_manager':
+        viewable_screen_count = layout_data.get('viewable_screen_count')
+        last_active_window_id = layout_data.get('last_active_window_id')
+        tm = TreeManager(viewable_screen_count=viewable_screen_count,
+                         last_active_window_id=last_active_window_id)
+
+        children = [generate_layout_tree(c) for c in layout_data['children']]
+        tm.set_children(children)
+
+        return tm
+
+    elif layout_data['type'] == 'workspace':
+        name = layout_data.get('name')
+        geometry = layout_data.get('geometry')
+        state = layout_data.get('state')
+        last_active_window_id = layout_data.get('last_active_window_id')
+
+        workspace = Workspace(name=name,
+                              geometry=geometry,
+                              state=state,
+                              last_active_window_id=last_active_window_id)
+
+        children = [generate_layout_tree(c) for c in layout_data['children']]
+        workspace.set_children(children)
+
+        return workspace
+
+
+def load_layout_to_screen(screen_target, layout_name):
+    workspace = get_screen_target(screen_target)
+    if workspace.get_child_count() > 0:
+        print("Can only apply layouts to empty screens")
+    layout_tree = create_layout_tree(layout_name)
+    workspace.add_child(layout_tree)
+    layout_tree.restore_splits()
+
+
+def load_layout(args):
+    check_windows()
+    if args == '':
+        print_layouts('ll')
+        return
+    args = args.split(',')
+    screen_target = args[0]
+    layout_name = args[1]
+    load_layout_to_screen(screen_target, layout_name)
+
+
+def print_layouts(prepend=''):
+    screens_layout_names = []
+    number_of_screens = tree_manager.get_viewable_screen_count()
+    for name in layouts.get_layout_names():
+        s = [prepend + 's' + str(x) + ',' + name for x in range(number_of_screens)]
+        screens_layout_names += s
+
+    print('\n'.join(screens_layout_names))
+
+
+def save_layout(args):
+    check_windows()
+    name = args.lstrip()
+
+    active_workspace = get_active_workspace()
+
+    json_data = active_workspace.get_layout_json()
+
+    with open(config.get_config('layouts_dir') + "/" + name, 'w') as f:
+        json.dump(json_data, f, indent=4, sort_keys=True)
+
+
+def attempt_swallow():
+    window_ids_in_woof = [win.get_window_id() for win in tree_manager.get_all_windows()]
+    non_reg_window_ids = [win for win in system_calls.get_all_system_window_ids()
+                          if win not in window_ids_in_woof]
+    windows = [{'window_id': wid,
+                'window_class': system_calls.get_window_class(wid),
+                'window_title': system_calls.get_window_title(wid)}
+               for wid in non_reg_window_ids]
+
+    empty_containers = tree_manager.get_empty_containers()
+
+    # Attempt to match on title first
+    for ec in empty_containers:
+        if ec.get_window_title() is None:
+            continue
+
+        title_matches = [win for win in windows
+                         if ec.get_window_title() in win.get('window_title')]
+
+        if len(title_matches) > 0:
+            chosen_window = title_matches[0]
+
+            new_woof_id = tree_manager.get_new_woof_id()
+            new_window = Container(window_id=chosen_window.get('window_id'),
+                                   woof_id=new_woof_id)
+            ec.swallow(new_window)
+            new_window.redraw()
+
+            windows.remove(chosen_window)
+
+    empty_containers = tree_manager.get_empty_containers()
+
+    # Attempt to match on class
+    for ec in empty_containers:
+        class_matches = [win for win in windows
+                         if ec.get_window_class() == win.get('window_class')]
+
+        if len(class_matches) > 0:
+            chosen_window = class_matches[0]
+
+            new_woof_id = tree_manager.get_new_woof_id()
+            new_window = Container(window_id=chosen_window.get('window_id'),
+                                   woof_id=new_woof_id)
+
+            ec.swallow(new_window)
+            new_window.redraw()
+
+            windows.remove(chosen_window)
 
 
 # TODO: These should all be changed. I left it alone because I can't be bothered to change it yet
@@ -552,6 +730,7 @@ def right_window():
     return closest_window
 
 
+# TODO: These need error correction for when you don't find a window
 def navigate_left():
     check_windows()
     left_window().activate(True)
@@ -598,12 +777,8 @@ def main(command_string):
     cmd = command_string[:2]
     args = command_string[2:]
     args = helpers.cut_off_rest(args)
-    log_info(['------- Start --------', 'Args:', cmd, args])
 
-    if cmd == OPTIONS.RELOAD:
-        tree_manager = TreeManager()
-
-    elif cmd == OPTIONS.DEBUG:
+    if cmd == OPTIONS.DEBUG:
         debug_print()
 
     elif cmd == OPTIONS.RESTORE:
@@ -708,6 +883,15 @@ def main(command_string):
     elif cmd == OPTIONS.MOVE_MOUSE:
         move_mouse()
 
+    elif cmd == OPTIONS.LOAD_LAYOUT:
+        load_layout(args)
+
+    elif cmd == OPTIONS.ATTEMPT_SWALLOW:
+        attempt_swallow()
+
+    elif cmd == OPTIONS.SAVE_LAYOUT:
+        save_layout(args)
+
     else:
         print("Invalid command")
 
@@ -723,31 +907,44 @@ def check_windows():
 
 def load_data():
     global tree_manager
-    if os.path.isfile(DATA_PATH):
-        tree_manager = pickle.load(open(DATA_PATH, "rb"))
+    if os.path.isfile(config.get_config('data_path')):
+        with open(config.get_config('data_path')) as json_file:
+            json_data = json.load(json_file)
+            tree_manager = generate_layout_tree(json_data)
         if check_windows():
             restore_all()
     else:
         tree_manager = TreeManager()
+        tree_manager.initialise_workspaces()
 
 
 def save_data():
-    pickle.dump(tree_manager, open(DATA_PATH, "wb"))
+    json_data = tree_manager.to_json()
+    with open(config.get_config('data_path'), 'w') as f:
+        json.dump(json_data, f)
 
 
 ARGS = sys.argv
 
-if ARGS == 'rl':
+if len(ARGS) <= 1:
+    exit(0)
+
+if ARGS[1] == 'rl':  # Just in case things go wrong
     tree_manager = TreeManager()
+    tree_manager.initialise_workspaces()
+    save_data()
+    exit(0)
 else:
     load_data()
 
-if len(ARGS) == 1:
+if ARGS[1] == 'help':
     print_options(tree_manager)
     exit(0)
 
+log_info(['------- Start --------', 'Args:'] + ARGS)
+
 start_time = 0.0  # Just to get rid of IDE warnings
-if BENCHMARK:
+if config.get_config('benchmark'):
     import time
 
     start_time = time.time()
@@ -755,7 +952,7 @@ if BENCHMARK:
 if __name__ == '__main__':
     main(' '.join(ARGS[1:]))
 
-if BENCHMARK:
+if config.get_config('benchmark'):
     end_time = time.time()
     log_info(['Benchmark:', (end_time - start_time), 'seconds'])
 

@@ -1,18 +1,17 @@
 import config
-import helpers
+import log
 from node import Node
 from enums import *
 
 
 class Workspace(Node):
-    def __init__(self, tree_manager, name, geometry=None, state=SCREEN_STATE.INACTIVE):
+    def __init__(self, **kwargs):
         Node.__init__(self, 1)
-        Node.set_parent(self, tree_manager)
 
-        self.name = name
-        self.geometry = geometry
-        self.state = state
-        self.last_active_window_id = None
+        self.name = kwargs.get('name', 'unnamed')
+        self.geometry = kwargs.get('geometry', None)
+        self.state = kwargs.get('state', SCREEN_STATE.INACTIVE)
+        self.last_active_window_id = kwargs.get('last_active_window_id', None)
 
     # ------------------------------------------------------------------------------------------------------------------
     # Getters
@@ -43,7 +42,7 @@ class Workspace(Node):
 
     def get_ui_string(self):
         index = self.parent.get_workspace_index(self)
-        return 's' + str(index) + config.COMMENT_SEP + self.get_name()
+        return 's' + str(index) + config.get_config('comment_sep') + self.get_name()
 
     # ------------------------------------------------------------------------------------------------------------------
     # Setters
@@ -66,22 +65,20 @@ class Workspace(Node):
     # ------------------------------------------------------------------------------------------------------------------
 
     def to_json(self):
-        if self.get_geometry() is None:
-            geometry = None
-        else:
-            ((px, py), (sx, sy)) = self.get_geometry()
-            geometry = [[px, py], [sx, sy]]
-
-        json = '{'
-        json += '"type":' + helpers.json_com('workspace') + ','
-        json += '"name":' + helpers.json_com(self.get_name()) + ','
-        json += '"geometry":' + helpers.json_com(geometry) + ','
-        json += '"state":' + helpers.json_com(self.get_state()) + ','
-        json += '"last_active_window_id":' + helpers.json_com(self.get_last_active_window_id()) + ','
-        json += Node.to_json(self)
-        json += '}'
+        json = Node.to_json(self)
+        json['type'] = 'workspace'
+        json['name'] = self.get_name()
+        json['geometry'] = self.get_geometry()
+        json['state'] = self.get_state()
+        json['last_active_window_id'] = self.get_last_active_window_id()
 
         return json
+
+    def get_layout_json(self):
+        if self.get_child_count() == 0:
+            return {}
+        else:
+            return self.get_child(0).get_layout_json()
 
     def restore_splits(self):
         [c.restore_splits() for c in self.get_children()]
@@ -109,6 +106,7 @@ class Workspace(Node):
         self.parent.set_window_active(window)
 
     def replace_and_trim(self, calling_child):
+        log.log_info(['Workspace activated replace_and_trim()'])
         self.remove_child(calling_child)
         self.set_last_active_window_id(None)
 
@@ -128,10 +126,10 @@ class Workspace(Node):
         (x_pos, y_pos), (x_size, y_size) = self.get_geometry()
 
         # Correct for gaps
-        x_pos += config.GAP
-        y_pos += config.GAP
-        x_size -= 2 * config.GAP
-        y_size -= 2 * config.GAP
+        x_pos += config.get_config('gap')
+        y_pos += config.get_config('gap')
+        x_size -= 2 * config.get_config('gap')
+        y_size -= 2 * config.get_config('gap')
 
         return [((x_pos, y_pos), (x_size, y_size))]
 

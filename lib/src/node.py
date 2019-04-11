@@ -34,6 +34,9 @@ class Node:
         return reduce(lambda acc, l: helpers.combine_lists(l.get_all_windows(), acc),
                       self.get_children(), [])
 
+    def is_group_node(self):
+        return False
+
     # ------------------------------------------------------------------------------------------------------------------
     # Setters
     # ------------------------------------------------------------------------------------------------------------------
@@ -69,14 +72,17 @@ class Node:
     # ------------------------------------------------------------------------------------------------------------------
 
     def to_json(self):
-        if self.get_child_count() == 0:
-            children = "[]"
-        else:
-            children = '[' + ','.join([c.to_json() for c in self.get_children()]) + ']'
+        json = {
+            'child_limit': self.get_child_limit(),
+            'children': [c.to_json() for c in self.get_children()]
+        }
 
-        json = ''
-        json += '"child_limit":' + helpers.json_com(self.get_child_limit()) + ','
-        json += '"children":' + children
+        return json
+
+    def get_layout_json(self):
+        json = {
+            'children': [c.get_layout_json() for c in self.get_children()]
+        }
 
         return json
 
@@ -98,6 +104,9 @@ class Node:
     def restore_splits(self):
         [c.restore_splits() for c in self.get_children()]
 
+    def get_empty_containers(self):
+        return reduce(lambda a, c: helpers.combine_lists(c.get_empty_containers(), a), self.get_children(), [])
+
     # ------------------------------------------------------------------------------------------------------------------
     # Bubble ups
     # ------------------------------------------------------------------------------------------------------------------
@@ -114,9 +123,6 @@ class Node:
     def update_status(self):
         self.parent.update_status()
 
-    def set_active_window(self, window):
-        self.parent.set_window_active(window)
-
     def get_split_node(self):
         return self.parent.get_split_node()
 
@@ -130,6 +136,11 @@ class Node:
     # Other
     # ------------------------------------------------------------------------------------------------------------------
 
+    def rotate_children(self, increment):
+        children = self.get_children()
+        new_children = children[increment:] + children[:increment]
+        self.set_children(new_children)
+
     def replace_self(self, replacement):
         self.parent.replace_child(self, replacement)
 
@@ -141,5 +152,6 @@ class Node:
     def remove_and_trim(self, calling_child):
         self.remove_child(calling_child)
         if self.get_child_count() == 1:
-            [c.unshade() for c in self.get_children()]
+            if self.get_child(0).is_group_node():
+                self.get_child(0).unshade()
             self.remove_self()

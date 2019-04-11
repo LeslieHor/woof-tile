@@ -31,25 +31,12 @@ def activate_window(window_id):
     call(['xdotool windowactivate', window_id])
 
 
-def get_window_state(window_id=None):
-    """Gets the windows state using xprop
-
-     States:
-     <BLANK> : Normal
-     _NET_WM_STATE_SHADED : Shaded
-     _NET_WM_STATE_HIDDEN : Minimized
-
-     """
-    return call(['xprop', '-id', verify_window_id(window_id),
-                 ' | grep "NET_WM_STATE" | sed \'s/_NET_WM_STATE(ATOM) = //\'']).rstrip()
-
-
 def get_window_class(window_id=None):
     return call(['xprop -id', verify_window_id(window_id), '| grep WM_CLASS | sed \'s/^.*, "//\' | sed \'s/"//\'']).rstrip()
 
 
 def get_window_title(window_id=None):
-    return call(['xdotool getwindowname', verify_window_id(window_id)]).rstrip()
+    return call(['xdotool getwindowname', verify_window_id(window_id)]).rstrip().decode('ascii', 'ignore')
 
 
 def minimise_window(window_id=None):
@@ -77,10 +64,6 @@ def get_all_system_window_ids():
     hex_ids = hex_ids_str.split("\n")
     dec_ids = [int(hid, 0) for hid in hex_ids]
     return dec_ids
-
-
-def remove_system_maximize(window_id=None):
-    call(["wmctrl", "-ir", verify_window_id(window_id), "-b", "remove,maximized_vert,maximized_horz"])
 
 
 def get_window_pid(window_id=None):

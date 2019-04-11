@@ -1,4 +1,3 @@
-import helpers
 from node import Node
 from enums import *
 import config
@@ -11,12 +10,11 @@ class SplitNode(Node):
     PlaneType defines whether the node is split horizontally or vertically
     """
 
-    def __init__(self, plane_type):
+    def __init__(self, **kwargs):
         Node.__init__(self, 2)
 
-        self.plane_type = plane_type
-        self.split_coordinate = None
-        self.split_ratio = 0.5
+        self.plane_type = kwargs.get('plane_type', PLANE.HORIZONTAL)
+        self.split_ratio = kwargs.get('split_ratio', 0.5)
 
     # ------------------------------------------------------------------------------------------------------------------
     # Getters
@@ -26,7 +24,28 @@ class SplitNode(Node):
         return self.plane_type
 
     def get_split_coordinate(self):
-        return self.split_coordinate
+        ((_, _), (x_size, y_size)) = self.parent.get_viewport(self)
+
+        if self.get_plane_type() == PLANE.HORIZONTAL:
+            split_coordinate = int(y_size * self.get_split_ratio())
+        elif self.get_plane_type() == PLANE.VERTICAL:
+            split_coordinate = int(x_size * self.get_split_ratio())
+        else:
+            raise Exception("Invalid plane")
+
+        return split_coordinate
+
+    def get_split_ratio_from_split_coordinate(self, split_coordinate):
+        ((_, _), (x_size, y_size)) = self.parent.get_viewport(self)
+
+        if self.get_plane_type() == PLANE.HORIZONTAL:
+            split_ratio = float(split_coordinate) / float(y_size)
+        elif self.get_plane_type() == PLANE.VERTICAL:
+            split_ratio = float(split_coordinate) / float(x_size)
+        else:
+            raise Exception("Invalid plane")
+
+        return split_ratio
 
     def get_split_ratio(self):
         return self.split_ratio
@@ -38,63 +57,33 @@ class SplitNode(Node):
     def set_plane_type(self, new_plane_type):
         self.plane_type = new_plane_type
 
-    def set_split_coordinate(self, new_split_coordinate):
-        self.split_coordinate = new_split_coordinate
-        self.set_split_ratio_from_split_coordinate()
-
     def set_split_ratio(self, new_split_ratio):
         self.split_ratio = new_split_ratio
-        self.set_split_coordinate_from_split_ratio()
 
     def alter_split_coordinate(self, increment):
         new_split_coordinate = self.get_split_coordinate() + increment
-        self.set_split_coordinate(new_split_coordinate)
-
-    def set_split_coordinate_from_split_ratio(self):
-        ((_, _), (x_size, y_size)) = self.parent.get_viewport(self)
-
-        if self.get_plane_type() == PLANE.HORIZONTAL:
-            split_coordinate = int(y_size * self.get_split_ratio())
-        elif self.get_plane_type() == PLANE.VERTICAL:
-            split_coordinate = int(x_size * self.get_split_ratio())
-        else:
-            raise Exception("Invalid plane")
-
-        self.split_coordinate = split_coordinate
-
-    def set_split_ratio_from_split_coordinate(self):
-        ((_, _), (x_size, y_size)) = self.parent.get_viewport(self)
-
-        if self.get_plane_type() == PLANE.HORIZONTAL:
-            split_ratio = float(self.get_split_coordinate()) / float(y_size)
-        elif self.get_plane_type() == PLANE.VERTICAL:
-            split_ratio = float(self.get_split_coordinate()) / float(x_size)
-        else:
-            raise Exception("Invalid plane")
-
-        self.split_ratio = split_ratio
+        new_split_ratio = self.get_split_ratio_from_split_coordinate(new_split_coordinate)
+        self.set_split_ratio(new_split_ratio)
 
     # ------------------------------------------------------------------------------------------------------------------
     # Trickle downs
     # ------------------------------------------------------------------------------------------------------------------
 
     def to_json(self):
-        json = '{'
-        json += '"type":' + helpers.json_com('split_node') + ','
-        json += '"plane_type":' + helpers.json_com(self.get_plane_type()) + ','
-        json += '"split_coordinate":' + helpers.json_com(self.get_split_coordinate()) + ','
-        json += '"split_ratio":' + helpers.json_com(self.get_split_ratio()) + ','
-        json += Node.to_json(self)
-        json += '}'
+        json = Node.to_json(self)
+        json['type'] = 'split_node'
+        json['plane_type'] = self.get_plane_type()
+        json['split_ratio'] = self.get_split_ratio()
 
         return json
 
-    def debug_print(self, level):
-        s = config.DEBUG_SPACER * level
-        s += ' '.join([self.get_plane_type(), self.get_split_coordinate(), self.get_split_ratio()])
-        print(s)
+    def get_layout_json(self):
+        json = Node.get_layout_json(self)
+        json['type'] = 'split_node'
+        json['plane_type'] = self.get_plane_type()
+        json['split_ratio'] = self.get_split_ratio()
 
-        [c.debug_print(level + 1) for c in self.get_children()]
+        return json
 
     def restore_splits(self):
         self.set_split_ratio(self.get_split_ratio())
@@ -161,10 +150,10 @@ class SplitNode(Node):
             y_size_2 = y_size - split
 
             # Gap correction
-            y_size_1 -= config.GAP / 2
+            y_size_1 -= config.get_config('gap') / 2
 
-            y_pos_2 += config.GAP / 2
-            y_size_2 -= config.GAP / 2
+            y_pos_2 += config.get_config('gap') / 2
+            y_size_2 -= config.get_config('gap') / 2
 
         elif self.get_plane_type() == PLANE.VERTICAL:
             x_pos_1 = x_pos
@@ -178,10 +167,10 @@ class SplitNode(Node):
             y_size_2 = y_size
 
             # Gap correction
-            x_size_1 -= config.GAP / 2
+            x_size_1 -= config.get_config('gap') / 2
 
-            x_pos_2 += config.GAP / 2
-            x_size_2 -= config.GAP / 2
+            x_pos_2 += config.get_config('gap') / 2
+            x_size_2 -= config.get_config('gap') / 2
         else:
             raise Exception("Invalid plane")
 

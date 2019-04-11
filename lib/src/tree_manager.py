@@ -1,27 +1,30 @@
 from functools import reduce
 import helpers
+from node import Node
 from workspace import Workspace
 from enums import SCREEN_STATE
 import config
 
 
-class TreeManager:
+class TreeManager(Node):
     """Root of all tree structures"""
 
-    def __init__(self):
-        self.viewable_screen_count = 0
-        self.last_active_window_id = None
-        self.workspaces = []
+    def __init__(self, **kwargs):
+        Node.__init__(self, None)
 
-        for workspace_config in config.WORKSPACE_CONFIG:
+        self.viewable_screen_count = kwargs.get('viewable_screen_count', 0)
+        self.last_active_window_id = kwargs.get('last_active_window_id', None)
+
+    def initialise_workspaces(self):
+        for workspace_config in config.get_config('workspace_config'):
             (name, geometry) = workspace_config
             if geometry is not None:
-                new_workspace = Workspace(self, name, geometry, SCREEN_STATE.ACTIVE)
+                new_workspace = Workspace(name=name, geometry=geometry, state=SCREEN_STATE.ACTIVE)
                 self.viewable_screen_count += 1
             else:
-                new_workspace = Workspace(self, name)
+                new_workspace = Workspace(name=name)
 
-            self.workspaces.append(new_workspace)
+            self.add_child(new_workspace)
 
         self.update_active_workspaces_statuses()
 
@@ -35,18 +38,6 @@ class TreeManager:
     def get_last_active_window_id(self):
         return self.last_active_window_id
 
-    def get_workspaces(self):
-        return self.workspaces
-
-    def get_workspaces_count(self):
-        return len(self.workspaces)
-
-    def get_workspace(self, index):
-        return self.get_workspaces()[index]
-
-    def get_all_windows(self):
-        return reduce(lambda acc, c: c.get_all_windows() + acc, self.get_workspaces(), [])
-
     def get_window_from_window_id(self, window_id):
         windows = [win for win in self.get_all_windows() if win.window_id == window_id]
         if windows:
@@ -58,7 +49,7 @@ class TreeManager:
         return window
 
     def get_active_workspaces(self):
-        return [ws for ws in self.get_workspaces() if ws.is_active()]
+        return [ws for ws in self.get_children() if ws.is_active()]
 
     def get_active_workspaces_count(self):
         return len(self.get_active_workspaces())
@@ -79,7 +70,7 @@ class TreeManager:
         return counter
 
     def get_viewable_workspace(self, index):
-        (_, geometry) = config.WORKSPACE_CONFIG[index]
+        (_, geometry) = config.get_config('workspace_config')[index]
         [workspace] = [ws for ws in self.get_active_workspaces() if ws.get_geometry() == geometry]
         return workspace
 
@@ -87,16 +78,16 @@ class TreeManager:
         return self.get_window_from_window_id(self.get_last_active_window_id())
 
     def get_workspace_from_config(self, geometry):
-        [workspace] = [ws for ws in self.get_workspaces() if ws.get_geometry() == geometry]
+        [workspace] = [ws for ws in self.get_children() if ws.get_geometry() == geometry]
         return workspace
 
     def get_active_workspace(self, index):
-        (_name, geometry) = config.WORKSPACE_CONFIG[index]
+        (_name, geometry) = config.get_config('workspace_config')[index]
         return self.get_workspace_from_config(geometry)
 
     def get_active_workspace_index(self, workspace):
         counter = 0
-        for (_name, geometry) in config.WORKSPACE_CONFIG:
+        for (_name, geometry) in config.get_config('workspace_config'):
             if geometry is None:
                 continue
             if workspace.get_geometry() == geometry:
@@ -106,53 +97,37 @@ class TreeManager:
         return None
 
     def get_workspace_index(self, calling_child):
-        return self.workspaces.index(calling_child)
+        return self.children.index(calling_child)
 
     def get_new_index(self):
-        return str(len(self.get_workspaces()))
+        return str(len(self.get_children()))
+
+    def get_empty_containers(self):
+        return reduce(lambda a, c: helpers.combine_lists(c.get_empty_containers(), a), self.get_children(), [])
 
     # ------------------------------------------------------------------------------------------------------------------
     # Setters
     # ------------------------------------------------------------------------------------------------------------------
 
-    def set_viewable_screen_count(self, new_viewable_screen_count):
-        self.viewable_screen_count = new_viewable_screen_count
-
     def set_last_active_window_id(self, new_last_active_window_id):
         self.last_active_window_id = new_last_active_window_id
-
-    def set_workspaces(self, new_workspaces):
-        self.workspaces = new_workspaces
 
     def add_workspace(self, name=None):
         if name is None:
             name = self.get_new_index()
-        self.workspaces.append(Workspace(self, name))
+        self.add_child(Workspace(name=name))
 
     # ------------------------------------------------------------------------------------------------------------------
     # Trickle downs
     # ------------------------------------------------------------------------------------------------------------------
 
     def to_json(self):
-        if self.get_workspaces is None:
-            workspaces = None
-        else:
-            workspaces = '[' + ','.join([w.to_json() for w in self.get_workspaces()]) + ']'
-
-        json = '{'
-        json += '"viewable_screen_count":' + helpers.json_com(self.get_viewable_screen_count()) + ','
-        json += '"last_active_window_id":' + helpers.json_com(self.get_last_active_window_id()) + ','
-        json += '"workspaces":' + workspaces
-        json += '}'
+        json = Node.to_json(self)
+        json['type'] = 'tree_manager'
+        json['viewable_screen_count'] = self.get_viewable_screen_count()
+        json['last_active_window_id'] = self.get_last_active_window_id()
 
         return json
-
-    def debug_print(self):
-        json = self.to_json()
-        print(json)
-
-    def minimize(self):
-        [ws.minimize() for ws in self.get_workspaces()]
 
     # ------------------------------------------------------------------------------------------------------------------
     # Bubble ups
@@ -178,12 +153,12 @@ class TreeManager:
         target_file_index = self.get_active_workspace_index(active_workspace)
         active_index = self.get_workspace_index(active_workspace)
         status = []
-        for i in range(self.get_workspaces_count()):
-            name = str(i) + ': ' + self.get_workspace(i).get_name()
+        for i in range(self.get_child_count()):
+            name = str(i) + ': ' + self.get_child(i).get_name()
             if i == active_index:
                 name = '> ' + name + ' <'
             status.append(name)
         status_line = ' | '.join(status)
 
-        with open(config.STATUSES_PATH + str(target_file_index), 'w') as file_:
+        with open(config.get_config('statuses_dir') + str(target_file_index), 'w') as file_:
             file_.write(status_line)

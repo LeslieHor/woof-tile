@@ -1,6 +1,6 @@
 import time
 from helpers import join_and_sanitize
-from config import *
+import config
 
 
 def log_info(log_list):
@@ -23,5 +23,5 @@ def log(log_list):
     string = join_and_sanitize(log_list) + '\n'
     timestamp = time.strftime('%Y-%m-%dT%H:%M:%S ', time.gmtime())
     string = timestamp + string
-    with open(LOG_PATH, 'a') as log_file:
+    with open(config.get_config('log_path'), 'a') as log_file:
         log_file.write(string)
