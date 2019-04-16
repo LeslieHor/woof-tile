@@ -155,6 +155,6 @@ class Node:
     def remove_and_trim(self, calling_child):
         self.remove_child(calling_child)
         if self.get_child_count() == 1:
-            if self.get_child(0).is_group_node():
+            if self.get_child(0).parent.is_group_node():
                 self.get_child(0).unshade()
             self.remove_self()

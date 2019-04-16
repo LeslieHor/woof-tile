@@ -18,7 +18,6 @@ from workspace import Workspace
 
 def check_window():
     if get_active_window() is None:
-        print("Window not in woof")
         log_error(["Window not in woof"])
         exit(0)
 
@@ -27,7 +26,7 @@ def create_new_window_from_active():
     new_window_id = system_calls.get_active_window_id()
     new_woof_id = tree_manager.get_new_woof_id()
 
-    return Container(window_id=new_window_id, wood_id=new_woof_id)
+    return Container(window_id=new_window_id, woof_id=new_woof_id)
 
 
 def create_new_split_node(plane_type, child_1, child_2):
