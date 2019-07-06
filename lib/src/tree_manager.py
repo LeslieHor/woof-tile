@@ -153,6 +153,8 @@ class TreeManager(Node):
         target_file_index = self.get_active_workspace_index(active_workspace)
         active_index = self.get_workspace_index(active_workspace)
         status = []
+
+        # Write available workspaces
         for i in range(self.get_child_count()):
             name = str(i) + ': ' + self.get_child(i).get_name()
             if i == active_index:

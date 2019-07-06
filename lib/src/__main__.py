@@ -20,7 +20,7 @@ def check_window():
     if get_active_window() is None:
         log_error(["Window not in woof"])
         exit(0)
-
+        
 
 def create_new_window_from_active():
     new_window_id = system_calls.get_active_window_id()
