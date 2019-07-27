@@ -41,7 +41,7 @@ class Workspace(Node):
         return Node.get_interactable_endpoints(self)
 
     def get_ui_string(self):
-        index = self.parent.get_workspace_index(self)
+        index = self.parent.get_active_workspace_index(self)
         return 's' + str(index) + config.get_config('comment_sep') + self.get_name()
 
     # ------------------------------------------------------------------------------------------------------------------
