@@ -1,8 +1,8 @@
 ROOT_DIR=$(dir $(realpath $(firstword $(MAKEFILE_LIST))))
 BUILD_DIR=${ROOT_DIR}_build/
 BIN_DIR=~/bin/
-INSTALL_DIR=~/
-WOOF_DIR=.woof/
+INSTALL_DIR=/usr/bin/
+USER_DIR=~/.woof/
 VERSION=`cat ${ROOT_DIR}version`
 
 PACKAGE_NAME=woof_v${VERSION}
@@ -17,28 +17,30 @@ build: clean
 	echo "Version: ${VERSION}"
 	echo "Package name: ${PACKAGE_NAME}"
 	mkdir ${BUILD_DIR}${PACKAGE_NAME}/
-	mkdir ${BUILD_DIR}${PACKAGE_NAME}/woof/
-	mkdir ${BUILD_DIR}${PACKAGE_NAME}/woof/log/
-	mkdir ${BUILD_DIR}${PACKAGE_NAME}/bin/
-	cp ${BUILD_DIR}woof ${BUILD_DIR}${PACKAGE_NAME}/woof/
-	cp ${ROOT_DIR}/lib/helpers/woof ${BUILD_DIR}${PACKAGE_NAME}/bin/
+	mkdir ${BUILD_DIR}${PACKAGE_NAME}/config/
+	mkdir ${BUILD_DIR}${PACKAGE_NAME}/layouts/
+	cp ${BUILD_DIR}woof ${BUILD_DIR}${PACKAGE_NAME}/
+	cp -r ${ROOT_DIR}config ${BUILD_DIR}${PACKAGE_NAME}/
+	cp -r ${ROOT_DIR}layouts ${BUILD_DIR}${PACKAGE_NAME}/
+	cp ${ROOT_DIR}/README.org ${BUILD_DIR}${PACKAGE_NAME}/
 	cd ${BUILD_DIR} ; zip -r ${PACKAGE_NAME}.zip ${PACKAGE_NAME}
 	rm ${BUILD_DIR}${PACKAGE_NAME} -rf
+
+	mkdir -p ${BUILD_DIR}tmp
+	mv ${BUILD_DIR}woof ${BUILD_DIR}tmp/
 
 	echo "woof built"
 
 install: build
-	mkdir -p ${BIN_DIR}
-	mkdir -p ${INSTALL_DIR}${WOOF_DIR}
-	mkdir -p ${INSTALL_DIR}${WOOF_DIR}/log
-	mkdir -p ${INSTALL_DIR}${WOOF_DIR}/status
+	mkdir -p ${INSTALL_DIR}
+	mkdir -p ${USER_DIR}
+	mkdir -p ${USER_DIR}/log
+	mkdir -p ${USER_DIR}/status
 
-	cp -v ${ROOT_DIR}/lib/helpers/woof ${BIN_DIR}
-	cp -v ${BUILD_DIR}/woof ${INSTALL_DIR}${WOOF_DIR}
+	cp -v ${BUILD_DIR}tmp/woof ${INSTALL_DIR}
 
 uninstall:
-	rm ${BIN_DIR}/woof
-	rm ${INSTALL_DIR}${WOOF_DIR} -rf
+	rm ${INSTALL_DIR}/woof
 
 backup:
 	mkdir ~/woof_backup/

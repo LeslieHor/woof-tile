@@ -1,29 +1,34 @@
 * woof-tile
 DE/WM agnostic tiling manager.
 
-*Examples coming soon*
+Calls into other applications to handle window management. Uses rofi to present
+options.
 
-Calls into other applications to handle window management. Uses rofi to present options.
-
-woof-tile calls the following applications to handle window controls. These will need to be installed:
-- wmctrl 
-- xdotool 
+woof-tile calls the following applications to handle window controls. These will
+need to be installed:
+- wmctrl
+- xdotool
 - xprop
-  
-I recommend you use =rofi= to interact with woof-tile, although it is optional.
 
-** Todo
-*** TODO kill session
-Add this to gitea issues
+I recommend you use =rofi= to interact with woof-tile, although it is optional.
 
 ** Set up
 *Coming Soon*
 
 ** Installation
-Clone the repo, and run =make install=.
+Clone the repo, and run ~make install~
 
-It will copy the =woof= bash script into =~/bin/= and copy the =woof=
-python package into =~/.woof/=.
+It will copy the =woof= file into =/usr/bin/=.
+
+You will also need to create the following files / directories:
+- ~/.woof/
+- ~/.woof/log/
+- ~/.woof/status/
+- ~/.woof/config.json
+
+See the =config.json= file for an example of what the file should look like.
+
+The config file and example layouts are included in the release.
 
 ** Usage
 
@@ -181,10 +186,3 @@ Example entries for xbindkeys:
 Use the rofi menu, it will list all options. You probably won't know
 what parameters to put it though. Use your best judgement or look
 through the code. I haven't bothered to properly document it all.
-
-** Bugs that still exist
-   :PROPERTIES:
-   :CUSTOM_ID: bugs-that-still-exist
-   :END:
-
-Plenty.
