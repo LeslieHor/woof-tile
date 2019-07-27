@@ -20,7 +20,7 @@ def check_window():
     if get_active_window() is None:
         log_error(["Window not in woof"])
         exit(0)
-        
+
 
 def create_new_window_from_active():
     new_window_id = system_calls.get_active_window_id()
@@ -731,21 +731,25 @@ def right_window():
 def navigate_left():
     check_windows()
     left_window().activate(True)
+    system_calls.post_window_change_hook()
 
 
 def navigate_down():
     check_windows()
     down_window().activate(True)
+    system_calls.post_window_change_hook()
 
 
 def navigate_up():
     check_windows()
     up_window().activate(True)
+    system_calls.post_window_change_hook()
 
 
 def navigate_right():
     check_windows()
     right_window().activate(True)
+    system_calls.post_window_change_hook()
 
 
 def swap_left():

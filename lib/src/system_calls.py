@@ -77,3 +77,6 @@ def move_mouse(x, y):
 
 def kill_window(window_id):
     return call(["wmctrl -ic", window_id])
+
+def post_window_change_hook(window_id = None):
+    call([". /home/leslie/.woof/hooks/post_window_change_hooks"])
