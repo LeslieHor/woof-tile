@@ -2,5 +2,9 @@
 .idea/
 *.iml
 
+# Emacs
+.emacs/
+TAGS
+
 # Project
 _build/
