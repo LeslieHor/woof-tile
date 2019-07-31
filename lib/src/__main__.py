@@ -44,6 +44,9 @@ def create_new_group_node(target, window):
 
     return group_node
 
+def is_window_registered_in_woof(window_id):
+    return tree_manager.get_window_from_window_id(window_id) != None
+
 
 def get_active_window():
     window_id = system_calls.get_active_window_id()
@@ -98,9 +101,20 @@ def print_workspaces(prepend=''):
     print('\n'.join(workspace_strings))
 
 
+def remove_pre_existing_window(window_id):
+    window = tree_manager.get_window_from_window_id(window_id)
+    if not window:
+        return False
+
+    window.remove_and_trim()
+    restore_all()
+    return True
+
+
 def add_to_screen(target_screen):
     workspace = tree_manager.get_viewable_workspace(int(target_screen))
     new_window = create_new_window_from_active()
+    remove_pre_existing_window(new_window.get_window_id())
 
     workspace.add_child(new_window)
     new_window.activate(True)
@@ -111,6 +125,7 @@ def add_split_last_active_window(plane_type):
     subtree = last_active_window.get_smallest_immutable_subtree()
     parent = subtree.get_parent()
     new_window = create_new_window_from_active()
+    remove_pre_existing_window(new_window.get_window_id())
 
     new_split_node = create_new_split_node(plane_type, subtree, new_window)
 
@@ -125,6 +140,7 @@ def add_split_woof_id(plane_type, target_woof_id):
     subtree = target_window.get_smallest_immutable_subtree()
     parent = subtree.get_parent()
     new_window = create_new_window_from_active()
+    remove_pre_existing_window(new_window.get_window_id())
 
     new_split_node = create_new_split_node(plane_type, target_window, new_window)
 
@@ -288,6 +304,7 @@ def add_to_group(target_woof_id):
         target = tree_manager.get_window_from_woof_id(int(target_woof_id))
 
     window = create_new_window_from_active()
+    remove_pre_existing_window(window.get_window_id())
     add_to_group_target(target, window)
 
 

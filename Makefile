@@ -31,13 +31,14 @@ build: clean
 
 	echo "woof built"
 
-install: build
+install:
+	[ -f ${BUILD_DIR}tmp/woof ]
 	mkdir -p ${INSTALL_DIR}
 	mkdir -p ${USER_DIR}
 	mkdir -p ${USER_DIR}/log
 	mkdir -p ${USER_DIR}/status
 
-	cp -v ${BUILD_DIR}tmp/woof ${INSTALL_DIR}
+	sudo cp -v ${BUILD_DIR}tmp/woof ${INSTALL_DIR}
 
 uninstall:
 	rm ${INSTALL_DIR}/woof
