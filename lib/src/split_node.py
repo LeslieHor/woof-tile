@@ -16,9 +16,9 @@ class SplitNode(Node):
         self.plane_type = kwargs.get('plane_type', PLANE.HORIZONTAL)
         self.split_ratio = kwargs.get('split_ratio', 0.5)
 
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # Getters
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
     def get_plane_type(self):
         return self.plane_type
@@ -50,9 +50,9 @@ class SplitNode(Node):
     def get_split_ratio(self):
         return self.split_ratio
 
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # Setters
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
     def set_plane_type(self, new_plane_type):
         self.plane_type = new_plane_type
@@ -62,12 +62,13 @@ class SplitNode(Node):
 
     def alter_split_coordinate(self, increment):
         new_split_coordinate = self.get_split_coordinate() + increment
-        new_split_ratio = self.get_split_ratio_from_split_coordinate(new_split_coordinate)
+        new_split_ratio = self.get_split_ratio_from_split_coordinate(
+            new_split_coordinate)
         self.set_split_ratio(new_split_ratio)
 
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # Trickle downs
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
     def to_json(self):
         json = Node.to_json(self)
@@ -89,9 +90,9 @@ class SplitNode(Node):
         self.set_split_ratio(self.get_split_ratio())
         [c.restore_splits() for c in self.get_children()]
 
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # Bubble ups
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
     def get_split_node(self):
         return self
@@ -99,9 +100,9 @@ class SplitNode(Node):
     def get_smallest_immutable_subtree(self, calling_child):
         return calling_child
 
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # Child Requests
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
     def get_viewports(self):
         """
@@ -192,9 +193,9 @@ class SplitNode(Node):
         self.restore_splits()
         self.redraw()
 
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # Other
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
     def resize(self, child, plane_type, increment):
         if self.get_plane_type() != plane_type:
@@ -208,8 +209,11 @@ class SplitNode(Node):
 
     # TODO: Refactor name
     def all_are_bees(self, caller_child):
-        """If the calling child is 'ChildB', ripple the call up to check if THIS caller is also ChildB'
-        Returns True if the entire call stack up to the screen are all 'ChildB's.
+        """If the calling child is 'ChildB', ripple the call up to check if THIS
+        caller is also 'ChildB'
+        Returns True if the entire call stack up to the screen are all
+        'ChildB's.
+
         Returns False if any along the call stack are 'ChildA'
         """
         if self.get_child_index(caller_child) == 1:
@@ -218,8 +222,8 @@ class SplitNode(Node):
 
     # TODO: Refactor name
     def find_earliest_a_but_not_me(self, caller_child):
-        """Returns the earliest (deepest in the tree, but above the caller) 'ChildA' that is not part of the call
-        stack
+        """Returns the earliest (deepest in the tree, but above the caller)
+        'ChildA' that is not part of the call stack
         """
         if self.get_child_index(caller_child) == 0:
             return self.parent.find_earliest_a_but_not_me(self)

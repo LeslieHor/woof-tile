@@ -3,22 +3,24 @@ import config
 
 
 class GroupNode(Node):
-    """ Window Groups allow multiple windows to take the position where normally a single window would appear.
-    It shades inactive windows and creates fake (non-functional) tabs to display which windows are a part of the group.
+    """ Window Groups allow multiple windows to take the position where normally
+    a single window would appear. It shades inactive windows and creates fake
+    (non-functional) tabs to display which windows are a part of the group.
 
-    Note: The active window of a window group is different from the active window of the entire system. A window group's
-    active window simply says which window is unshaded, and which window can be focused.
+    Note: The active window of a window group is different from the active
+    window of the entire system. A window group's active window simply says
+    which window is unshaded, and which window can be focused.
 
-    The structure contains a list for all windows in the window group, along with a separate list for the inactive
-    windows to build the tabs with.
+    The structure contains a list for all windows in the window group, along
+    with a separate list for the inactive windows to build the tabs with.
     """
 
     def __init__(self, **kwargs):
         Node.__init__(self, None)
 
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # Getters
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
     def get_inactive_windows_count(self):
         return self.get_child_count() - 1
@@ -35,13 +37,13 @@ class GroupNode(Node):
     def is_group_node(self):
         return True
 
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # Setters
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # Trickle downs
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
     def to_json(self):
         json = Node.to_json(self)
@@ -63,13 +65,13 @@ class GroupNode(Node):
         [win.redraw() for win in self.get_inactive_windows()]
         [win.shade() for win in self.get_inactive_windows()]
 
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # Bubble ups
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # Other
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
     def get_active_viewport(self):
         (x_pos, y_pos), (x_size, y_size) = self.parent.get_viewport(self)

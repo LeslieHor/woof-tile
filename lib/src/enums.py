@@ -71,29 +71,40 @@ def get_option_description(option):
     elif option == OPTIONS.RESTORE:
         return '(restore) restore all window positions'
     elif option == OPTIONS.LIST:
-        return more_prepend + '(list) list the windows available for interaction'
+        return more_prepend + \
+            '(list) list the windows available for interaction'
     elif option == OPTIONS.ADD_HORIZONTAL:
-        return more_prepend + '(add horizontal) add the active window the the right of a target window'
+        return more_prepend + \
+            '(add horizontal) add the active window the the right of a ' + \
+            'target window'
     elif option == OPTIONS.ADD_VERTICAL:
-        return more_prepend + '(add vertical) add the active window below the target window'
+        return more_prepend + \
+            '(add vertical) add the active window below the target window'
     elif option == OPTIONS.EXPAND_HORIZONTAL:
-        return '(expand horizontal) increase the horizontal size of the active window'
+        return '(expand horizontal) increase the horizontal size of the ' + \
+            'active window'
     elif option == OPTIONS.REDUCE_HORIZONTAL:
-        return '(reduce horizontal) decrease the horizontal size of the active window'
+        return '(reduce horizontal) decrease the horizontal size of the ' + \
+            'active window'
     elif option == OPTIONS.EXPAND_VERTICAL:
-        return '(expand vertical) increase the vertical size of the active window'
+        return '(expand vertical) increase the vertical size of the ' + \
+            'active window'
     elif option == OPTIONS.REDUCE_VERTICAL:
-        return '(reduce vertical) decrease the vertical size of the active window'
+        return '(reduce vertical) decrease the vertical size of the ' + \
+            'active window'
     elif option == OPTIONS.CHANGE_PLANE:
-        return '(change plane) change a vertical split to a horizontal split and vice versa'
+        return '(change plane) change a vertical split to a horizontal ' + \
+            'split and vice versa'
     elif option == OPTIONS.SWAP_PANE:
         return '(swap-pane) swap the two windows in the split'
     elif option == OPTIONS.SWAP:
-        return more_prepend + '(swap) swap the positions of two windows in the tree'
+        return more_prepend + \
+            '(swap) swap the positions of two windows in the tree'
     elif option == OPTIONS.MINIMIZE_ALL:
         return '(minimize all) minimize all windows in woof'
     elif option == OPTIONS.MAXIMIZE:
-        return '(maximize) maximize the active window as if it was the only window on the screen'
+        return '(maximize) maximize the active window as if it was the ' + \
+            'only window on the screen'
     elif option == OPTIONS.KILL:
         return '(kill) attempt to close the window and remove it from woof'
     elif option == OPTIONS.REMOVE:
@@ -109,17 +120,20 @@ def get_option_description(option):
     elif option == OPTIONS.NAV_DOWN:
         return '(nav down) focus window to the bottom'
     elif option == OPTIONS.ADD_TO_GROUP:
-        return more_prepend + '(add to group) add window as a group'
+        return more_prepend + \
+            '(add to group) add window as a group'
     elif option == OPTIONS.ACTIVATE_NEXT_WINDOW_IN_GROUP:
         return '(next window in group) activate next window in group'
     elif option == OPTIONS.ACTIVATE_PREV_WINDOW_IN_GROUP:
         return '(prev window in group) activate prev window in group'
     elif option == OPTIONS.SWAP_SCREENS:
-        return more_prepend + '(swap screen) swap the two screens'
+        return more_prepend + \
+            '(swap screen) swap the two screens'
     elif option == OPTIONS.NEW_SCREEN:
         return '(new screen) adds a new screen (not functional)'
     elif option == OPTIONS.LIST_SCREENS:
-        return more_prepend + '(list screens) list all the screens in woof'
+        return more_prepend + \
+            '(list screens) list all the screens in woof'
     elif option == OPTIONS.RENAME_SCREEN:
         return '(rename screen) rename the current screen'
     elif option == OPTIONS.SWAP_SCREEN_LEFT:
@@ -137,7 +151,8 @@ def get_option_description(option):
     elif option == OPTIONS.MOVE_MOUSE:
         return '(move mouse) move the mouse to the center of the window'
     elif option == OPTIONS.LOAD_LAYOUT:
-        return more_prepend + '(load layout) layout a layout'
+        return more_prepend + \
+            '(load layout) layout a layout'
     elif option == OPTIONS.ATTEMPT_SWALLOW:
         return '(attempt swallow) attempt to swallow windows'
     elif option == OPTIONS.SAVE_LAYOUT:
@@ -160,4 +175,3 @@ def print_options(_windows):
 
     for command in commands:
         print(command)
-

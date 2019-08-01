@@ -13,9 +13,9 @@ class Workspace(Node):
         self.state = kwargs.get('state', SCREEN_STATE.INACTIVE)
         self.last_active_window_id = kwargs.get('last_active_window_id', None)
 
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # Getters
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
     def get_name(self):
         return self.name
@@ -42,11 +42,12 @@ class Workspace(Node):
 
     def get_ui_string(self):
         index = self.parent.get_active_workspace_index(self)
-        return 's' + str(index) + config.get_config('comment_sep') + self.get_name()
+        return 's' + str(index) + config.get_config('comment_sep') + \
+            self.get_name()
 
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # Setters
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
     def set_name(self, new_name):
         self.name = new_name
@@ -60,9 +61,9 @@ class Workspace(Node):
     def set_last_active_window_id(self, new_last_active_window_id):
         self.last_active_window_id = new_last_active_window_id
 
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # Trickle downs
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
     def to_json(self):
         json = Node.to_json(self)
@@ -86,9 +87,9 @@ class Workspace(Node):
     def backup_splits(self):
         [c.backup_splits() for c in self.get_children()]
 
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # Bubble ups
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
     @staticmethod
     def resize_vertical(_caller_child, _increment):
@@ -115,9 +116,10 @@ class Workspace(Node):
 
     def get_smallest_immutable_subtree(self, calling_child):
         return calling_child
-    # ------------------------------------------------------------------------------------------------------------------
+
+    # --------------------------------------------------------------------------
     # Child Requests
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
     def get_viewports(self):
         """
@@ -136,9 +138,9 @@ class Workspace(Node):
     def get_viewport(self, _calling_child=None):
         return self.get_viewports()[0]
 
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # Other
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
     def set_active(self, geometry):
         self.set_state(SCREEN_STATE.ACTIVE)
@@ -156,14 +158,16 @@ class Workspace(Node):
         self.parent.update_status_for_active(self)
 
     def activate_last_active_window(self):
-        windows = [win for win in self.get_all_windows() if win.window_id == self.get_last_active_window_id()]
+        windows = [win for win in self.get_all_windows()
+                   if win.window_id == self.get_last_active_window_id()]
         if windows:
             windows[0].activate(True)
 
     # TODO: Refactor function name
     @staticmethod
     def all_are_bees(_caller_child):
-        """If call has gotten to this point, all children to this point must have been 'ChildB'
+        """If call has gotten to this point, all children to this point must
+        have been 'ChildB'
         So just return true
         """
         return True
@@ -171,5 +175,6 @@ class Workspace(Node):
     # TODO: Refactor function name
     @staticmethod
     def find_earliest_a_but_not_me(_caller_child):
-        """If call has gotten to this point, we could not find a 'ChildA' that was not part of the calling stack"""
+        """If call has gotten to this point, we could not find a 'ChildA' that
+        was not part of the calling stack"""
         return None
