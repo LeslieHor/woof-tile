@@ -8,9 +8,9 @@ class Node:
         self.children = []
         self.child_limit = child_limit
 
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # Getters
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
     def get_parent(self):
         return self.parent
@@ -31,15 +31,16 @@ class Node:
         return self.children.index(child)
 
     def get_all_windows(self):
-        return reduce(lambda acc, l: helpers.combine_lists(l.get_all_windows(), acc),
+        return reduce(lambda acc, l: helpers.combine_lists(l.get_all_windows(),
+                                                           acc),
                       self.get_children(), [])
 
     def is_group_node(self):
         return False
 
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # Setters
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
     def set_parent(self, new_parent):
         self.parent = new_parent
@@ -58,7 +59,8 @@ class Node:
         new_child.set_parent(self)
 
     def add_child(self, new_child):
-        if self.get_child_limit() <= self.get_child_count() and self.get_child_limit() is not None:
+        if self.get_child_limit() <= self.get_child_count() and \
+           self.get_child_limit() is not None:
             raise Exception("Cannot add child")
         self.children.append(new_child)
         new_child.set_parent(self)
@@ -67,9 +69,9 @@ class Node:
     def remove_child(self, child):
         self.children.remove(child)
 
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # Trickle downs
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
     def to_json(self):
         json = {
@@ -96,7 +98,8 @@ class Node:
         [c.unminimize() for c in self.get_children()]
 
     def get_interactable_endpoints(self):
-        return reduce(lambda a, c: helpers.combine_lists(c.get_interactable_endpoints(), a), self.get_children(), [])
+        return reduce(lambda a, c: helpers.combine_lists(
+            c.get_interactable_endpoints(), a), self.get_children(), [])
 
     def is_any_maximized(self):
         return any([c.is_any_maximized() for c in self.get_children()])
@@ -105,11 +108,12 @@ class Node:
         [c.restore_splits() for c in self.get_children()]
 
     def get_empty_containers(self):
-        return reduce(lambda a, c: helpers.combine_lists(c.get_empty_containers(), a), self.get_children(), [])
+        return reduce(lambda a, c: helpers.combine_lists(
+            c.get_empty_containers(), a), self.get_children(), [])
 
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # Bubble ups
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
     def get_workspace_index(self, _=None):
         return self.parent.get_workspace_index(self)
@@ -135,9 +139,9 @@ class Node:
     def resize(self, child, plane_type, increment):
         self.parent.resize(self, plane_type, increment)
 
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # Other
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
     def rotate_children(self, increment):
         children = self.get_children()

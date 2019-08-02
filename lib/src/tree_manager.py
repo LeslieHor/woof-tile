@@ -19,7 +19,9 @@ class TreeManager(Node):
         for workspace_config in config.get_config('workspace_config'):
             (name, geometry) = workspace_config
             if geometry is not None:
-                new_workspace = Workspace(name=name, geometry=geometry, state=SCREEN_STATE.ACTIVE)
+                new_workspace = Workspace(name=name,
+                                          geometry=geometry,
+                                          state=SCREEN_STATE.ACTIVE)
                 self.viewable_screen_count += 1
             else:
                 new_workspace = Workspace(name=name)
@@ -28,9 +30,9 @@ class TreeManager(Node):
 
         self.update_active_workspaces_statuses()
 
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # Getters
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
     def get_viewable_screen_count(self):
         return self.viewable_screen_count
@@ -39,13 +41,15 @@ class TreeManager(Node):
         return self.last_active_window_id
 
     def get_window_from_window_id(self, window_id):
-        windows = [win for win in self.get_all_windows() if win.window_id == window_id]
+        windows = [win for win in self.get_all_windows()
+                   if win.window_id == window_id]
         if windows:
             return windows[0]
         return None
 
     def get_window_from_woof_id(self, woof_id):
-        [window] = [win for win in self.get_all_windows() if win.woof_id == woof_id]
+        [window] = [win for win in self.get_all_windows()
+                    if win.woof_id == woof_id]
         return window
 
     def get_active_workspaces(self):
@@ -55,11 +59,13 @@ class TreeManager(Node):
         return len(self.get_active_workspaces())
 
     def get_interactable_endpoints(self):
-        return reduce(lambda acc, ws: helpers.combine_lists(ws.get_interactable_endpoints(), acc),
+        return reduce(lambda acc, ws: helpers.combine_lists(
+            ws.get_interactable_endpoints(), acc),
                       self.get_active_workspaces(), [])
 
     def get_viewable_windows(self):
-        return reduce(lambda acc, ws: helpers.combine_lists(ws.get_viewable_windows(), acc),
+        return reduce(lambda acc, ws: helpers.combine_lists(
+            ws.get_viewable_windows(), acc),
                       self.get_active_workspaces(), [])
 
     def get_new_woof_id(self):
@@ -71,14 +77,16 @@ class TreeManager(Node):
 
     def get_viewable_workspace(self, index):
         (_, geometry) = config.get_config('workspace_config')[index]
-        [workspace] = [ws for ws in self.get_active_workspaces() if ws.get_geometry() == geometry]
+        [workspace] = [ws for ws in self.get_active_workspaces()
+                       if ws.get_geometry() == geometry]
         return workspace
 
     def get_last_active_window(self):
         return self.get_window_from_window_id(self.get_last_active_window_id())
 
     def get_workspace_from_config(self, geometry):
-        [workspace] = [ws for ws in self.get_children() if ws.get_geometry() == geometry]
+        [workspace] = [ws for ws in self.get_children()
+                       if ws.get_geometry() == geometry]
         return workspace
 
     def get_active_workspace(self, index):
@@ -103,11 +111,12 @@ class TreeManager(Node):
         return str(len(self.get_children()))
 
     def get_empty_containers(self):
-        return reduce(lambda a, c: helpers.combine_lists(c.get_empty_containers(), a), self.get_children(), [])
+        return reduce(lambda a, c: helpers.combine_lists(
+            c.get_empty_containers(), a), self.get_children(), [])
 
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # Setters
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
     def set_last_active_window_id(self, new_last_active_window_id):
         self.last_active_window_id = new_last_active_window_id
@@ -117,9 +126,9 @@ class TreeManager(Node):
             name = self.get_new_index()
         self.add_child(Workspace(name=name))
 
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # Trickle downs
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
     def to_json(self):
         json = Node.to_json(self)
@@ -129,9 +138,9 @@ class TreeManager(Node):
 
         return json
 
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # Bubble ups
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
     def change_plane(self):
         return
@@ -139,9 +148,9 @@ class TreeManager(Node):
     def set_window_active(self, window):
         self.set_last_active_window_id(window.window_id)
 
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # Other
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
     def redraw(self):
         [ws.redraw() for ws in self.get_active_workspaces()]
@@ -162,5 +171,6 @@ class TreeManager(Node):
             status.append(name)
         status_line = ' | '.join(status)
 
-        with open(config.get_config('statuses_dir') + str(target_file_index), 'w') as file_:
+        with open(config.get_config('statuses_dir') + str(target_file_index),
+                  'w') as file_:
             file_.write(status_line)

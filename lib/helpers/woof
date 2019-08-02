@@ -1,6 +1,0 @@
-#!/bin/bash
-
-WOOF=~/.woof/woof
-LOG_FILE=~/.woof/log/log
-
-${WOOF} $@ 2>> ${LOG_FILE}

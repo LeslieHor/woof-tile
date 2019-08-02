@@ -20,7 +20,7 @@ def check_window():
     if get_active_window() is None:
         log_error(["Window not in woof"])
         exit(0)
-        
+
 
 def create_new_window_from_active():
     new_window_id = system_calls.get_active_window_id()
@@ -74,8 +74,9 @@ def restore_all():
 
 def print_interactable_endpoints(prepend=''):
     active_window = get_active_window()
-    interactable_endpoints_strings = [prepend + ep.get_ui_string() for
-                                      ep in tree_manager.get_interactable_endpoints()
+    interactable_endpoints_strings = [prepend + ep.get_ui_string()
+                                      for ep in
+                                      tree_manager.get_interactable_endpoints()
                                       if ep != active_window]
     interactable_endpoints_strings.sort()
     print('\n'.join(interactable_endpoints_strings))
@@ -83,8 +84,11 @@ def print_interactable_endpoints(prepend=''):
 
 def print_interactable_windows(prepend=''):
     active_window = get_active_window()
-    interactable_windows = [win for win in tree_manager.get_interactable_endpoints() if isinstance(win, Container)]
-    interactable_windows_strings = [prepend + win.get_ui_string() for win in interactable_windows
+    interactable_windows = [win for
+                            win in tree_manager.get_interactable_endpoints()
+                            if isinstance(win, Container)]
+    interactable_windows_strings = [prepend + win.get_ui_string()
+                                    for win in interactable_windows
                                     if win != active_window]
     interactable_windows_strings.sort()
     print('\n'.join(interactable_windows_strings))
@@ -92,11 +96,14 @@ def print_interactable_windows(prepend=''):
 
 def print_workspaces(prepend=''):
     active_workspace = get_active_workspace()
-    workspace_strings = [prepend + 's' + str(tree_manager.get_active_workspace_index(ws)) + " : " +
-                         ws.get_name() for ws in tree_manager.get_active_workspaces()
+    workspace_strings = [prepend + 's' +
+                         str(tree_manager.get_active_workspace_index(ws)) +
+                         " : " + ws.get_name()
+                         for ws in tree_manager.get_active_workspaces()
                          if ws != active_workspace]
-    workspace_strings += [prepend + str(tree_manager.get_workspace_index(ws)) + " : " +
-                          ws.get_name() for ws in tree_manager.get_children()
+    workspace_strings += [prepend + str(tree_manager.get_workspace_index(ws)) +
+                          " : " + ws.get_name()
+                          for ws in tree_manager.get_children()
                           if ws != active_workspace]
     print('\n'.join(workspace_strings))
 
@@ -173,28 +180,40 @@ def add_vertical(target_window):
 
 def expand_vertical(increment):
     check_window()
-    increment = config.get_config('resize_increment') if increment == '' else int(increment)
+    if increment == '':
+        increment = config.get_config('resize_increment')
+    else:
+        increment = int(increment)
     window = get_active_window()
     window.resize_vertical(increment)
 
 
 def reduce_vertical(increment):
     check_windows()
-    increment = -1 * config.get_config('resize_increment') if increment == '' else -1 * int(increment)
+    if increment == '':
+        increment = -1 * config.get_config('resize_increment')
+    else:
+        increment = -1 * int(increment)
     window = get_active_window()
     window.resize_vertical(increment)
 
 
 def expand_horizontal(increment):
     check_windows()
-    increment = config.get_config('resize_increment') if increment == '' else int(increment)
+    if increment == '':
+        increment = config.get_config('resize_increment')
+    else:
+        increment = int(increment)
     window = get_active_window()
     window.resize_horizontal(increment)
 
 
 def reduce_horizontal(increment):
     check_windows()
-    increment = -1 * config.get_config('resize_increment') if increment == '' else -1 * int(increment)
+    if increment == '':
+        increment = -1 * config.get_config('resize_increment')
+    else:
+        increment = -1 * int(increment)
     window = get_active_window()
     window.resize_horizontal(increment)
 
@@ -359,7 +378,8 @@ def swap_screens(target):
     target_2 = None if len(targets) == 1 else targets[1]
     workspace_1 = get_screen_target(target_1)
     workspace_2 = get_screen_target(target_2)
-    do_swap_screens(workspace_2, workspace_1)  # Flipped to move focus to non-active workspace
+    do_swap_screens(workspace_2, workspace_1)  # Flipped to move focus to
+                                               # non-active workspace
 
 
 def get_screen_target(target=None):
@@ -374,8 +394,10 @@ def get_screen_target(target=None):
 
 
 def do_swap_screens(screen_1, screen_2):
-    screen_1_active, screen_2_active = screen_1.is_active(), screen_2.is_active()
-    screen_1_geometry, screen_2_geometry = screen_1.get_geometry(), screen_2.get_geometry()
+    screen_1_active = screen_1.is_active()
+    screen_2_active = screen_2.is_active()
+    screen_1_geometry = screen_1.get_geometry()
+    screen_2_geometry = screen_2.get_geometry()
 
     if (screen_1_active, screen_2_active) == (True, True):
         screen_1.set_active(screen_2_geometry)
@@ -420,8 +442,10 @@ def rename_screen(name):
 
 def swap_screen_left():
     check_windows()
-    active_screen_index = tree_manager.get_active_workspace_index(get_active_workspace())
-    left_index = (active_screen_index - 1) % tree_manager.get_active_workspaces_count()
+    active_screen_index = tree_manager.get_active_workspace_index(
+        get_active_workspace())
+    left_index = (active_screen_index - 1) % \
+                 tree_manager.get_active_workspaces_count()
 
     active_workspace = tree_manager.get_active_workspace(active_screen_index)
     left_workspace = tree_manager.get_active_workspace(left_index)
@@ -431,8 +455,10 @@ def swap_screen_left():
 
 def swap_screen_right():
     check_windows()
-    active_screen_index = tree_manager.get_active_workspace_index(get_active_workspace())
-    right_index = (active_screen_index + 1) % tree_manager.get_active_workspaces_count()
+    active_screen_index = tree_manager.get_active_workspace_index(
+        get_active_workspace())
+    right_index = (active_screen_index + 1) % \
+                  tree_manager.get_active_workspaces_count()
 
     active_workspace = tree_manager.get_active_workspace(active_screen_index)
     right_workspace = tree_manager.get_active_workspace(right_index)
@@ -544,7 +570,8 @@ def print_layouts(prepend=''):
     screens_layout_names = []
     number_of_screens = tree_manager.get_viewable_screen_count()
     for name in layouts.get_layout_names():
-        s = [prepend + 's' + str(x) + ',' + name for x in range(number_of_screens)
+        s = [prepend + 's' + str(x) + ',' + name
+             for x in range(number_of_screens)
              if tree_manager.get_active_workspace(x).get_child_count() == 0]
         screens_layout_names += s
 
@@ -564,8 +591,10 @@ def save_layout(args):
 
 
 def attempt_swallow():
-    window_ids_in_woof = [win.get_window_id() for win in tree_manager.get_all_windows()]
-    non_reg_window_ids = [win for win in system_calls.get_all_system_window_ids()
+    window_ids_in_woof = [win.get_window_id()
+                          for win in tree_manager.get_all_windows()]
+    non_reg_window_ids = [win
+                          for win in system_calls.get_all_system_window_ids()
                           if win not in window_ids_in_woof]
     windows = [{'window_id': wid,
                 'window_class': system_calls.get_window_class(wid),
@@ -613,7 +642,8 @@ def attempt_swallow():
             windows.remove(chosen_window)
 
 
-# TODO: These should all be changed. I left it alone because I can't be bothered to change it yet
+# TODO: These should all be changed. I left it alone because I can't be bothered
+# TODO: to change it yet
 def left_window():
     window = get_active_window()
     ((l, t), (_, _)) = window.get_viewport()
@@ -632,11 +662,14 @@ def left_window():
 
         top_border_diff = (t - wt) ** 2  # Magnitude of diff
 
-        if wr == closest_valid_border:  # Only compare when the borders are same distance apart
-            if lowest_top_diff < top_border_diff or (lowest_top_diff == top_border_diff and t < wt):
+        if wr == closest_valid_border:  # Only compare when the borders are same
+                                        # distance apart
+            if lowest_top_diff < top_border_diff or \
+               (lowest_top_diff == top_border_diff and t < wt):
                 continue
 
-            # When two windows are equally apart. Take the to one with greater overlap
+            # When two windows are equally apart. Take the to one with greater
+            # overlap
             # +------+ +-----+
             # |      | |     |
             # |  1   | +-----+
@@ -677,7 +710,8 @@ def down_window():
 
         left_border_diff = (l - wl) ** 2  # Magnitude of diff
         if wt == closest_top_border:
-            if lowest_left_diff < left_border_diff or (lowest_left_diff == left_border_diff and wl > l):
+            if lowest_left_diff < left_border_diff or \
+              (lowest_left_diff == left_border_diff and wl > l):
                 continue
 
         closest_top_border = wt
@@ -705,7 +739,8 @@ def up_window():
 
         left_border_diff = (l - wl) ** 2  # Magnitude of diff
         if wb == closest_bottom_border:
-            if lowest_left_diff < left_border_diff or (lowest_left_diff == left_border_diff and wl > l):
+            if lowest_left_diff < left_border_diff or \
+               (lowest_left_diff == left_border_diff and wl > l):
                 continue
 
         closest_bottom_border = wb
@@ -734,7 +769,8 @@ def right_window():
 
         top_border_diff = (t - wt) ** 2  # Magnitude of diff
         if wl == closest_left_border:
-            if lowest_top_diff < top_border_diff or (lowest_top_diff == top_border_diff and t < wt):
+            if lowest_top_diff < top_border_diff or \
+               (lowest_top_diff == top_border_diff and t < wt):
                 continue
 
         closest_left_border = wl
@@ -829,7 +865,8 @@ def main(command_string):
         swap(args)
 
     elif cmd == OPTIONS.MINIMIZE_ALL:
-        minimize_all()  # TODO: Gotta think about things about how to restore them all
+        minimize_all()  # TODO: Gotta think about things about how to restore
+                        # TODO: them all
 
     elif cmd == OPTIONS.MAXIMIZE:
         maximize()
@@ -914,7 +951,8 @@ def main(command_string):
 
 def check_windows():
     system_ids = system_calls.get_all_system_window_ids()
-    dead_windows = [win for win in tree_manager.get_all_windows() if win.window_id not in system_ids]
+    dead_windows = [win for win in tree_manager.get_all_windows()
+                    if win.window_id not in system_ids]
     [win.remove_and_trim() for win in dead_windows]
     return len(dead_windows) > 0
 

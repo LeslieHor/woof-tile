@@ -20,9 +20,9 @@ class Container(Node):
         else:
             self.window_class = system_calls.get_window_class(self.window_id)
 
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # Getters
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
     def get_window_id(self):
         return self.window_id
@@ -48,10 +48,7 @@ class Container(Node):
         return corrected_viewport
 
     def get_border_class_correction(self):
-        if self.get_window_class() in config.get_config('border_class_corrections'):
-            return config.get_config('border_class_corrections')[self.get_window_class()]
-        else:
-            return config.get_config('default_border_corrections')
+        return config.get_border_class_correction(self)
 
     def get_all_windows(self):
         return [self]
@@ -65,7 +62,9 @@ class Container(Node):
         return [self]
 
     def get_ui_string(self):
-        return str(self.get_woof_id()) + config.get_config('comment_sep') + self.get_window_title()
+        return str(self.get_woof_id()) + \
+            config.get_config('comment_sep') + \
+            self.get_window_title()
 
     def is_shaded(self):
         return self.get_state() == WINDOW_STATE.SHADED
@@ -73,16 +72,16 @@ class Container(Node):
     def is_minimized(self):
         return self.get_state() == WINDOW_STATE.MINIMIZED
 
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # Setters
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
     def set_state(self, new_state):
         self.state = new_state
 
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # Trickle downs
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
     def to_json(self):
         json = {
@@ -103,9 +102,9 @@ class Container(Node):
 
         return json
 
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # Bubble ups
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
     def remove_and_trim(self, _=None):
         self.get_parent().remove_and_trim(self)
@@ -113,13 +112,14 @@ class Container(Node):
     def get_smallest_immutable_subtree(self, _=None):
         return self.parent.get_smallest_immutable_subtree(self)
 
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
     # Other
-    # ------------------------------------------------------------------------------------------------------------------
+    # --------------------------------------------------------------------------
 
     def correct_borders_for_class(self, viewport):
         ((x_pos_1, y_pos_1), (x_size_1, y_size_1)) = viewport
-        ((x_pos_2, y_pos_2), (x_size_2, y_size_2)) = self.get_border_class_correction()
+        ((x_pos_2, y_pos_2), (x_size_2, y_size_2)) \
+            = self.get_border_class_correction()
 
         corrected_viewport = (
             (x_pos_1 + x_pos_2, y_pos_1 + y_pos_2),
@@ -182,4 +182,3 @@ class Container(Node):
     def resize_horizontal(self, increment):
         """Resize the width"""
         self.parent.resize(self, PLANE.VERTICAL, increment)
-

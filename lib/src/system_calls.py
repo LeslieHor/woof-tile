@@ -8,7 +8,8 @@ def call(command):
     """Call into the system and run Command (string)"""
     s = time.time()
     cmd = join_and_sanitize(command)
-    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                            shell=True)
     result, _err = proc.communicate()
     e = time.time()
     log_debug(["subprocess command:", cmd])
@@ -32,11 +33,16 @@ def activate_window(window_id):
 
 
 def get_window_class(window_id=None):
-    return call(['xprop -id', verify_window_id(window_id), '| grep WM_CLASS | sed \'s/^.*, "//\' | sed \'s/"//\'']).rstrip()
+    return call(['xprop -id', verify_window_id(window_id),
+                 '| grep WM_CLASS ' + \
+                 '| sed \'s/^.*, "//\' ' + \
+                 '| sed \'s/"//\'']).rstrip()
 
 
 def get_window_title(window_id=None):
-    return call(['xdotool getwindowname', verify_window_id(window_id)]).rstrip().decode('ascii', 'ignore')
+    return call(['xdotool getwindowname',
+                 verify_window_id(window_id)]).rstrip().decode('ascii',
+                                                               'ignore')
 
 
 def minimise_window(window_id=None):
@@ -68,7 +74,9 @@ def get_all_system_window_ids():
 
 def get_window_pid(window_id=None):
     window_id = verify_window_id(window_id)
-    return int(call(["xprop -id", window_id, "| grep 'PID' | sed 's/_NET_WM_PID(CARDINAL) = //'"]).rstrip())
+    return int(call(["xprop -id", window_id,
+                     "| grep 'PID' " + \
+                     "| sed 's/_NET_WM_PID(CARDINAL) = //'"]).rstrip())
 
 
 def move_mouse(x, y):
