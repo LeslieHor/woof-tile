@@ -370,7 +370,7 @@ def swap_screens(target):
     """
     check_windows()
     if target == '':
-        print_workspaces(OPTIONS.SWAP_SCREENS)  # TODO: Only workspaces
+        print_workspaces(OPTIONS.SWAP_SCREENS)
         return
 
     targets = target.split(',')
@@ -390,7 +390,7 @@ def get_screen_target(target=None):
         return tree_manager.get_active_workspace(index)
     else:
         index = int(target)
-        return tree_manager.get_child(index)
+        return tree_manager.get_workspace(index)
 
 
 def do_swap_screens(screen_1, screen_2):

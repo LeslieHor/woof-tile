@@ -114,6 +114,15 @@ class TreeManager(Node):
         return reduce(lambda a, c: helpers.combine_lists(
             c.get_empty_containers(), a), self.get_children(), [])
 
+    def get_workspace(self, index):
+        """Attempts to return the index child
+        If non exists, creates a new workspace and returns it."""
+        if index < len(self.children):
+            return self.get_child(index)
+        else:
+            workspace = self.add_workspace()
+            return workspace
+
     # --------------------------------------------------------------------------
     # Setters
     # --------------------------------------------------------------------------
@@ -124,7 +133,10 @@ class TreeManager(Node):
     def add_workspace(self, name=None):
         if name is None:
             name = self.get_new_index()
-        self.add_child(Workspace(name=name))
+
+        new_workspace = Workspace(name=name)
+        self.add_child(new_workspace)
+        return new_workspace
 
     # --------------------------------------------------------------------------
     # Trickle downs
