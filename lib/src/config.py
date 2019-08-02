@@ -34,9 +34,9 @@ def get_config(key):
 
 def get_border_class_correction(window):
     window_class = window.get_window_class()
-    border_class_corrections = get_config('borcer_class_corrections')
+    border_class_corrections = get_config('border_class_corrections')
 
     if window_class in border_class_corrections:
         return border_class_corrections[window_class]
     else:
-        return config.get_config('default_border_corrections')
+        return get_config('default_border_corrections')
