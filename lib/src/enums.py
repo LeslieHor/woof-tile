@@ -57,6 +57,7 @@ class OPTIONS:
     LOAD_LAYOUT = 'll'
     ATTEMPT_SWALLOW = 'as'
     SAVE_LAYOUT = 'wl'
+    DELETE_SCREEN = 'ds'
 
 
 def get_option_description(option):
@@ -157,6 +158,8 @@ def get_option_description(option):
         return '(attempt swallow) attempt to swallow windows'
     elif option == OPTIONS.SAVE_LAYOUT:
         return '(save layout) save layout'
+    elif option == OPTIONS.DELETE_SCREEN:
+        return '(delete screen) deletes the target / active workspace'
 
     else:
         return ''

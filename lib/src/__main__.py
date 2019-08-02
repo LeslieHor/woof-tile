@@ -10,7 +10,7 @@ from split_node import SplitNode
 from container import Container
 from log import log_info, log_error
 import config
-from enums import PLANE, WINDOW_STATE, OPTIONS, print_options
+from enums import PLANE, WINDOW_STATE, SCREEN_STATE, OPTIONS, print_options
 import helpers
 import system_calls
 from workspace import Workspace
@@ -641,6 +641,25 @@ def attempt_swallow():
 
             windows.remove(chosen_window)
 
+def delete_screen(args):
+    if args == '':
+        target_screen = get_active_workspace()
+        set_new_active = True
+        geometry = target_screen.get_geometry()
+        workspace_index = tree_manager.get_workspace_index(target_screen)
+    else:
+        target_screen = tree_manager.get_child(int(args))
+        set_new_active = False
+
+    tree_manager.remove_child(target_screen)
+
+    if set_new_active:
+        next_workspace = tree_manager.find_next_workspace(
+            workspace_index - 1, -1, SCREEN_STATE.INACTIVE)
+        next_workspace.set_active(geometry)
+
+    tree_manager.update_active_workspaces_statuses()
+
 
 # TODO: These should all be changed. I left it alone because I can't be bothered
 # TODO: to change it yet
@@ -942,6 +961,9 @@ def main(command_string):
 
     elif cmd == OPTIONS.SAVE_LAYOUT:
         save_layout(args)
+
+    elif cmd == OPTIONS.DELETE_SCREEN:
+        delete_screen(args)
 
     else:
         print("Invalid command")

@@ -123,6 +123,21 @@ class TreeManager(Node):
             workspace = self.add_workspace()
             return workspace
 
+    def find_next_workspace(self, start_index, increment = 1, active_status = None):
+        index = start_index
+        history = []
+        while True:
+            ws = self.get_child(index)
+            if not active_status:
+                return ws
+            elif ws.get_state() == active_status:
+                return ws
+            elif index in history:
+                return None
+
+            history.append(index)
+            index += increment % self.get_child_count()
+
     # --------------------------------------------------------------------------
     # Setters
     # --------------------------------------------------------------------------
