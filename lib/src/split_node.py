@@ -90,6 +90,9 @@ class SplitNode(Node):
         self.set_split_ratio(self.get_split_ratio())
         [c.restore_splits() for c in self.get_children()]
 
+    def set_regular_state(self, state=WINDOW_STATE.NORMAL):
+        [win.set_regular_state(state) for win in self.get_children()]
+
     # --------------------------------------------------------------------------
     # Bubble ups
     # --------------------------------------------------------------------------

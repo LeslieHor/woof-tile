@@ -1,4 +1,5 @@
 from functools import reduce
+from enums import WINDOW_STATE
 import helpers
 
 
@@ -110,6 +111,9 @@ class Node:
     def get_empty_containers(self):
         return reduce(lambda a, c: helpers.combine_lists(
             c.get_empty_containers(), a), self.get_children(), [])
+
+    def set_regular_state(self, state=WINDOW_STATE.NORMAL):
+        [c.set_regular_state(state) for c in self.get_children()]
 
     # --------------------------------------------------------------------------
     # Bubble ups

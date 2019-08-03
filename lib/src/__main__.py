@@ -286,6 +286,7 @@ def do_unmaximize():
     windows = workspace.get_all_windows()
     [w.unminimize() for w in windows if w != window]
     window.unmaximize()
+    workspace.set_regular_state(WINDOW_STATE.NORMAL)
     window.activate()
 
 

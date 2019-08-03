@@ -79,6 +79,9 @@ class Container(Node):
     def set_state(self, new_state):
         self.state = new_state
 
+    def set_regular_state(self, new_state=WINDOW_STATE.NORMAL):
+        self.set_state(new_state)
+
     # --------------------------------------------------------------------------
     # Trickle downs
     # --------------------------------------------------------------------------
@@ -140,7 +143,6 @@ class Container(Node):
 
     def unminimize(self):
         self.activate()
-        self.set_state(WINDOW_STATE.NORMAL)
 
     def activate(self, set_last_active=False):
         """Call into WM to focus the window"""

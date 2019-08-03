@@ -1,4 +1,5 @@
 from node import Node
+from enums import WINDOW_STATE
 import config
 
 
@@ -64,6 +65,15 @@ class GroupNode(Node):
         self.get_active_window().unshade()
         [win.redraw() for win in self.get_inactive_windows()]
         [win.shade() for win in self.get_inactive_windows()]
+
+    def set_regular_state(self, state=WINDOW_STATE.NORMAL):
+        if state == WINDOW_STATE.NORMAL:
+            self.get_active_window().set_regular_state(WINDOW_STATE.NORMAL)
+            [win.set_regular_state(WINDOW_STATE.MINIMIZED)
+             for win in self.get_inactive_windows()]
+        else:
+            [win.set_regular_state(WINDOW_STATE.MINIMZED)
+             for win in self.get_children()]
 
     # --------------------------------------------------------------------------
     # Bubble ups
