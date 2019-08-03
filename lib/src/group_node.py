@@ -117,3 +117,8 @@ class GroupNode(Node):
         self.rotate_children(increment)
         self.redraw()
         self.get_active_window().activate(True)
+
+    def force_window_active(self, window):
+        self.rotate_child_to_head(window)
+        self.redraw()
+        self.get_active_window().activate(True)

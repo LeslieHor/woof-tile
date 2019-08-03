@@ -335,7 +335,7 @@ def add_to_group_target(target_window, new_window):
     else:
         group_node = create_new_group_node(target_window, new_window)
 
-    group_node.redraw()
+    group_node.force_window_active(new_window)
 
 
 def activate_next_window_in_group():

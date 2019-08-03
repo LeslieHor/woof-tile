@@ -152,6 +152,12 @@ class Node:
         new_children = children[increment:] + children[:increment]
         self.set_children(new_children)
 
+    def rotate_child_to_head(self, child):
+        child_index = self.get_child_index(child)
+        children = self.get_children()
+        new_children = children[child_index:] + children[:child_index]
+        self.set_children(new_children)
+
     def replace_self(self, replacement):
         self.parent.replace_child(self, replacement)
 
