@@ -143,6 +143,7 @@ class Container(Node):
 
     def unminimize(self):
         self.activate()
+        self.set_state(WINDOW_STATE.NORMAL)
 
     def activate(self, set_last_active=False):
         """Call into WM to focus the window"""
