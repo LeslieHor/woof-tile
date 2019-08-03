@@ -374,12 +374,23 @@ def swap_screens(target):
         return
 
     targets = target.split(',')
+
+    is_single_target = len(targets) == 1
+
     target_1 = targets[0]
-    target_2 = None if len(targets) == 1 else targets[1]
+    target_2 = None if is_single_target else targets[1]
     workspace_1 = get_screen_target(target_1)
     workspace_2 = get_screen_target(target_2)
-    do_swap_screens(workspace_2, workspace_1)  # Flipped to move focus to
-                                               # non-active workspace
+
+    if is_single_target \
+       and workspace_1.get_state() == SCREEN_STATE.ACTIVE:
+        # focus on it
+        win_id = workspace_1.get_last_active_window_id()
+        window = tree_manager.get_window_from_window_id(win_id)
+        window.activate(True)
+    else:
+        do_swap_screens(workspace_2, workspace_1)  # Flipped to move focus to
+                                                   # non-active workspace
 
 
 def get_screen_target(target=None):
