@@ -60,6 +60,12 @@ class OPTIONS:
     DELETE_SCREEN = 'ds'
 
 
+class DIR:
+    L = 'left'
+    D = 'down'
+    U = 'up'
+    R = 'right'
+
 def get_option_description(option):
     more_prepend = '--more-- '
 

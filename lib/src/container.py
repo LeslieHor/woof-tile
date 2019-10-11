@@ -39,11 +39,16 @@ class Container(Node):
     def get_window_title(self):
         return system_calls.get_window_title(self.window_id)
 
-    def get_viewport(self):
+    def get_raw_viewport(self):
+        # Split out for other logic
         if self.get_state() == WINDOW_STATE.MAXIMIZED:
             viewport = self.get_workspace_viewport()
         else:
             viewport = self.parent.get_viewport(self)
+        return viewport
+
+    def get_viewport(self):
+        viewport = self.get_raw_viewport()
         corrected_viewport = self.correct_borders_for_class(viewport)
         return corrected_viewport
 

@@ -10,7 +10,7 @@ from split_node import SplitNode
 from container import Container
 from log import log_info, log_error
 import config
-from enums import PLANE, WINDOW_STATE, SCREEN_STATE, OPTIONS, print_options
+from enums import PLANE, WINDOW_STATE, SCREEN_STATE, OPTIONS, DIR, print_options
 import helpers
 import system_calls
 from workspace import Workspace
@@ -673,53 +673,178 @@ def delete_screen(args):
     tree_manager.update_active_workspaces_statuses()
 
 
-# TODO: These should all be changed. I left it alone because I can't be bothered
-# TODO: to change it yet
+def get_corner_coordinates(((px, py), (sx, sy))):
+    return ((px,      py),
+            (px + sx, py),
+            (px,      py + sy),
+            (px + sx, py + sy))
+
+def coord_midpoint(direction, ((px, py), (sx, sy))):
+    if direction == DIR.L:
+        return (px, py + (sy / 2))
+    elif direction == DIR.D:
+        return (px + (sx / 2), py + sy)
+    elif direction == DIR.U:
+        return (px + (sx / 2), py)
+    elif direction == DIR.R:
+        return (px + sx, py + (sy / 2))
+    else:
+        raise Exception("invalid direction")
+
+def get_compare_function(direction):
+    if direction == DIR.L:
+        return compare_left
+    elif direction == DIR.D:
+        return None
+    elif direction == DIR.U:
+        return None
+    elif direction == DIR.R:
+        return None
+    else:
+        raise Exception("invalid direction")
+
+def get_corner_function(direction):
+    if direction == DIR.L:
+        return get_corners_left
+    elif direction == DIR.D:
+        return None
+    elif direction == DIR.U:
+        return None
+    elif direction == DIR.R:
+        return None
+    else:
+        raise Exception("invalid direction")
+
+def compare_left(midpoint, geometry):
+    (x, _) = midpoint
+    ((px, py), (sx, sy)) = geometry
+    v = px + sx # right border
+    return v <= x
+
+def get_corners_left(geometry):
+    ((px, py), (sx, sy)) = geometry
+    return ((px, py), (px, py + sy))
+
+def vector_distance((x1, y1), (x2, y2)):
+    return ((x1 - x2) ** 2) + ((y1 - y2) ** 2) ** 0.5
+
+def find_window_dir(direction):
+    active_window = get_active_window()
+    midpoint = coord_midpoint(direction, active_window.get_raw_viewport())
+
+    compare_fun = get_compare_function(direction)
+    get_corners_fun = get_corner_function(direction)
+
+    windows = tree_manager.get_viewable_windows()
+    windows = filter(lambda w: not (w.is_shaded() or w.is_minimized()), windows)
+    windows = [(w.get_raw_viewport(), w) for w in windows]
+    windows = filter(lambda (g, w): compare_fun(midpoint, g), windows)
+    windows = reduce(lambda acc, (g, w):
+                     acc + [(x, w) for x in get_corners_fun(g)],
+                     windows, [])
+    windows = [(vector_distance((cx, cy), midpoint), cx , w)
+               for ((cx, cy), w) in windows]
+    windows.sort(key=lambda (d, _x, _w): d)
+    (min_dist, _x, _w) = windows[0]
+    windows = filter(lambda (d, _x, _w): d == min_dist, windows)
+    windows.sort(key=lambda (_d, x, _w): x)
+    print windows
+
+    if windows:
+        return windows[0]
+    else:
+        return None
+
+
 def left_window():
-    window = get_active_window()
-    ((l, t), (_, _)) = window.get_viewport()
-    closest_valid_border = 0
-    lowest_top_diff = sys.maxint
-    closest_window = None
+    find_window_dir(DIR.L)
+    # ((l, t), (_, sy)) = window.get_viewport()
+    # # closest_valid_border = 0
+    # # lowest_top_diff = sys.maxint
+    # # closest_window = None
 
-    for win in tree_manager.get_viewable_windows():
-        if win.is_shaded() or win.is_minimized():
-            continue
+    # # Midpoint
+    # active_window = get_active_window()
+    # ((l, t), (_, sy)) = active_window.get_raw_viewport() # ALT
+    # m = t + (sy / 2)
+    # # Midpoint = (l, m)
 
-        ((wl, wt), (ww, wh)) = win.get_viewport()
-        wr = wl + ww
-        if l < wr or wr < closest_valid_border:
-            continue
+    # windows = tree_manager.get_viewable_windows()
+    # # Filtering down eligible windows
 
-        top_border_diff = (t - wt) ** 2  # Magnitude of diff
+    # # Don't look at non-visible windows
+    # windows = filter(lambda w: not (w.is_shaded() or w.is_minimized()), windows)
 
-        if wr == closest_valid_border:  # Only compare when the borders are same
-                                        # distance apart
-            if lowest_top_diff < top_border_diff or \
-               (lowest_top_diff == top_border_diff and t < wt):
-                continue
+    # windows = [(w.get_raw_viewport(), w) for w in windows]
 
-            # When two windows are equally apart. Take the to one with greater
-            # overlap
-            # +------+ +-----+
-            # |      | |     |
-            # |  1   | +-----+
-            # |      | +-----+
-            # |      | |  0  |
-            # +------+ +-----+
-            # +------+
-            # |      |
-            # |      |
-            # |      |
-            # |      |
-            # +------+
-            # 0 Should switch to 1
+    # # Only keep windows to the left of the active window
+    # windows = filter(lambda (((wpx, wpy), (wsx, wsy)), _w): wpx + wsx <= l, windows) # ALT
 
-        closest_valid_border = wr
-        lowest_top_diff = top_border_diff
-        closest_window = win
+    # # Convert data to corner coordinates
+    # windows = [(get_corner_coordinates(x), w) for (x, w) in windows]
+    # # Only keep the corners we want
+    # windows = map(lambda ((_a, t, _b, b), w): ((t, b), w), windows) # ALT
 
-    return closest_window
+    # # Split those out
+    # windows = reduce(lambda acc, ((x, y), w): acc + [(x, w), (y, w)], windows, [])
+
+    # # Calculate distances
+    # windows = map(lambda ((x, y), w): (((x - l)**2 + (y - m)**2) ** 0.5, w),
+    #               windows) # ALT
+
+    # # Find the closest corner
+    # windows.sort(key=lambda (d, _): d)
+    # min_dist = windows[0][0]
+
+    # windows = filter(lambda (x, w): x <= min_dist, windows)
+
+    # # Get the highest window of the remaining
+    # windows = [(w.get_raw_viewport()[0][1], w) for (x, w) in windows]
+    # windows.sort(key=lambda (x, _): x)
+    # if windows:
+    #     return windows[0][1]
+    # else:
+    #     return None
+
+
+    # for win in tree_manager.get_viewable_windows():
+    #     if win.is_shaded() or win.is_minimized():
+    #         continue
+
+    #     ((wl, wt), (ww, wh)) = win.get_viewport()
+    #     wr = wl + ww
+    #     if l < wr or wr < closest_valid_border:
+    #         continue
+
+    #     top_border_diff = (t - wt) ** 2  # Magnitude of diff
+
+    #     if wr == closest_valid_border:  # Only compare when the borders are same
+    #                                     # distance apart
+    #         if lowest_top_diff < top_border_diff or \
+    #            (lowest_top_diff == top_border_diff and t < wt):
+    #             continue
+
+    #         # When two windows are equally apart. Take the to one with greater
+    #         # overlap
+    #         # +------+ +-----+
+    #         # |      | |     |
+    #         # |  1   | +-----+
+    #         # |      | +-----+
+    #         # |      | |  0  |
+    #         # +------+ +-----+
+    #         # +------+
+    #         # |      |
+    #         # |      |
+    #         # |      |
+    #         # |      |
+    #         # +------+
+    #         # 0 Should switch to 1
+
+    #     closest_valid_border = wr
+    #     lowest_top_diff = top_border_diff
+    #     closest_window = win
+
+    # return closest_window
 
 
 def down_window():
