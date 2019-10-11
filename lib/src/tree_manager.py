@@ -195,6 +195,8 @@ class TreeManager(Node):
             name = str(i) + ': ' + self.get_child(i).get_name()
             if i == active_index:
                 name = '> ' + name + ' <'
+            elif self.get_child(i).is_active():
+                name = '..' + name + '..'
             status.append(name)
         status_line = ' | '.join(status)
 
