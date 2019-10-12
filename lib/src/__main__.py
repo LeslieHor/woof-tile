@@ -283,10 +283,11 @@ def do_maximize():
 def do_unmaximize():
     window = get_active_window()
     workspace = get_active_workspace()
-    windows = workspace.get_all_windows()
-    [w.unminimize() for w in windows if w != window]
+    workspace.unminimize_workspace_windows()
+    # windows = workspace.get_all_windows()
+    # [w.unminimize() for w in windows if w != window]
     window.unmaximize()
-    workspace.set_regular_state(WINDOW_STATE.NORMAL)
+    # workspace.set_regular_state(WINDOW_STATE.NORMAL) # TODO: needed?
     window.activate()
 
 
@@ -987,8 +988,15 @@ def check_windows():
     system_ids = system_calls.get_all_system_window_ids()
     dead_windows = [win for win in tree_manager.get_all_windows()
                     if win.window_id not in system_ids]
-    [win.remove_and_trim() for win in dead_windows]
-    return len(dead_windows) > 0
+    # If we have dead windows, clean tree without and restore original focus
+    # afterwards
+    if dead_windows:
+        active_window_id = system_calls.get_active_window_id()
+        [win.remove_and_trim() for win in dead_windows]
+        system_calls.activate_window(active_window_id)
+        return True
+    else:
+        return False
 
 
 def load_data():

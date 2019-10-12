@@ -154,6 +154,9 @@ class Workspace(Node):
         self.set_geometry(None)
         self.minimize()
 
+    def unminimize_workspace_windows(self):
+        [w.unminimize() for w in self.get_all_windows()]
+
     def update_status(self):
         self.parent.update_status_for_active(self)
 

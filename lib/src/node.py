@@ -143,6 +143,9 @@ class Node:
     def resize(self, child, plane_type, increment):
         self.parent.resize(self, plane_type, increment)
 
+    def unminimize_workspace_windows(self):
+        self.parent.unminimize_workspace_windows()
+
     # --------------------------------------------------------------------------
     # Other
     # --------------------------------------------------------------------------

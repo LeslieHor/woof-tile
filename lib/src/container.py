@@ -111,6 +111,8 @@ class Container(Node):
 
     def remove_and_trim(self, _=None):
         self.get_parent().remove_and_trim(self)
+        if self.get_state() == WINDOW_STATE.MAXIMIZED:
+            self.unminimize_workspace_windows()
 
     def get_smallest_immutable_subtree(self, _=None):
         return self.parent.get_smallest_immutable_subtree(self)
@@ -142,8 +144,9 @@ class Container(Node):
         self.set_state(WINDOW_STATE.MINIMIZED)
 
     def unminimize(self):
-        self.activate()
-        self.set_state(WINDOW_STATE.NORMAL)
+        if self.get_state() == WINDOW_STATE.MINIMIZED:
+            self.activate()
+            self.set_state(WINDOW_STATE.NORMAL)
 
     def activate(self, set_last_active=False):
         """Call into WM to focus the window"""
@@ -160,8 +163,9 @@ class Container(Node):
         self.redraw()
 
     def unmaximize(self):
-        self.set_state(WINDOW_STATE.NORMAL)
-        self.redraw()
+        if self.get_state() == WINDOW_STATE.MAXIMIZED:
+            self.set_state(WINDOW_STATE.NORMAL)
+            self.redraw()
 
     def shade(self):
         system_calls.shade_window(self.window_id)
