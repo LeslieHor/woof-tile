@@ -58,6 +58,8 @@ class OPTIONS:
     ATTEMPT_SWALLOW = 'as'
     SAVE_LAYOUT = 'wl'
     DELETE_SCREEN = 'ds'
+    PREV_WORKSPACE = 'pc'
+    NEXT_WORKSPACE = 'nc'
 
 
 def get_option_description(option):
@@ -160,6 +162,10 @@ def get_option_description(option):
         return '(save layout) save layout'
     elif option == OPTIONS.DELETE_SCREEN:
         return '(delete screen) deletes the target / active workspace'
+    elif option == OPTIONS.PREV_WORKSPACE:
+        return '(previous workspace) switches to the previous inactive workspace'
+    elif option == OPTIONS.NEXT_WORKSPACE:
+        return '(next workspace) switches to the next inactive workspace'
 
     else:
         return ''

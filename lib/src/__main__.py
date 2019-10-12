@@ -361,6 +361,29 @@ def rotate_window_in_group(increment):
     parent.rotate_active_window(increment)
 
 
+def prev_workspace():
+    current_workspace = get_active_workspace()
+    workspace_index = tree_manager.get_workspace_index(current_workspace)
+
+    # We only care about workspaces after the current one
+    candidate_workspaces = tree_manager.get_children()[:workspace_index]
+    candidate_workspaces = filter(lambda ws: not ws.is_active(), candidate_workspaces)
+    if candidate_workspaces:
+        do_swap_screens(current_workspace,
+                        candidate_workspaces[len(candidate_workspaces) - 1])
+
+
+def next_workspace():
+    current_workspace = get_active_workspace()
+    workspace_index = tree_manager.get_workspace_index(current_workspace)
+
+    # We only care about workspaces after the current one
+    candidate_workspaces = tree_manager.get_children()[workspace_index + 1:]
+    candidate_workspaces = filter(lambda ws: not ws.is_active(), candidate_workspaces)
+    if candidate_workspaces:
+        do_swap_screens(current_workspace, candidate_workspaces[0])
+
+
 def swap_screens(target):
     """
     1. x
@@ -977,6 +1000,12 @@ def main(command_string):
 
     elif cmd == OPTIONS.DELETE_SCREEN:
         delete_screen(args)
+
+    elif cmd == OPTIONS.PREV_WORKSPACE:
+        prev_workspace()
+
+    elif cmd == OPTIONS.NEXT_WORKSPACE:
+        next_workspace()
 
     else:
         print("Invalid command")
