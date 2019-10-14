@@ -83,5 +83,9 @@ def move_mouse(x, y):
     call(["xdotool mousemove", x, y])
 
 
+def remove_system_maximize(window_id=None):
+    call(['wmctrl', '-ir', verify_window_id(window_id), '-b', 'remove,maximized_vert,maximized_horz'])
+
+
 def kill_window(window_id):
     return call(["wmctrl -ic", window_id])

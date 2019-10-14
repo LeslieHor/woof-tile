@@ -24,6 +24,7 @@ def check_window():
 
 def create_new_window_from_active():
     new_window_id = system_calls.get_active_window_id()
+    system_calls.remove_system_maximize(new_window_id)
     new_woof_id = tree_manager.get_new_woof_id()
 
     return Container(window_id=new_window_id, woof_id=new_woof_id)
